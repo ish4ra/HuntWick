@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+src-tauri/target/
+src-tauri/gen/schemas/
+__pycache__/
+*.pyc
+.venv/
+engine/build/
+*.log
+.DS_Store
