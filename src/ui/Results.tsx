@@ -1,0 +1,329 @@
+import { useMemo, useState } from 'react'
+import {
+  ArrowDownAZ,
+  ChevronDown,
+  CircleCheck,
+  Download,
+  ExternalLink,
+  LayoutGrid,
+  List,
+  ListFilter,
+  Radio,
+  Search,
+  SlidersHorizontal,
+} from 'lucide-react'
+import {
+  Busy,
+  CopyLink,
+  Empty,
+  PlatformMark,
+  isActive,
+  phases,
+  statuses,
+  useElapsed,
+  type Workspace,
+} from './common'
+import type { Result, Status } from '../model'
+
+function ProfileLink({ row, ws }: { row: Result; ws: Workspace }) {
+  if (!row.url) return <span className="muted">Unavailable</span>
+  return (
+    <span className="profile-link">
+      <button title={row.url} onClick={() => void ws.openUrl(row.url)}>
+        <span>{row.url}</span>
+        <ExternalLink size={12} />
+      </button>
+      <CopyLink url={row.url} />
+    </span>
+  )
+}
+function StatusPill({ status }: { status: Status }) {
+  return (
+    <span className={'result-status status-' + status}>
+      <i />
+      {statuses[status]}
+    </span>
+  )
+}
+export default function Results({ ws }: { ws: Workspace }) {
+  const { run } = ws
+  const [layout, setLayout] = useState<'table' | 'cards'>('table')
+  const [filter, setFilter] = useState<Status | 'all'>('found')
+  const [category, setCategory] = useState('')
+  const [query, setQuery] = useState('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [ascending, setAscending] = useState(true)
+  const [exportsOpen, setExportsOpen] = useState(false)
+  const elapsed = useElapsed(run)
+  const active = isActive(run)
+  const rows = run?.results ?? []
+  const found = rows.filter((r) => r.status === 'found').length
+  const matchLinks = [...new Set(rows.filter((r) => r.status === 'found' && r.url).map((r) => r.url))].join(
+    '\n',
+  )
+  const missing = rows.filter((r) => r.status === 'not_found').length
+  const uncertain = rows.filter(
+    (r) => r.status !== 'found' && r.status !== 'not_found' && r.status !== 'cancelled',
+  ).length
+  const checked = run?.checked ?? 0
+  const filtered = useMemo(
+    () =>
+      (run?.results ?? [])
+        .filter(
+          (r) =>
+            (filter === 'all' || r.status === filter) &&
+            (!category || r.category === category) &&
+            (r.platform + ' ' + r.url).toLowerCase().includes(query.trim().toLowerCase()),
+        )
+        .sort((a, b) => a.platform.localeCompare(b.platform) * (ascending ? 1 : -1)),
+    [run?.results, filter, category, query, ascending],
+  )
+  const categories = [...new Set(rows.map((row) => row.category))].sort()
+  return (
+    <section className="result-area" aria-label="Search results">
+      <div className="section-heading">
+        <div className="heading-with-icon">
+          <ListFilter size={21} />
+          <h2>Search results</h2>
+          {run && <span className="count-tag">{rows.length}</span>}
+        </div>
+        <div className="actions">
+          {run && (
+            <span className="run-state">
+              {active ? <Busy /> : <CircleCheck size={14} />} {phases[run.phase]}
+            </span>
+          )}
+          {run && <CopyLink url={matchLinks} bulk />}
+          <div className="menu-anchor">
+            <button
+              className="quiet small"
+              disabled={!rows.length || active}
+              aria-expanded={exportsOpen}
+              onClick={() => setExportsOpen(!exportsOpen)}
+            >
+              <Download size={14} /> Export <ChevronDown size={12} />
+            </button>
+            {exportsOpen && (
+              <div
+                className="popover"
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setExportsOpen(false)
+                }}
+              >
+                {(['csv', 'json', 'html'] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => {
+                      setExportsOpen(false)
+                      void ws.exportRun(f)
+                    }}
+                  >
+                    Export {f.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="result-panel">
+        {run && (
+          <div className="run-summary">
+            <div className="summary-title">
+              <span>
+                Results for <strong>@{run.username}</strong>
+              </span>
+              <span className="mono">{elapsed} elapsed</span>
+            </div>
+            <progress aria-label="Search progress" max={Math.max(1, run.sites.length)} value={checked} />
+            <dl className="stats">
+              {[
+                ['Total', run.sites.length],
+                ['Checked', checked],
+                ['Found', found],
+                ['Not found', missing],
+                ['Inconclusive', uncertain],
+              ].map(([name, value]) => (
+                <div key={name}>
+                  <dt>{name}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+            {run.error && (
+              <p className="issue" role="alert">
+                {run.error}
+              </p>
+            )}
+          </div>
+        )}
+        <div className="results-toolbar">
+          <div className="filter-tabs">
+            <button
+              className={filter === 'found' ? 'chosen' : ''}
+              aria-pressed={filter === 'found'}
+              onClick={() => setFilter('found')}
+            >
+              <span className="tiny-dot" />
+              Matches <b>{found}</b>
+            </button>
+            <button
+              className={filter === 'all' ? 'chosen' : ''}
+              aria-pressed={filter === 'all'}
+              onClick={() => setFilter('all')}
+            >
+              All results <b>{rows.length}</b>
+            </button>
+          </div>
+          <div className="actions toolbar-actions">
+            <button
+              className={'filter-button' + (filtersOpen ? ' selected' : '')}
+              aria-expanded={filtersOpen}
+              onClick={() => setFiltersOpen(!filtersOpen)}
+            >
+              <SlidersHorizontal size={14} /> Filters
+            </button>
+            <i className="separator" />
+            <div className="view-switch">
+              <button
+                className={layout === 'table' ? 'selected' : ''}
+                onClick={() => setLayout('table')}
+                aria-label="Table view"
+                title="Table view"
+                aria-pressed={layout === 'table'}
+              >
+                <List size={15} />
+              </button>
+              <button
+                className={layout === 'cards' ? 'selected' : ''}
+                onClick={() => setLayout('cards')}
+                aria-label="Card view"
+                title="Card view"
+                aria-pressed={layout === 'cards'}
+              >
+                <LayoutGrid size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+        {filtersOpen && (
+          <div className="filters">
+            <label>
+              Platform or URL
+              <div className="input-icon">
+                <Search size={15} />
+                <input
+                  placeholder="Filter results"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
+            </label>
+            <label>
+              Status
+              <select
+                aria-label="Status"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value as typeof filter)}
+              >
+                <option value="all">All statuses</option>
+                {Object.entries(statuses).map(([k, v]) => (
+                  <option value={k} key={k}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Category
+              <select aria-label="Category" value={category} onChange={(e) => setCategory(e.target.value)}>
+                <option value="">All categories</option>
+                {categories.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+            </label>
+            <button className="quiet small" onClick={() => setAscending(!ascending)}>
+              <ArrowDownAZ size={14} />
+              {ascending ? 'A–Z' : 'Z–A'}
+            </button>
+          </div>
+        )}
+        {!run ? (
+          <Empty icon={<Radio size={27} />} title="Awaiting your first search">
+            Enter a username above to discover public profiles.
+          </Empty>
+        ) : filtered.length === 0 ? (
+          <Empty
+            icon={active ? <Busy /> : <Search size={24} />}
+            title={active ? 'Checking public profiles' : 'No results in this view'}
+          >
+            {active
+              ? 'Results appear here as platform checks finish.'
+              : 'Try another status or adjust your filters.'}
+          </Empty>
+        ) : layout === 'cards' ? (
+          <div className="profile-cards">
+            {filtered.map((row) => (
+              <article key={row.platform} className="profile-card">
+                <div className="card-title">
+                  <PlatformMark name={row.platform} />
+                  <div className="profile-id">
+                    <strong>{row.platform}</strong>
+                    <small>@{run.username}</small>
+                  </div>
+                </div>
+                <div className="card-meta">
+                  <StatusPill status={row.status} />
+                  <span>{row.category}</span>
+                </div>
+                <ProfileLink row={row} ws={ws} />
+                {row.message && <small>{row.message}</small>}
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    <button className="sort-header" onClick={() => setAscending(!ascending)}>
+                      Platform <ArrowDownAZ size={13} />
+                    </button>
+                  </th>
+                  <th>Status</th>
+                  <th>Category</th>
+                  <th>Profile URL</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((row) => (
+                  <tr key={row.platform}>
+                    <td>
+                      <div className="platform-cell">
+                        <PlatformMark name={row.platform} />
+                        <div className="profile-id">
+                          <strong>{row.platform}</strong>
+                          <small>@{run.username}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td title={row.message}>
+                      <StatusPill status={row.status} />
+                      {row.message && <small className="row-detail">{row.message}</small>}
+                    </td>
+                    <td>{row.category}</td>
+                    <td>
+                      <ProfileLink row={row} ws={ws} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
