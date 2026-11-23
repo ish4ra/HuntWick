@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0-alpha.1 — unreleased
+## 0.1.0-rc.1 — unreleased
 
 - Add a local Tauri and React workspace for public username discovery with a bundled Sherlock engine and pinned platform definitions.
 - Stream results into filterable table and card views. Add cancellation, per-site selection, local exports and opt-in history.

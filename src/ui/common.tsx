@@ -5,7 +5,7 @@ import { activeRun, type Run, type Status } from '../model'
 
 export type Workspace = ReturnType<typeof useHuntWick>
 export type Page = 'Search' | 'History' | 'Platforms' | 'Settings' | 'About'
-export const version = '0.1.0-alpha.1'
+export const version = '0.1.0-rc.1'
 export const statuses: Record<Status, string> = {
   found: 'Found',
   not_found: 'Not found',

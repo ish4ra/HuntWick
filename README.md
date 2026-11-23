@@ -6,9 +6,9 @@ HuntWick is a local desktop application for discovering public profiles that use
 
 ![HuntWick search workspace with Quick and Full search options](docs/screenshots/workspace.png)
 
-## Using the alpha
+## Using the release candidate
 
-The development version is **v0.1.0-alpha.1**. For a test installer, open a successful CI run for the implementation branch, download its artifact for your system, extract it, and compare the SHA256 checksum before installing. The packaging matrix targets Windows 10/11 x64 (NSIS installer), Apple Silicon and Intel Macs (DMG), and Linux x64 (Debian package and AppImage). Availability depends on the individual build job. See the [installation and unsigned-build instructions](docs/packaging.md) and [GitHub Actions](https://github.com/ish4ra/HuntWick/actions).
+The development version is **v0.1.0-rc.1**. For a test installer, open a successful CI run for the implementation branch, download its artifact for your system, extract it, and compare the SHA256 checksum before installing. The packaging matrix targets Windows 10/11 x64 (NSIS installer), Apple Silicon and Intel Macs (DMG), and Linux x64 (Debian package and AppImage). Availability depends on the individual build job. See the [installation and unsigned-build instructions](docs/packaging.md) and [GitHub Actions](https://github.com/ish4ra/HuntWick/actions).
 
 The installers bundle the Python runtime and Sherlock. Launch HuntWick from your applications menu. The platform directory and settings work offline. A live search needs a network connection to the selected sites.
 
