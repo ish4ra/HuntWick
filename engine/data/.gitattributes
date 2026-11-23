@@ -1,0 +1,3 @@
+# Preserve upstream bytes used by the runtime integrity check on all platforms.
+*.json -text
+*.txt -text

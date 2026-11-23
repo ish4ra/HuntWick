@@ -1,0 +1,8 @@
+[project]
+name = "huntwick-engine"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = ["sherlock-project==0.16.2", "requests>=2.32,<3"]
+
+[dependency-groups]
+dev = ["pyinstaller==6.22.3"]
