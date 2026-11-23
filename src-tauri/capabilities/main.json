@@ -4,7 +4,7 @@
   "description": "Local main window commands and native result subscription",
   "windows": ["main"],
   "permissions": [
-    "allow-catalog", "allow-start-search", "allow-cancel-search",
+    "allow-confirm-install", "allow-catalog", "allow-start-search", "allow-cancel-search",
     "allow-save-export", "allow-open-url",
     "core:event:allow-listen", "core:event:allow-unlisten"
   ]

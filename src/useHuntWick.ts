@@ -38,6 +38,17 @@ export function useHuntWick() {
     void session.connect()
     return session.disconnect
   }, [session])
+  useEffect(() => {
+    if (!state.ready || !state.catalog || !('__HUNTWICK_VERIFY_INSTALL__' in window)) return
+    const siteCount = state.catalog.sites.length
+    const frame = requestAnimationFrame(() => {
+      const input = document.querySelector<HTMLInputElement>('main form input#username')
+      if (input?.offsetWidth && input.offsetHeight && input.form?.querySelector('button[type="submit"]')) {
+        void invoke('confirm_install', { siteCount })
+      }
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [state.ready, state.catalog])
   return {
     ...state,
     start: session.start, cancel: session.cancel, clearRun: session.clearRun,

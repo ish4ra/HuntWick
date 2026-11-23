@@ -19,9 +19,24 @@ use tauri::{AppHandle, Emitter, Manager, State};
 #[derive(Default)]
 struct Runtime {
     shutting_down: bool,
+    verify_install: bool,
+    install_verified: bool,
     catalog: Option<Catalog>,
     loading: Option<Arc<Process>>,
     search: Option<ActiveSearch>,
+}
+
+impl Runtime {
+    fn confirm_install(&mut self, site_count: usize) -> Result<(), String> {
+        if !self.verify_install
+            || site_count == 0
+            || self.catalog.as_ref().map(|c| c.sites.len()) != Some(site_count)
+        {
+            return Err("Installation verification is unavailable.".into());
+        }
+        self.install_verified = true;
+        Ok(())
+    }
 }
 
 struct ActiveSearch {
@@ -241,15 +256,41 @@ async fn save_export(
     Ok(true)
 }
 
+#[tauri::command]
+fn confirm_install(
+    app: AppHandle,
+    state: State<'_, Engine>,
+    site_count: usize,
+) -> Result<(), String> {
+    state.runtime.lock().unwrap().confirm_install(site_count)?;
+    app.exit(0);
+    Ok(())
+}
+
 fn main() {
-    tauri::Builder::default()
-        .manage(Engine::default())
+    let verify_install = std::env::args_os()
+        .skip(1)
+        .any(|arg| arg == "--verify-install");
+    let mut builder = tauri::Builder::default();
+    if verify_install {
+        builder = builder
+            .append_invoke_initialization_script("\n;window.__HUNTWICK_VERIFY_INSTALL__ = true;");
+    }
+    builder
+        .manage(Engine {
+            runtime: Mutex::new(Runtime {
+                verify_install,
+                ..Runtime::default()
+            }),
+            ..Engine::default()
+        })
         .invoke_handler(tauri::generate_handler![
             catalog,
             start_search,
             cancel_search,
             open_url,
-            save_export
+            save_export,
+            confirm_install
         ])
         .build(tauri::generate_context!())
         .expect("could not initialize HuntWick")
@@ -264,6 +305,32 @@ fn main() {
                 if let Some(process) = runtime.loading.take() {
                     process.stop();
                 }
+                if runtime.verify_install && !runtime.install_verified {
+                    std::process::exit(1);
+                }
             }
         });
+}
+
+#[cfg(test)]
+mod install_tests {
+    use super::*;
+
+    #[test]
+    fn only_explicit_verification_can_confirm_a_loaded_catalog() {
+        let mut runtime = Runtime::default();
+        assert!(runtime.confirm_install(1).is_err());
+        runtime.verify_install = true;
+        assert!(runtime.confirm_install(0).is_err());
+        runtime.catalog = Some(serde_json::from_value(json!({
+            "version":"1", "databaseVersion":"a", "updatedAt":"2026-11-01",
+            "sites":[{"name":"GitHub","url":"https://github.com","category":"Coding","quick":true}]
+        })).unwrap());
+        assert!(runtime.confirm_install(2).is_err());
+        assert!(!runtime.install_verified);
+        assert!(runtime.confirm_install(1).is_ok());
+        assert!(runtime.install_verified);
+        runtime.verify_install = false;
+        assert!(runtime.confirm_install(1).is_err());
+    }
 }
