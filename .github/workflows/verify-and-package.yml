@@ -51,7 +51,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential curl wget file libwebkit2gtk-4.1-dev \
-            libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev libfuse2 patchelf
+            libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev libfuse2 patchelf \
+            xvfb xauth dbus-x11
       - name: Install Rust, Python, and locked dependencies
         run: |
           rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt,clippy --target "$TARGET"
@@ -81,7 +82,7 @@ jobs:
         run: |
           npm run tauri -- build --ci --target "$TARGET" --bundles "$BUNDLES" -- --locked
           uv run --project engine --frozen python scripts/stage_installers.py "$TARGET"
-      - name: Test engine from the Windows installer
+      - name: Test installed Windows engine and desktop
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
@@ -90,7 +91,9 @@ jobs:
           $install = Start-Process $installer -ArgumentList '/S', "/D=$installDir" -Wait -PassThru
           if ($install.ExitCode -ne 0) { throw "Installer exited with $($install.ExitCode)" }
           uv run --project engine --frozen python scripts/smoke_engine.py "$installDir"
-      - name: Test engine from the mounted DMG
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          uv run --project engine --frozen python scripts/smoke_desktop.py "$installDir/huntwick.exe"
+      - name: Test engine and desktop from the mounted DMG
         if: runner.os == 'macOS'
         run: |
           mountpoint="$RUNNER_TEMP/huntwick-dmg"
@@ -98,15 +101,20 @@ jobs:
           hdiutil attach -readonly -nobrowse -mountpoint "$mountpoint" "installers/$TARGET/"*.dmg
           trap 'hdiutil detach "$mountpoint"' EXIT
           uv run --project engine --frozen python scripts/smoke_engine.py "$mountpoint"
-      - name: Test engines from the Debian package and AppImage
+          apps=("$mountpoint/"*.app)
+          uv run --project engine --frozen python scripts/smoke_desktop.py "${apps[0]}/Contents/MacOS/huntwick"
+      - name: Test installed Debian desktop and both Linux engines
         if: runner.os == 'Linux'
         run: |
-          dpkg-deb --extract "installers/$TARGET/"*.deb "$RUNNER_TEMP/huntwick-deb"
-          uv run --project engine --frozen python scripts/smoke_engine.py "$RUNNER_TEMP/huntwick-deb"
+          sudo dpkg -i "installers/$TARGET/"*.deb
+          uv run --project engine --frozen python scripts/smoke_engine.py /usr/lib/HuntWick
+          dbus-run-session -- xvfb-run -a uv run --project engine --frozen python scripts/smoke_desktop.py /usr/bin/huntwick
           appimage=("$GITHUB_WORKSPACE/installers/$TARGET/"*.AppImage)
           chmod +x "${appimage[0]}"
           (cd "$RUNNER_TEMP" && "${appimage[0]}" --appimage-extract >/dev/null)
           uv run --project engine --frozen python scripts/smoke_engine.py "$RUNNER_TEMP/squashfs-root"
+      - name: Verify staged installers and report SHA-256
+        run: uv run --project engine --frozen python scripts/stage_installers.py "$TARGET" --verify
       - name: Upload verified installers
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
