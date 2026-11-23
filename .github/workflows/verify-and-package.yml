@@ -1,0 +1,116 @@
+name: Verify and package
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            runner: windows-2022
+            bundles: nsis
+          - target: aarch64-apple-darwin
+            runner: macos-15
+            bundles: dmg
+          - target: x86_64-apple-darwin
+            runner: macos-15-intel
+            bundles: dmg
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-22.04
+            bundles: deb,appimage
+    defaults:
+      run:
+        shell: bash
+    env:
+      RUSTUP_TOOLCHAIN: "1.95.0"
+      TARGET: ${{ matrix.target }}
+      BUNDLES: ${{ matrix.bundles }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: "24.22.3"
+          package-manager-cache: false
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        with:
+          version: "0.13.9"
+          enable-cache: false
+      - name: Install Linux desktop build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl wget file libwebkit2gtk-4.1-dev \
+            libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev libfuse2 patchelf
+      - name: Install Rust, Python, and locked dependencies
+        run: |
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt,clippy --target "$TARGET"
+          uv python install 3.12.14
+          uv sync --project engine --frozen --python 3.12.14
+          npm ci
+      - name: Check frontend and engine
+        run: |
+          npm run lint
+          npm run typecheck
+          npm test
+          npm run build
+          uv run --project engine --frozen python -m unittest discover -s engine/tests
+      - name: Freeze the native engine
+        run: |
+          uv run --project engine --frozen python engine/build.py
+          cargo fetch --manifest-path src-tauri/Cargo.toml --locked --target "$TARGET"
+          uv run --project engine --frozen python scripts/desktop_notices.py
+      - name: Run Rust checks
+        run: |
+          cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+          cargo clippy --manifest-path src-tauri/Cargo.toml --locked --target "$TARGET" --all-targets -- -D warnings
+          cargo test --manifest-path src-tauri/Cargo.toml --locked --target "$TARGET"
+      - name: Build desktop installers and checksums
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+        run: |
+          npm run tauri -- build --ci --target "$TARGET" --bundles "$BUNDLES" -- --locked
+          uv run --project engine --frozen python scripts/stage_installers.py "$TARGET"
+      - name: Test engine from the Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $installer = (Get-Item "installers/$env:TARGET/*.exe").FullName
+          $installDir = Join-Path $env:RUNNER_TEMP HuntWick
+          $install = Start-Process $installer -ArgumentList '/S', "/D=$installDir" -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw "Installer exited with $($install.ExitCode)" }
+          uv run --project engine --frozen python scripts/smoke_engine.py "$installDir"
+      - name: Test engine from the mounted DMG
+        if: runner.os == 'macOS'
+        run: |
+          mountpoint="$RUNNER_TEMP/huntwick-dmg"
+          mkdir "$mountpoint"
+          hdiutil attach -readonly -nobrowse -mountpoint "$mountpoint" "installers/$TARGET/"*.dmg
+          trap 'hdiutil detach "$mountpoint"' EXIT
+          uv run --project engine --frozen python scripts/smoke_engine.py "$mountpoint"
+      - name: Test engines from the Debian package and AppImage
+        if: runner.os == 'Linux'
+        run: |
+          dpkg-deb --extract "installers/$TARGET/"*.deb "$RUNNER_TEMP/huntwick-deb"
+          uv run --project engine --frozen python scripts/smoke_engine.py "$RUNNER_TEMP/huntwick-deb"
+          appimage=("$GITHUB_WORKSPACE/installers/$TARGET/"*.AppImage)
+          chmod +x "${appimage[0]}"
+          (cd "$RUNNER_TEMP" && "${appimage[0]}" --appimage-extract >/dev/null)
+          uv run --project engine --frozen python scripts/smoke_engine.py "$RUNNER_TEMP/squashfs-root"
+      - name: Upload verified installers
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: huntwick-${{ matrix.target }}
+          path: installers/${{ matrix.target }}/
+          if-no-files-found: error
+          compression-level: 0
