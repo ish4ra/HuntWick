@@ -122,3 +122,39 @@ class EngineTests(unittest.TestCase):
                      '<h1>Too many requests</h1>', '<form action="/login"><input type="password"></form>'):
             with self.subTest(challenge=body):
                 self.assertEqual(self.run_search(body=identity + body), 'blocked')
+
+    def test_child_exits_if_native_parent_disappears_during_a_search(self):
+        import os
+        import tempfile
+        import time
+        with tempfile.TemporaryDirectory() as tmp:
+            ready = Path(tmp) / 'request-started'
+            worker = '''
+import sys, time
+from pathlib import Path
+import adapter
+
+def wait_for_network(url, timeout):
+    Path(sys.argv[1]).touch()
+    time.sleep(60)
+
+adapter.fetch = wait_for_network
+raise SystemExit(adapter.main())
+'''
+            process = subprocess.Popen([sys.executable, '-c', worker, str(ready)], cwd=ENGINE,
+                                       stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+                                       env={**os.environ, 'HUNTWICK_PARENT_PIPE':'1'})
+            try:
+                process.stdin.write(b'{"op":"search","username":"blue","sites":["GitHub"]}\n')
+                process.stdin.flush()
+                deadline = time.monotonic() + 12
+                while not ready.exists() and process.poll() is None and time.monotonic() < deadline:
+                    time.sleep(.02)
+                self.assertTrue(ready.exists(), 'Search must start with parent pipe open')
+                self.assertIsNone(process.poll())
+                process.stdin.close()
+                self.assertNotEqual(process.wait(timeout=3), 0)
+            finally:
+                process.kill()
+                process.wait()
+                process.stdin.close()

@@ -4,6 +4,7 @@ import json
 import os
 import re
 import sys
+import threading
 from time import monotonic
 from urllib.parse import urljoin, urlsplit
 
@@ -134,6 +135,18 @@ def events(request, sites):
     yield {'type': 'done'}
 
 
+def watch_parent():
+    # Only the native launcher keeps the request pipe open until this process
+    # exits. Using the raw descriptor avoids stdin's buffered-reader lock at
+    # interpreter shutdown, including when a network worker is still blocked.
+    try:
+        while os.read(sys.stdin.fileno(), 1):
+            pass
+    except OSError:
+        pass
+    os._exit(1)
+
+
 def main():
     try:
         line = sys.stdin.buffer.readline(65537)
@@ -143,6 +156,8 @@ def main():
             request = json.loads(line)
         except (ValueError, RecursionError):
             raise ValueError('Invalid JSON request.') from None
+        if os.getenv('HUNTWICK_PARENT_PIPE') == '1':
+            threading.Thread(target=watch_parent, daemon=True).start()
         for event in events(request, load_sites()):
             print(json.dumps(event, separators=(',', ':')), flush=True)
         return 0
