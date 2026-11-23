@@ -127,7 +127,8 @@ export class HuntWickSession {
     const settings = parseSettings({ ...this.state.settings, ...patch })
     if (!settings.saveHistory) this.eligibleHistoryId = null
     this.update({ settings })
-    this.persist(settingsKey, settings)
+    const { timeout, concurrency, defaultMode, ...appSettings } = settings
+    this.persist(settingsKey, settings.rememberPreferences ? { ...appSettings, timeout, concurrency, defaultMode } : appSettings)
   }
   loadHistory = (id: string) => {
     if (activeRun(this.state.run)) return
@@ -136,6 +137,19 @@ export class HuntWickSession {
   }
   deleteHistory = (id: string) => this.setHistory(this.state.history.filter(r => r.id !== id))
   clearHistory = () => this.setHistory([])
+  clearLocalData = (): boolean => {
+    if (activeRun(this.state.run)) return false
+    this.eligibleHistoryId = null
+    this.clearError()
+    const historyCleared = this.persist(historyKey, null)
+    const settingsCleared = this.persist(settingsKey, null)
+    this.update({
+      run: null,
+      ...(historyCleared ? { history: [] } : {}),
+      ...(settingsCleared ? { settings: parseSettings(null) } : {}),
+    })
+    return historyCleared && settingsCleared
+  }
 
   start = async (username: string, mode: Mode, selected?: string[]) => {
     if (activeRun(this.state.run)) return

@@ -43,6 +43,7 @@ export function useHuntWick() {
     start: session.start, cancel: session.cancel, clearRun: session.clearRun,
     clearError: session.clearError, retryCatalog: session.connect, updateSettings: session.updateSettings,
     loadHistory: session.loadHistory, deleteHistory: session.deleteHistory, clearHistory: session.clearHistory,
+    clearLocalData: session.clearLocalData,
     openUrl: session.openUrl, exportRun: session.exportRun,
   }
 }

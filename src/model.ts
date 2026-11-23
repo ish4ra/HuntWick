@@ -35,6 +35,7 @@ export interface Run {
   error: string | null
 }
 export interface Settings {
+  rememberPreferences: boolean
   timeout: number
   concurrency: number
   saveHistory: boolean
@@ -146,6 +147,7 @@ function boundedInt(value: unknown, max: number, fallback: number): number {
 export function parseSettings(input: unknown): Settings {
   const value = record(input) ? input : {}
   return {
+    rememberPreferences: value.rememberPreferences === true,
     timeout: boundedInt(value.timeout, 60, 10), concurrency: boundedInt(value.concurrency, 20, 8),
     saveHistory: value.saveHistory === true, defaultMode: value.defaultMode === 'full' ? 'full' : 'quick',
     theme: value.theme === 'light' || value.theme === 'system' ? value.theme : 'dark',
