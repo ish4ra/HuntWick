@@ -6,11 +6,13 @@ The development branch is `feat/phase-1-desktop-mvp`. The first complete applica
 
 | Area | Evidence |
 | --- | --- |
-| Interface | ESLint, TypeScript, Vite production build and 34 Vitest cases passed. Browser checks covered all five pages, two viewport sizes, sorting, filters, views, clipboard, themes and local storage. |
+| Interface | ESLint, TypeScript, Vite production build and 35 Vitest cases passed. Browser checks covered all five pages, two viewport sizes, sorting, filters, views, clipboard, themes and local storage. |
 | Engine | 15 deterministic Python tests passed, including status classification, corrupt snapshot rejection and pipe closure on parent loss. The stock CPython 3.12.14 Linux build loaded 396 compatible sites, including 12 Quick sites, without Python on PATH. A synthetic single-site GitHub lookup returned not found and completed with certificate verification enabled. |
-| Native host | Linux Tauri debug build displayed the Search page and read the complete catalog. The host and engine now use a liveness pipe so closing the host during a search terminates the worker. |
+| Native host | Seven Rust tests, Clippy and formatting passed. The Linux RC Debian payload displayed Search and read the complete catalog. Closing its verification window before startup completed produced exit code 1. The host and engine now use a liveness pipe so closing the host during a search terminates the worker. |
 | Functional scope | Public handle discovery, progressive results, cancellation, native HTTPS opening, exports and opt-in local history. An inconclusive result can represent a real profile whose page lacks enough evidence to confirm a match. |
 | Installer verification | The `0.1.0-rc.1` changes add a test-only launch flag for the shipped GUI, enabled explicitly by the caller. A successful exit requires the webview to render Search and load the native catalog. The matrix checks individual installer hashes before artifact upload. |
 | Pull request | Git push works. An HTTPS CONNECT to api.github.com returned HTTP 403 from the cloud proxy. A restricted-network draft adds this single host. Manual draft PR creation is available through the [branch comparison](https://github.com/ish4ra/HuntWick/compare/main...feat/phase-1-desktop-mvp?expand=1). |
 
 Keep the RC version until final platform results and remaining interactive acceptance checks are recorded. The stable version, merge and publication await review.
+
+Native CSV, HTML and JSON saves exposed a missing timestamp in CSV. Commit `43749cd` appends the original UTC start time to each CSV record. A regression test failed on the prior implementation and passed after the fix. New installer verification must include this commit.
