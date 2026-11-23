@@ -14,6 +14,7 @@ impl Process {
     pub fn spawn(path: &Path) -> Result<(Arc<Self>, ChildStdin, ChildStdout), String> {
         let mut command = Command::new(path);
         command
+            .env("HUNTWICK_PARENT_PIPE", "1")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
@@ -82,9 +83,10 @@ pub fn communicate<T>(
     input
         .write_all(b"\n")
         .map_err(|_| "Could not send the engine request.")?;
-    drop(input);
+    // The engine watches for EOF after the request to detect abrupt host termination.
     let value = parse(BufReader::new(output))?;
     process.wait_success()?;
+    drop(input);
     Ok(value)
 }
 
