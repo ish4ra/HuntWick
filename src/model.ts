@@ -206,7 +206,10 @@ export function formatExport(run: Run, format: ExportFormat): string {
   if (format === 'json') return JSON.stringify(run, null, 2) + '\n'
   const columns = ['Username', 'Platform', 'Category', 'Status', 'Profile URL', 'Message']
   const rows = run.results.map(r => [run.username, r.platform, r.category, r.status, safeUrl(r.url), r.message])
-  if (format === 'csv') return [columns, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n') + '\r\n'
+  if (format === 'csv') {
+    const records = [[...columns, 'Search started (UTC)'], ...rows.map(row => [...row, run.startedAt])]
+    return records.map(row => row.map(csvCell).join(',')).join('\r\n') + '\r\n'
+  }
   const header = columns.map(s => '<th scope="col">' + s + '</th>').join('')
   const body = rows.map(row => '<tr>' + row.map(s => '<td>' + htmlText(s) + '</td>').join('') + '</tr>').join('\n')
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +

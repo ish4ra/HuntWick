@@ -74,6 +74,13 @@ describe('run lifecycle', () => {
 })
 
 describe('reports and local preferences', () => {
+  it('includes the original search time in each exported CSV row', () => {
+    const run = cancelRun(collected(), catalog, later)
+    const lines = formatExport(run, 'csv').trimEnd().split('\r\n')
+    expect(lines[0]).toContain('"Search started (UTC)"')
+    expect(lines.slice(1)).toHaveLength(run.results.length)
+    for (const line of lines.slice(1)) expect(line).toContain('"' + now + '"')
+  })
   it('escapes HTML and CSV formula cells and preserves original JSON data', () => {
     const run = cancelRun(collected(), catalog, later)
     run.results[0].message = '  =SUM(1,2)"<script>'
