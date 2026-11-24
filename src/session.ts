@@ -1,5 +1,5 @@
 import {
-  activeRun, applyEvent, cancelRun, createRun, formatExport, historyLimit, parseCatalog, parseHistory,
+  activeRun, applyEvent, cancelRun, createRun, diagnosticReport, formatExport, historyLimit, parseCatalog, parseHistory,
   parseSettings, safeUrl, selectSites, validUsername,
 } from './model'
 import type { Catalog, ExportFormat, Mode, Run, Settings } from './model'
@@ -202,10 +202,10 @@ export class HuntWickSession {
     try { await this.bridge.open(url) }
     catch (e) { this.update({ error: message(e) }) }
   }
-  exportRun = async (format: ExportFormat) => {
+  exportRun = async (format: ExportFormat | 'diagnostics') => {
     const { run } = this.state
     if (!run || !run.results.length) return
-    try { await this.bridge.save(format, formatExport(run, format)) }
+    try { await (format === 'diagnostics' ? this.bridge.save('json', diagnosticReport(run)) : this.bridge.save(format, formatExport(run, format))) }
     catch (e) { this.update({ error: message(e) }) }
   }
 }

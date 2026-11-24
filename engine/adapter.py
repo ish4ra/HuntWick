@@ -12,6 +12,7 @@ from urllib.parse import urljoin, urlsplit
 import requests
 from sherlock_project import __version__
 from sherlock_project.notify import QueryNotify
+from urllib3.util import Timeout
 from urllib3.exceptions import ReadTimeoutError
 
 from catalog import describe, load_sites
@@ -35,7 +36,7 @@ def fetch(url, timeout):
             with session.get(url, headers={'User-Agent': 'HuntWick/0.1 (public profile lookup)'},
                              proxies=requests.utils.get_environ_proxies(url),
                              verify=os.getenv('REQUESTS_CA_BUNDLE') or os.getenv('CURL_CA_BUNDLE') or True,
-                             allow_redirects=False, timeout=remaining, stream=True) as response:
+                             allow_redirects=False, timeout=Timeout(total=remaining), stream=True) as response:
                 if response.is_redirect and not attempt:
                     target = urljoin(url, response.headers['Location'])
                     if target != url and equivalent(url, target):
@@ -44,6 +45,11 @@ def fetch(url, timeout):
                         continue
                 media = response.headers.get('Content-Type', '').lower()
                 content = bytearray()
+                # These outcomes depend on the HTTP status alone. Do not wait for
+                # a slow denial/error document or retrieve a binary media payload.
+                if response.status_code in {401, 403, 407, 408, 429, 451, 504}:
+                    response._content = b''
+                    return response
                 if media.startswith(('image/', 'video/', 'audio/', 'application/octet-stream')):
                     response._content = b''
                     return response
@@ -110,13 +116,15 @@ def check_site(name, definition, username, timeout):
         result['message'] = f"Sherlock: {upstream}. HTTP {response.status_code}. Headers: {response.elapsed.total_seconds():.2f} s. Total: {monotonic() - started:.2f} s."
     except requests.ConnectTimeout:
         result['status'] = 'timed_out'
-        result['message'] = 'Connection establishment timed out.'
+        result['message'] = f'Connect timeout after {monotonic() - started:.2f} s.'
     except requests.Timeout:
-        result['message'] = 'Timed out waiting for headers or reading the response.'
+        result['message'] = f'Response timeout after {monotonic() - started:.2f} s.'
         result['status'] = 'timed_out'
     except requests.ConnectionError as exc:
         # requests wraps urllib3's streaming read timeout as ConnectionError.
         result['status'] = 'timed_out' if any(isinstance(arg, ReadTimeoutError) for arg in exc.args) else 'error'
+        stage = 'Body timeout' if result['status'] == 'timed_out' else 'TLS failure' if isinstance(exc, requests.exceptions.SSLError) else 'Connection failure'
+        result['message'] = f'{stage} after {monotonic() - started:.2f} s.'
     except Exception:
         # Isolate malformed and failing sites. Never send response bodies, error
         # strings (which can include the URL) or tracebacks to application logs.

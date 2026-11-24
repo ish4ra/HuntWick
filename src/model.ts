@@ -270,3 +270,13 @@ export function formatExport(run: Run, format: ExportFormat): string {
     ' · Status: ' + htmlText(run.phase) + ' · Results: ' + run.results.length + ' / ' + run.sites.length +
     '</p><table><thead><tr>' + header + '</tr></thead><tbody>' + body + '</tbody></table></body></html>\n'
 }
+
+/** Share only recognized transport measurements. Older history may contain free text. */
+export function diagnosticReport(run: Run) {
+  return JSON.stringify({mode:run.mode, counts:countStatuses(run.results), checks:run.results.map(row=>{
+    const http=/^Sherlock: (Claimed|Available|Unknown|Illegal|WAF)\. HTTP (\d{3})\. Headers: (\d+\.\d+) s\. Total: (\d+\.\d+) s\.$/.exec(row.message)
+    const failure=/^(Connect timeout|Response timeout|Body timeout|Connection failure|TLS failure) after (\d+\.\d+) s\.$/.exec(row.message)
+    return {platform:row.platform,status:row.status,...(http?{upstream:http[1],http:Number(http[2]),headersSeconds:Number(http[3]),totalSeconds:Number(http[4])}:{}),
+      ...(failure?{failure:failure[1],totalSeconds:Number(failure[2])}:{})}
+  })},null,2)
+}

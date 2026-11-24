@@ -120,7 +120,7 @@ export default function Results({ ws }: { ws: Workspace }) {
                   if (e.key === 'Escape') setExportsOpen(false)
                 }}
               >
-                {(['csv', 'json', 'html'] as const).map((f) => (
+                {(['csv', 'json', 'html', 'diagnostics'] as const).map((f) => (
                   <button
                     key={f}
                     onClick={() => {
@@ -128,7 +128,7 @@ export default function Results({ ws }: { ws: Workspace }) {
                       void ws.exportRun(f)
                     }}
                   >
-                    Export {f.toUpperCase()}
+                    {f === 'diagnostics' ? 'Export diagnostics (no handle or URLs)' : 'Export '+f.toUpperCase()}
                   </button>
                 ))}
               </div>
