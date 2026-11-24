@@ -70,6 +70,13 @@ class HostedTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await client.post('/api/search',json=self.request, headers={'X-Forwarded-For':'198.51.100.1'})).status_code,429)
         self.assertFalse(self.app.state.jobs.active)
 
+    async def test_possible_lead_keeps_its_upstream_confidence(self):
+        client = self.setup_app(mode='lead')
+        response = await client.post('/api/search', json=self.request | {'sites': ['GitHub']})
+        result, done = map(json.loads, response.text.splitlines())
+        self.assertEqual(result['status'], 'possible')
+        self.assertEqual(done['type'], 'done')
+
     async def test_untrusted_child_result_is_not_exposed(self):
         client=self.setup_app(mode='bad')
         response=await client.post('/api/search',json=self.request)

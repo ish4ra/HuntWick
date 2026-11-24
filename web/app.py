@@ -32,7 +32,7 @@ ROUTES = {
     'GitHub': ('https://www.github.com/{}', 'https://www.github.com/{}'),
     'GitLab': ('https://gitlab.com/{}', 'https://gitlab.com/api/v4/users?username={}'),
 }
-STATUSES = {'found', 'not_found', 'inconclusive', 'timed_out', 'blocked', 'cancelled', 'error'}
+STATUSES = {'found', 'possible', 'not_found', 'inconclusive', 'timed_out', 'blocked', 'cancelled', 'error'}
 RUN_ID = re.compile(r'[a-zA-Z0-9_-]{1,96}')
 HANDLE = re.compile(r'[a-zA-Z0-9_.-]{1,64}')
 COOKIE = 'huntwick_session'
@@ -47,7 +47,9 @@ def hosted_catalog():
         if (rule['url'], rule.get('urlProbe', rule['url'])) != routes or rule.get('request_method', 'GET') != 'GET':
             raise RuntimeError('Hosted Sherlock rules require review.')
         selected[name] = rule
-    return describe(selected, sherlock_version)
+    catalog = describe(selected, sherlock_version)
+    catalog.pop('unavailable', None)  # The hosted directory exposes only approved routes.
+    return catalog
 
 
 class Guard:
