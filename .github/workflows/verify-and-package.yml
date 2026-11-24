@@ -118,7 +118,8 @@ jobs:
             export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=""
           fi
           export HUNTWICK_SIGNING_TEST_PUBLIC_KEY="${HUNTWICK_SIGNING_TEST_PUBLIC_KEY:-$HUNTWICK_UPDATER_PUBLIC_KEY}"
-          npm run tauri -- build --config '{"bundle":{"createUpdaterArtifacts":true}}' --ci --target "$TARGET" --bundles "$BUNDLES" -- --locked
+          config=$(node -p 'JSON.stringify({bundle:{createUpdaterArtifacts:true},plugins:{updater:{pubkey:process.env.HUNTWICK_SIGNING_TEST_PUBLIC_KEY}}})')
+          npm run tauri -- build --config "$config" --ci --target "$TARGET" --bundles "$BUNDLES" -- --locked
           uv run --project engine --frozen python scripts/stage_installers.py "$TARGET"
           python scripts/updater_assets.py "$TARGET"
       - name: Test installed Windows engine and desktop

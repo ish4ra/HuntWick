@@ -1,3 +1,4 @@
+import { pingRadar } from './ui/radarAudio'
 import {
   activeRun, applyEvent, cancelRun, createRun, diagnosticReport, formatExport, historyLimit, parseCatalog, parseHistory,
   parseSettings, safeUrl, selectSites, validUsername,
@@ -84,7 +85,14 @@ export class HuntWickSession {
       if (this.bridge.desktop) {
         const unlisten = await this.bridge.listen(event => {
           if (this.generation !== generation || !this.state.run) return
-          this.acceptRun(applyEvent(this.state.run, event, catalog, now()))
+          const before = this.state.run
+          const after = applyEvent(before, event, catalog, now())
+          const latest = after.results.at(-1)
+          if (after.results.length > before.results.length && this.state.settings.radarSound &&
+              (latest?.status === 'found' || latest?.status === 'possible')) {
+            pingRadar(latest.status === 'possible', this.state.settings.radarVolume)
+          }
+          this.acceptRun(after)
         })
         if (generation !== this.generation) { unlisten(); return }
         this.unlisten = unlisten
