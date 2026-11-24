@@ -37,6 +37,8 @@ export interface Run {
   error: string | null
 }
 export interface Settings {
+  radarSound: boolean
+  radarVolume: number
   autoUpdates: boolean
   includeNsfw: boolean
   includeExcluded: boolean
@@ -192,6 +194,8 @@ export function parseSettings(input: unknown): Settings {
   return {
     autoUpdates: value.autoUpdates !== false,
     includeNsfw: value.includeNsfw === true, includeExcluded: value.includeExcluded === true,
+    radarSound: value.radarSound === true,
+    radarVolume: typeof value.radarVolume === 'number' && Number.isFinite(value.radarVolume) ? Math.max(0,Math.min(100,value.radarVolume)) : 40,
     rememberPreferences: value.rememberPreferences === true,
     timeout: boundedInt(value.timeout, 60, 10), concurrency: boundedInt(value.concurrency, 20, 8),
     saveHistory: value.saveHistory === true, defaultMode: value.defaultMode === 'full' ? 'full' : 'quick',

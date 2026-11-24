@@ -1,3 +1,5 @@
+import { DiscoveryRadar } from './DiscoveryRadar'
+import { armRadar } from './radarAudio'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import {
   ArrowRight,
@@ -19,29 +21,6 @@ import { validUsername, type Mode } from '../model'
 import { Busy, isActive, type Workspace } from './common'
 import Results from './Results'
 
-function ScopeRadar({ active }: { active: boolean }) {
-  return (
-    <div className={'scope-radar' + (active ? ' scanning' : '')} aria-hidden="true">
-      <div className="radar-grid" />
-      <div className="radar-axis-x" />
-      <div className="radar-axis-y" />
-      <div className="radar-disc">
-        <div className="sweep" />
-        <i />
-        <i />
-        <i />
-        <i />
-        <b />
-      </div>
-      <span className="radar-label radar-n">N</span>
-      <span className="radar-label radar-e">E</span>
-      <i className="corner tl" />
-      <i className="corner tr" />
-      <i className="corner bl" />
-      <i className="corner br" />
-    </div>
-  )
-}
 export function NumberSetting({
   label,
   value,
@@ -108,6 +87,7 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
       return
     }
     setValidation('')
+    if (ws.settings.radarSound) armRadar()
     await ws.start(name, mode)
   }
   return (
@@ -205,7 +185,7 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
                 ))}
               </div>
             </div>
-            <ScopeRadar active={active} />
+            <DiscoveryRadar key={ws.run?.id} ws={ws} />
           </div>
           <div className="console-foot">
             <button

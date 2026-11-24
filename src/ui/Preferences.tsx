@@ -49,6 +49,13 @@ export function SettingsPage({ ws }: { ws: Workspace }) {
         title="Settings"
         description="Manage your workspace appearance, search defaults and local history."
       />
+      <Panel title="Discovery radar" icon={<Monitor size={17}/>}>
+        <Preference title="Detection sound" hint="One short ping for new matches. Closely spaced detections share a ping.">
+          <Toggle label="Detection sound" checked={s.radarSound} onChange={()=>ws.updateSettings({radarSound:!s.radarSound})}/>
+        </Preference><Preference title="Volume" hint="Applies to detection sounds.">
+          <input type="range" aria-label="Radar volume" min="0" max="100" value={s.radarVolume} onChange={e=>ws.updateSettings({radarVolume:Number(e.target.value)})}/>
+        </Preference>
+      </Panel>
       <Panel title="Appearance" icon={<Palette size={17} />}>
         <Preference title="Color theme" hint="Use your device theme or choose a workspace theme.">
           <select
