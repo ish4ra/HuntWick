@@ -1,5 +1,4 @@
 """Exercise the installed Linux updater on a private HTTPS feed in a disposable checkout."""
-import base64
 import hashlib
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -37,7 +36,35 @@ def acceptance(tmp):
     run('openssl','req','-x509','-newkey','rsa:2048','-nodes','-days','1','-subj','/CN=localhost',
         '-addext','subjectAltName=DNS:localhost,IP:127.0.0.1','-keyout',pem,'-out',cert,stderr=subprocess.DEVNULL)
 
+    attempts = {'/updates-preview/latest.json':0, '/updates-stable/latest.json':0}
+
     class Handler(SimpleHTTPRequestHandler):
+        def do_GET(self):
+            if self.path in attempts:
+                attempts[self.path] += 1
+                n = attempts[self.path]
+                if self.path.startswith('/updates-stable/'):
+                    if n == 1:
+                        self.send_error(404)
+                        return
+                    data = manifest
+                else:
+                    data = dict(manifest)
+                    if n == 1:
+                        data['version'] = '0.0.1'
+                    elif n == 2:
+                        data['platforms'] = {'unsupported': next(iter(manifest['platforms'].values()))}
+                    elif n == 3:
+                        data['platforms'] = {'linux-x86_64': dict(manifest['platforms']['linux-x86_64'],signature='invalid')}
+                body = json.dumps(data).encode()
+                self.send_response(200)
+                self.send_header('Content-Type','application/json')
+                self.send_header('Content-Length',str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            super().do_GET()
+
         def __init__(self,*args,**kw):
             super().__init__(*args,directory=release,**kw)
 
@@ -63,8 +90,23 @@ def acceptance(tmp):
         driver=checkout/'src/useHuntWick.ts'
         orig="void invoke('confirm_install', { siteCount })"
         assert orig in driver.read_text()
-        driver.write_text(driver.read_text().replace(orig, """void invoke<{version:string}>('check_update',{prerelease:true})
-          .then(offer=>invoke('install_update',{version:offer.version})).catch(console.error)"""))
+        driver.write_text(driver.read_text().replace(orig, """void (async()=>{
+          const check=(prerelease:boolean)=>invoke<{version:string}|null>('check_update',{prerelease})
+          const mustReject=async(p:Promise<unknown>)=>{
+            try {await p} catch {return}
+            throw Error('Expected update operation to fail')
+          }
+          await mustReject(check(false))
+          if (await check(false)) throw Error('Stable check accepted a prerelease')
+          if (await check(true)) throw Error('Downgrade accepted')
+          await mustReject(check(true))
+          const damaged=await check(true)
+          if (!damaged) throw Error('Missing signature fixture')
+          await mustReject(invoke('install_update',{version:damaged.version}))
+          const valid=await check(true)
+          if (!valid) throw Error('Missing valid update')
+          await invoke('install_update',{version:valid.version})
+        })().catch(console.error)"""))
         app=checkout/'src/App.tsx'
         # Avoid a background stable-feed check competing with the explicit preview check.
         app.write_text(app.read_text().replace('ws.desktop && <Updates','ws.desktop && !("__HUNTWICK_VERIFY_INSTALL__" in window) && <Updates'))
@@ -74,7 +116,8 @@ def acceptance(tmp):
         old,=(ROOT/'src-tauri/target'/TARGET/'release/bundle/appimage').glob('*0.1.0-rc.1*.AppImage')
         installed=tmp/'installed.AppImage'
         shutil.copy2(old,installed)
-        expected=hashlib.file_digest(payload.open('rb'),'sha256').digest()
+        with payload.open('rb') as stream:
+            expected=hashlib.file_digest(stream,'sha256').digest()
         env.update(SSL_CERT_FILE=str(cert),NO_PROXY='localhost,127.0.0.1',no_proxy='localhost,127.0.0.1',
                    XDG_CONFIG_HOME=str(tmp/'prefs'),XDG_DATA_HOME=str(tmp/'data'),XDG_CACHE_HOME=str(tmp/'cache'))
         p=subprocess.Popen([installed,'--verify-install'],env=env)
@@ -85,7 +128,10 @@ def acceptance(tmp):
                     with installed.open('rb') as f:
                         if hashlib.file_digest(f,'sha256').digest()==expected:break
                 time.sleep(.5)
-            else: raise RuntimeError('Installed image was not replaced with the signed candidate.')
+            else:
+                raise RuntimeError(f'Image replacement failed after feed requests {attempts}, client exit {p.poll()}.')
+            if list(attempts.values()) != [4,2]:
+                raise RuntimeError('Unexpected update feed request sequence.')
             run(installed,'--verify-install',env=env,timeout=90)
         finally:
             if p.poll() is None:p.terminate()
@@ -95,5 +141,9 @@ def acceptance(tmp):
 
 if __name__=='__main__':
     with tempfile.TemporaryDirectory() as tmp:
-        acceptance(Path(tmp))
+        try:
+            acceptance(Path(tmp))
+        except (RuntimeError, subprocess.SubprocessError) as exc:
+            print(f'::error title=AppImage upgrade fixture::{exc}', flush=True)
+            raise
     print('Verified in-place Linux AppImage update and startup of the replaced image.')
