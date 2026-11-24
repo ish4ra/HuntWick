@@ -1,5 +1,5 @@
 export type Mode = 'quick' | 'full'
-export type Status = 'found' | 'not_found' | 'inconclusive' | 'timed_out' | 'blocked' | 'cancelled' | 'error'
+export type Status = 'found' | 'possible' | 'not_found' | 'inconclusive' | 'timed_out' | 'blocked' | 'cancelled' | 'error'
 export type Phase = 'running' | 'cancelling' | 'complete' | 'cancelled' | 'error'
 export type ExportFormat = 'csv' | 'json' | 'html'
 
@@ -14,12 +14,14 @@ export interface Catalog {
   databaseVersion: string
   updatedAt: string
   sites: Site[]
+  unavailable?: { name: string; reason: string }[]
 }
 export interface Result {
   platform: string
   url: string
   category: string
   status: Status
+  reason?: string
   message: string
 }
 export interface Run {
@@ -45,7 +47,28 @@ export interface Settings {
   disabledSites: string[]
 }
 
-const statuses: ReadonlySet<string> = new Set<Status>(['found', 'not_found', 'inconclusive', 'timed_out', 'blocked', 'cancelled', 'error'])
+export const statusLabels: Record<Status, string> = {
+  found: 'Verified Match', possible: 'Possible Match', not_found: 'Not found', blocked: 'Blocked',
+  timed_out: 'Timed out', inconclusive: 'Inconclusive', error: 'Error', cancelled: 'Cancelled',
+}
+const statuses: ReadonlySet<string> = new Set(Object.keys(statusLabels))
+export type ResultView = 'balanced' | 'strict' | 'diagnostics' | 'all'
+
+export function countStatuses(rows: Result[]): Record<Status, number> {
+  const counts = { found: 0, possible: 0, not_found: 0, blocked: 0, timed_out: 0, inconclusive: 0, error: 0, cancelled: 0 }
+  for (const row of rows) counts[row.status]++
+  return counts
+}
+export function visibleIn(status: Status, view: ResultView) {
+  const match = status === 'found' || status === 'possible'
+  if (view === 'balanced') return match
+  if (view === 'strict') return status === 'found'
+  if (view === 'diagnostics') return !match
+  return true
+}
+export function matchLinks(rows: Result[], level: 'found' | 'possible'): string {
+  return [...new Set(rows.filter(row => row.status === level).map(row => safeUrl(row.url)).filter(Boolean))].join('\n')
+}
 export const historyLimit = 20
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -89,7 +112,17 @@ export function parseCatalog(value: unknown): Catalog {
     seen.add(s.name)
     return { name: s.name, category: s.category, quick: s.quick, url: safeUrl(s.url) }
   })
-  return { version: value.version, databaseVersion: value.databaseVersion, updatedAt: value.updatedAt, sites }
+  const catalog: Catalog = { version: value.version, databaseVersion: value.databaseVersion, updatedAt: value.updatedAt, sites }
+  if (value.unavailable === undefined) return catalog
+  if (!Array.isArray(value.unavailable)) throw new Error('The unavailable platform list is invalid.')
+  catalog.unavailable = value.unavailable.map((entry: unknown) => {
+    if (!record(entry) || !shortString(entry.name) || !shortString(entry.reason) || seen.has(entry.name)) {
+      throw new Error('The engine returned an invalid unavailable platform.')
+    }
+    seen.add(entry.name)
+    return { name: entry.name, reason: entry.reason }
+  })
+  return catalog
 }
 
 export function selectSites(catalog: Catalog, mode: Mode, disabled: string[], selected?: string[]): Site[] {
@@ -130,6 +163,7 @@ export function applyEvent(run: Run, event: unknown, catalog: Catalog, now: stri
     const site = catalog.sites.find(s => s.name === platform)
     if (!site) return run
     const result: Result = { platform, url: safeUrl(event.url), status: event.status, category: site.category,
+      ...(shortString(event.reason) ? { reason: event.reason } : {}),
       message: typeof event.message === 'string' ? event.message.slice(0, 2048) : '' }
     return { ...run, results: [...run.results, result], checked: run.checked + (result.status === 'cancelled' ? 0 : 1) }
   }
@@ -171,9 +205,10 @@ function parseSavedRun(value: unknown): Run | null {
   const results: Result[] = []
   for (const row of value.results) {
     if (!record(row) || !shortString(row.platform) || !remaining.delete(row.platform) ||
-      !shortString(row.category) || !validStatus(row.status) || typeof row.message !== 'string') return null
+      !shortString(row.category) || !validStatus(row.status) || (row.message !== undefined && typeof row.message !== 'string')) return null
     results.push({ platform: row.platform, category: row.category, status: row.status,
-      url: safeUrl(row.url), message: row.message.slice(0, 2048) })
+      ...(shortString(row.reason) ? { reason: row.reason } : {}),
+      url: safeUrl(row.url), message: typeof row.message === 'string' ? row.message.slice(0, 2048) : '' })
   }
   // Older saved reports predate the explicit count. Unreported rows have no URL.
   const checked = typeof value.checked === 'number' && Number.isInteger(value.checked) &&
@@ -203,18 +238,20 @@ function htmlText(value: string): string {
 }
 
 export function formatExport(run: Run, format: ExportFormat): string {
-  if (format === 'json') return JSON.stringify(run, null, 2) + '\n'
+  if (format === 'json') return JSON.stringify({ ...run, statusLabels, counts: countStatuses(run.results) }, null, 2) + '\n'
   const columns = ['Username', 'Platform', 'Category', 'Status', 'Profile URL', 'Message']
-  const rows = run.results.map(r => [run.username, r.platform, r.category, r.status, safeUrl(r.url), r.message])
   if (format === 'csv') {
-    const records = [[...columns, 'Search started (UTC)'], ...rows.map(row => [...row, run.startedAt])]
+    const records = [[...columns, 'Search started (UTC)', 'Result label', 'Reason'],
+      ...run.results.map(r => [run.username, r.platform, r.category, r.status, safeUrl(r.url), r.message,
+        run.startedAt, statusLabels[r.status], r.reason ?? ''])]
     return records.map(row => row.map(csvCell).join(',')).join('\r\n') + '\r\n'
   }
-  const header = columns.map(s => '<th scope="col">' + s + '</th>').join('')
-  const body = rows.map(row => '<tr>' + row.map(s => '<td>' + htmlText(s) + '</td>').join('') + '</tr>').join('\n')
+  const header = [...columns, 'Reason'].map(s => '<th scope="col">' + s + '</th>').join('')
+  const body = run.results.map(r => [run.username, r.platform, r.category, statusLabels[r.status], safeUrl(r.url), r.message, r.reason ?? ''])
+    .map(row => '<tr>' + row.map(s => '<td>' + htmlText(s) + '</td>').join('') + '</tr>').join('\n')
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<title>HuntWick search report</title><style>body{font:1rem system-ui;margin:2rem;color:#18212b}table{border-collapse:collapse}td,th{padding:.5rem;border:1px solid #ccd1d5;text-align:left;overflow-wrap:anywhere}</style></head><body>' +
     '<h1>HuntWick search report</h1><p>Username: ' + htmlText(run.username) + '</p><p>Started: ' + htmlText(run.startedAt) +
-    ' · Status: ' + htmlText(run.phase) + ' · Results: ' + rows.length + ' / ' + run.sites.length +
+    ' · Status: ' + htmlText(run.phase) + ' · Results: ' + run.results.length + ' / ' + run.sites.length +
     '</p><table><thead><tr>' + header + '</tr></thead><tbody>' + body + '</tbody></table></body></html>\n'
 }
