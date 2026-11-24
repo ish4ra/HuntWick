@@ -335,7 +335,7 @@ mod install_tests {
         assert!(runtime.confirm_install(1).is_err());
         runtime.verify_install = true;
         assert!(runtime.confirm_install(0).is_err());
-        runtime.policy = policy;
+        assert_eq!(runtime.policy, (false, false));
         runtime.catalog = Some(serde_json::from_value(json!({
             "version":"1", "databaseVersion":"a", "updatedAt":"2026-11-01",
             "sites":[{"name":"GitHub","url":"https://github.com","category":"Coding","quick":true}]
