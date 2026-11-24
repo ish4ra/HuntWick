@@ -96,7 +96,7 @@ def acceptance(tmp):
         # Build an older installed client using exactly the candidate native updater.
         # Only its build-time trust anchor, feed, version and test driver differ.
         checkout=tmp/'old'
-        run('git','clone','-q','--local',ROOT,checkout)
+        run('git','clone','-q','--local','--no-hardlinks',ROOT,checkout)
         (checkout/'node_modules').symlink_to(ROOT/'node_modules',target_is_directory=True)
         (checkout/'engine/dist').symlink_to(ROOT/'engine/dist',target_is_directory=True)
         service=checkout/'src-tauri/src/updates.rs'
