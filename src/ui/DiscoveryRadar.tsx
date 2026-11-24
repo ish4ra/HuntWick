@@ -1,18 +1,10 @@
-import {useEffect, useRef, useState} from 'react'
+import {useState} from 'react'
 import {PlatformMark, isActive, statuses, type Workspace} from './common'
-import {pingRadar} from './radarAudio'
 
 export function DiscoveryRadar({ws}:{ws:Workspace}) {
   const rows=ws.run?.results.filter(r=>r.status==='found'||r.status==='possible') ?? []
   const active=isActive(ws.run)
   const [selected,setSelected]=useState('')
-  const seen=useRef(rows.length)
-  useEffect(()=>{
-    if (active && rows.length>seen.current && ws.settings.radarSound) {
-      pingRadar(rows[rows.length-1].status==='possible',ws.settings.radarVolume)
-    }
-    seen.current=rows.length
-  },[rows,active,ws.settings.radarSound,ws.settings.radarVolume])
   const detail=rows.find(r=>r.platform===selected)
   return <section className={'scope-radar'+(active?' scanning':'')} aria-label="Profile discoveries">
     <div className="radar-grid"/><div className="radar-axis-x"/><div className="radar-axis-y"/>

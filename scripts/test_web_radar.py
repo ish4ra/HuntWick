@@ -21,6 +21,11 @@ def run(port, screenshots):
             events.insert(1,events[0])
             events.append({'id':payload['id'],'type':'done'})
             route.fulfill(content_type='application/x-ndjson',body='\n'.join(map(json.dumps,events))+'\n')
+        page.add_init_script("""window.testPings=0;
+          const create=AudioContext.prototype.createOscillator;
+          AudioContext.prototype.createOscillator=function(){
+            window.testPings++;return create.call(this)
+          };""")
         page.route('**/api/search',synthetic)
         page.goto(origin)
         for name in ('GitHub','GitLab'):page.get_by_role('checkbox',name=name,exact=True).check()
@@ -34,10 +39,19 @@ def run(port, screenshots):
         expect(page.locator('.scope-radar.scanning')).to_have_count(0)
         for slug in ('github','gitlab'):
             assert page.request.get(origin+'/platforms/'+slug+'.svg').status==200
+        assert page.evaluate('window.testPings')==0
         if screenshots:
             page.screenshot(path=screenshots/'web-desktop.png',full_page=True)
             page.set_viewport_size({'width':390,'height':844})
             page.screenshot(path=screenshots/'web-mobile.png',full_page=True)
+        page.set_viewport_size({'width':1280,'height':900})
+        page.get_by_role('button',name='Settings',exact=True).click()
+        page.get_by_role('switch',name='Detection sound').click()
+        page.get_by_role('button',name='Search',exact=True).first.click()
+        page.locator('#username').fill('demo')
+        page.locator('button[type=submit]').click()
+        page.wait_for_function('window.testPings === 1')
+        expect(dots).to_have_count(2)
         browser.close()
 
 
