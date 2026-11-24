@@ -18,3 +18,9 @@ Keep the RC version until final platform results and remaining interactive accep
 Native CSV, HTML and JSON saves exposed a missing timestamp in CSV. Commit `43749cd` appends the original UTC start time to each CSV record. A regression test failed on the prior implementation and passed after the fix. New installer verification must include this commit.
 
 The Windows test harness at `a47935f` failed before launching the installed desktop because it indexed a copied environment dictionary with mixed-case `SystemRoot`. Commit `6cf7c32` normalizes Windows keys and supplies only System32 and the Windows root on PATH. A focused regression checks three casings, preservation of OS settings, and removal of inherited Python settings. The [corrected RC run](https://github.com/ish4ra/HuntWick/actions/runs/45294603221) is the acceptance run for this fix.
+
+## Final RC.1 result
+
+All four jobs passed in [run 45294603221](https://github.com/ish4ra/HuntWick/actions/runs/45294603221). The corrected Windows harness launched the installed desktop. Apple Silicon completed successfully in this run. Intel macOS and Linux also passed. All four archives were uploaded after verification of the five installer checksums. See the [RC archive links and digests](release-checklist.md#verified-release-candidate).
+
+The [Linux interactive acceptance report](desktop-acceptance.md) distinguishes installed-RC tests from prior native sessions. The Linux AppImage separately launched through AppRun in extract-and-run mode and completed the GUI handshake with the OS graphics library available. Windows and macOS installer dialogs, default-browser handoff, native export dialogs and unsigned-install prompts still warrant interactive checks on representative user machines. The candidate is ready for approval review. Packaging remains at 0.1.0-rc.1.

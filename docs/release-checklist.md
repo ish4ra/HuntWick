@@ -10,6 +10,17 @@ Use the commit and package version printed in the candidate's CI run. Record the
 6. Switch theme and density, restart, and verify preferences and history consent. Test clearing local data and restoring platform defaults. Distinguish access blocks and timeouts from confirmed matches using deterministic fixtures.
 7. Review the MIT and dependency notices, unsigned installation instructions, and known limitations. Test the Windows minimum version and macOS security prompts on representative machines. Obtain explicit approval of final artifacts and version before merge or public release.
 
+## Verified release candidate
+
+All four jobs passed at commit `6cf7c32d4c104cd2d77efa966cbe72610bacdc1f`. CI launched the installed Windows app, both macOS app bundles and the installed Debian app. Each completed the webview and native catalog handshake. CI rehashed all five installers against the staged manifests before upload. The SHA256 values below are GitHub's archive digests. Each archive also contains the individual installer manifest. [Corrected RC run](https://github.com/ish4ra/HuntWick/actions/runs/45294603221)
+
+| RC.1 archive | Archive SHA256 |
+| --- | --- |
+| [huntwick-aarch64-apple-darwin](https://github.com/ish4ra/HuntWick/actions/runs/45294603221/artifacts/14876337739) | `f0a88510a9d0161ace5049ef35495f76e086fe45b69f7983f595bf0062b1d414` |
+| [huntwick-x86_64-apple-darwin](https://github.com/ish4ra/HuntWick/actions/runs/45294603221/artifacts/14876781277) | `4996f14a27c0ad294e73e292c98f7246e9be0a5fe5880450a321d57b0588cbba` |
+| [huntwick-x86_64-pc-windows-msvc](https://github.com/ish4ra/HuntWick/actions/runs/45294603221/artifacts/14877010845) | `cac1a17e8982b7ee9fd523abbd84076c767b9c3daa46bb7756a35588e16894e7` |
+| [huntwick-x86_64-unknown-linux-gnu](https://github.com/ish4ra/HuntWick/actions/runs/45294603221/artifacts/14875922742) | `4ff302ec83f47027f4bf0326ad8e63d71d23b60bb2a01b7cd567986365766b9c` |
+
 ## Verified alpha packaging baseline
 
 All four jobs for commit `4f8ae0c0c61a45e12d7f59e357f44700a15dcf55` passed. Each exercised the bundled engine from its installer payload. GitHub reports the following SHA256 values for **artifact archives**. Individual installer checksums are in each archive. [Build and artifact summary](https://github.com/ish4ra/HuntWick/actions/runs/45149732056)
