@@ -42,7 +42,11 @@ def fetch(url, timeout):
                         session.cookies.clear()
                         url = target
                         continue
+                media = response.headers.get('Content-Type', '').lower()
                 content = bytearray()
+                if media.startswith(('image/', 'video/', 'audio/', 'application/octet-stream')):
+                    response._content = b''
+                    return response
                 for chunk in response.iter_content(chunk_size=8192):
                     if monotonic() >= deadline:
                         raise requests.Timeout()
@@ -87,19 +91,28 @@ def search_engine():
 def check_site(name, definition, username, timeout):
     profile = definition['url'].replace('{}', username)
     result = {'type': 'result', 'platform': name, 'url': profile, 'status': 'inconclusive'}
+    started = monotonic()
     for template in (definition['url'], definition.get('urlProbe', definition['url'])):
         if '{}' in urlsplit(template).netloc and not HOST_LABEL.fullmatch(username):
-            return result
+            return {**result, 'message': 'Username does not fit this platform rule.'}
     # Sherlock attaches the future to this dictionary. Never share it across runs.
     rule = {**definition, 'request_method': 'GET'}
     try:
         report = search_engine().sherlock(username, {name: rule}, QueryNotify(), timeout=timeout)
         future = rule.get('request_future')
         if future is None:  # platform-specific username syntax
-            return result
+            return {**result, 'message': 'Username does not fit this platform rule.'}
         response = future.result()
         result['status'] = classify(rule, profile, username, report[name]['status'].status, response)
+        if result['status'] == 'found' and rule.get('experimental'):
+            result['status'] = 'possible'
+        upstream = report[name]['status'].status.value
+        result['message'] = f"Sherlock: {upstream}. HTTP {response.status_code}. Headers: {response.elapsed.total_seconds():.2f} s. Total: {monotonic() - started:.2f} s."
+    except requests.ConnectTimeout:
+        result['status'] = 'timed_out'
+        result['message'] = 'Connection establishment timed out.'
     except requests.Timeout:
+        result['message'] = 'Timed out waiting for headers or reading the response.'
         result['status'] = 'timed_out'
     except requests.ConnectionError as exc:
         # requests wraps urllib3's streaming read timeout as ConnectionError.
@@ -108,6 +121,8 @@ def check_site(name, definition, username, timeout):
         # Isolate malformed and failing sites. Never send response bodies, error
         # strings (which can include the URL) or tracebacks to application logs.
         result['status'] = 'error'
+    if 'message' not in result:
+        result['message'] = f"Check ended after {monotonic() - started:.2f} s."
     return result
 
 
@@ -170,7 +185,7 @@ def main():
             search_engine()
         if os.getenv('HUNTWICK_PARENT_PIPE') == '1':
             threading.Thread(target=watch_parent, daemon=True).start()
-        for event in events(request, load_sites()):
+        for event in events(request, load_sites(request.get('includeNsfw', False), request.get('includeExcluded', False)) if isinstance(request, dict) else {}):
             print(json.dumps(event, separators=(',', ':')), flush=True)
         return 0
     except (OSError, ValueError) as exc:

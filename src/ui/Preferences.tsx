@@ -40,6 +40,7 @@ function Preference({ title, hint, children }: { title: string; hint: string; ch
 }
 export function SettingsPage({ ws }: { ws: Workspace }) {
   const s = ws.settings
+  const [confirmAdult, setConfirmAdult] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
   return (
     <>
@@ -71,6 +72,16 @@ export function SettingsPage({ ws }: { ws: Workspace }) {
           </select>
         </Preference>
       </Panel>
+      {ws.desktop && <Panel title="Desktop catalog" icon={<Database size={17} />}>
+        <fieldset disabled={isActive(ws.run)}><Preference title="Include adult platforms" hint="Public profile checks only. A matching name does not establish identity or interests.">
+          <button onClick={() => s.includeNsfw ? ws.updateSettings({includeNsfw:false}) : setConfirmAdult(true)}>{s.includeNsfw ? 'Disable adult platforms' : 'Include NSFW platforms…'}</button>
+          {confirmAdult && <div role="group" aria-label="Confirm adult platforms">Include adult-labeled sites in the directory and Full Search?
+          <button onClick={() => {ws.updateSettings({includeNsfw:true});setConfirmAdult(false)}}>Confirm inclusion</button>
+          <button onClick={() => setConfirmAdult(false)}>Cancel</button></div>}
+        </Preference><Preference title="Include upstream-excluded sites" hint="Experimental checks can return false positives. Their strongest result is Possible Match.">
+          <Toggle checked={s.includeExcluded} label="Include upstream-excluded sites" onChange={() => ws.updateSettings({includeExcluded:!s.includeExcluded})}/>
+        </Preference></fieldset>
+      </Panel>}
       <Panel title="Search defaults" icon={<SlidersHorizontal size={17} />}>
         <Preference
           title="Remember search preferences"

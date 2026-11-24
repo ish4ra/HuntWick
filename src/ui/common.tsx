@@ -6,7 +6,7 @@ export { statusLabels as statuses } from '../model'
 
 export type Workspace = ReturnType<typeof useHuntWick>
 export type Page = 'Search' | 'History' | 'Platforms' | 'Settings' | 'About'
-export const version = '0.1.0-rc.1'
+export const version = '0.1.0-rc.2'
 export const phases: Record<Run['phase'], string> = {
   running: 'Running',
   cancelling: 'Cancelling',

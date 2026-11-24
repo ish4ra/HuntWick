@@ -10,8 +10,8 @@ function createSession() {
   const desktop = isTauri()
   const bridge: Bridge = {
     desktop,
-    catalog: async () => {
-      if (desktop) return invoke('catalog')
+    catalog: async (policy) => {
+      if (desktop) return invoke('catalog', policy)
       const response = await fetch('./catalog.json', { credentials: 'same-origin' })
       if (!response.ok) throw new Error('The bundled preview catalog could not be loaded.')
       return response.json()

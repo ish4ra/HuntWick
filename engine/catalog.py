@@ -38,27 +38,32 @@ def valid_https(url):
             and not parsed.fragment and not any(c.isspace() for c in url))
 
 
-def load_sites():
+def load_sites(include_nsfw=False, include_excluded=False):
+    if type(include_nsfw) is not bool or type(include_excluded) is not bool:
+        raise ValueError("Invalid catalog policy.")
     for filename, expected in DIGESTS.items():
         if sha256((DATA / filename).read_bytes()).hexdigest() != expected:
             raise ValueError('Bundled Sherlock database integrity check failed.')
-    excluded = set((DATA / 'exclusions.txt').read_text('utf-8').splitlines()) | UNSUPPORTED_PROBES
+    excluded = set((DATA / 'exclusions.txt').read_text('utf-8').splitlines())
     manifest = SitesInformation(str(DATA / 'sites.json'), honor_exclusions=False)
-    manifest.remove_nsfw_sites()
+    if not include_nsfw:
+        manifest.remove_nsfw_sites()
     sites = {}
     for site in manifest:
         rule = site.information
         profile = rule['url']
         probe = rule.get('urlProbe', profile)
-        if (site.name in excluded or rule.get('request_method', 'GET') not in {'GET', 'HEAD'}
+        if (site.name in UNSUPPORTED_PROBES or (site.name in excluded and not include_excluded) or rule.get('request_method', 'GET') not in {'GET', 'HEAD'}
                 or rule.get('request_payload') or profile.count('{}') != 1 or probe.count('{}') != 1
                 or not all(valid_https(url) for url in (profile, probe, rule['urlMain']))):
+            continue
+        if site.name in excluded and urlsplit(profile).hostname != urlsplit(probe).hostname:
             continue
         if rule['errorType'] not in {'message', 'response_url', 'status_code'}:
             raise ValueError('Unsupported rule in bundled database.')
         if 'regexCheck' in rule:
             re.compile(rule['regexCheck'])
-        sites[site.name] = rule
+        sites[site.name] = {**rule, 'experimental': site.name in excluded}
     return sites
 
 
@@ -67,11 +72,15 @@ def describe(sites, version):
     for name in sorted(sites, key=str.casefold):
         default = 'Forums' if 'forum' in name.casefold() else 'Other'
         category = next((group for group, names in GROUPS.items() if name in names), default)
+        if sites[name].get('isNSFW'):
+            category = 'Adult (NSFW)'
+        elif sites[name].get('experimental'):
+            category = 'Experimental'
         entries.append({'name': name, 'url': sites[name]['urlMain'], 'category': category, 'quick': name in QUICK})
     return {'type': 'catalog', 'version': version, 'updatedAt': UPDATED_AT,
-            'databaseVersion': DATABASE_VERSION, 'sites': entries, 'unavailable': [
+            'databaseVersion': DATABASE_VERSION, 'sites': entries, 'unavailable': [row for row in [
                 {'name': 'Instagram', 'reason': 'The bundled lookup uses a third-party mirror.'},
                 {'name': 'X (Twitter)', 'reason': 'The bundled lookup uses a third-party Nitter instance.'},
                 {'name': 'Reddit', 'reason': 'Disabled by the pinned upstream exclusions.'},
                 {'name': 'Facebook', 'reason': 'No public profile rule in the pinned database.'},
-            ]}
+            ] if row['name'] not in sites]}

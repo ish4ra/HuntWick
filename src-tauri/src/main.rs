@@ -22,6 +22,7 @@ struct Runtime {
     verify_install: bool,
     install_verified: bool,
     catalog: Option<Catalog>,
+    policy: (bool, bool),
     loading: Option<Arc<Process>>,
     search: Option<ActiveSearch>,
 }
@@ -93,7 +94,16 @@ async fn run_worker<T: Send + 'static>(
 }
 
 #[tauri::command]
-async fn catalog(app: AppHandle, state: State<'_, Engine>) -> Result<Catalog, String> {
+async fn catalog(
+    app: AppHandle,
+    state: State<'_, Engine>,
+    include_nsfw: Option<bool>,
+    include_excluded: Option<bool>,
+) -> Result<Catalog, String> {
+    let policy = (
+        include_nsfw.unwrap_or(false),
+        include_excluded.unwrap_or(false),
+    );
     let _gate = state.catalog_gate.lock().await;
     let (process, input, output) = {
         let mut runtime = state.runtime.lock().unwrap();
@@ -101,7 +111,9 @@ async fn catalog(app: AppHandle, state: State<'_, Engine>) -> Result<Catalog, St
             return Err("The application is closing.".into());
         }
         if let Some(catalog) = &runtime.catalog {
-            return Ok(catalog.clone());
+            if runtime.policy == policy {
+                return Ok(catalog.clone());
+            }
         }
         let handles = Process::spawn(&engine_path(&app)?)?;
         runtime.loading = Some(handles.0.clone());
@@ -112,7 +124,7 @@ async fn catalog(app: AppHandle, state: State<'_, Engine>) -> Result<Catalog, St
             &process,
             input,
             output,
-            &json!({"op":"catalog"}),
+            &json!({"op":"catalog","includeNsfw":policy.0,"includeExcluded":policy.1}),
             read_catalog,
         )
     })
@@ -120,6 +132,7 @@ async fn catalog(app: AppHandle, state: State<'_, Engine>) -> Result<Catalog, St
     let mut runtime = state.runtime.lock().unwrap();
     runtime.loading.take();
     let catalog = value?;
+    runtime.policy = policy;
     runtime.catalog = Some(catalog.clone());
     Ok(catalog)
 }
@@ -130,7 +143,7 @@ async fn start_search(
     state: State<'_, Engine>,
     request: SearchRequest,
 ) -> Result<(), String> {
-    let (process, input, output) = {
+    let ((process, input, output), policy) = {
         let mut runtime = state.runtime.lock().unwrap();
         if runtime.shutting_down {
             return Err("The application is closing.".into());
@@ -148,7 +161,7 @@ async fn start_search(
             id: request.id.clone(),
             process: handles.0.clone(),
         });
-        handles
+        (handles, runtime.policy)
     };
 
     tauri::async_runtime::spawn(async move {
@@ -158,7 +171,7 @@ async fn start_search(
         let reader_process = process.clone();
         let result = run_worker(process.clone(), deadline, move || {
             let operation = json!({ "op":"search", "username":request.username, "sites":request.sites,
-                                    "timeout":request.timeout, "concurrency":request.concurrency });
+                                    "includeNsfw":policy.0, "includeExcluded":policy.1, "timeout":request.timeout, "concurrency":request.concurrency });
             communicate(&reader_process, input, output, &operation, |reader| {
                 stream_search(reader, &request.sites, |profile| {
                     let state = reader_app.state::<Engine>();
@@ -322,6 +335,7 @@ mod install_tests {
         assert!(runtime.confirm_install(1).is_err());
         runtime.verify_install = true;
         assert!(runtime.confirm_install(0).is_err());
+        runtime.policy = policy;
         runtime.catalog = Some(serde_json::from_value(json!({
             "version":"1", "databaseVersion":"a", "updatedAt":"2026-11-01",
             "sites":[{"name":"GitHub","url":"https://github.com","category":"Coding","quick":true}]

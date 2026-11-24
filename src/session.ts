@@ -13,7 +13,7 @@ interface SearchRequest {
 }
 export interface Bridge {
   desktop: boolean
-  catalog(): Promise<unknown>
+  catalog(policy: Pick<Settings, 'includeNsfw' | 'includeExcluded'>): Promise<unknown>
   listen(listener: (event: unknown) => void): Promise<() => void>
   start(request: SearchRequest): Promise<void>
   cancel(id: string): Promise<void>
@@ -79,7 +79,7 @@ export class HuntWickSession {
     const generation = this.generation
     this.update({ ready: false, error: null })
     try {
-      const catalog = parseCatalog(await this.bridge.catalog())
+      const catalog = parseCatalog(await this.bridge.catalog({ includeNsfw: this.state.settings.includeNsfw, includeExcluded: this.state.settings.includeExcluded }))
       if (this.generation !== generation) return
       if (this.bridge.desktop) {
         const unlisten = await this.bridge.listen(event => {
@@ -126,7 +126,10 @@ export class HuntWickSession {
   updateSettings = (patch: Partial<Settings>) => {
     const settings = parseSettings({ ...this.state.settings, ...patch })
     if (!settings.saveHistory) this.eligibleHistoryId = null
+    const reload = settings.includeNsfw !== this.state.settings.includeNsfw || settings.includeExcluded !== this.state.settings.includeExcluded
+    if (reload && activeRun(this.state.run)) return
     this.update({ settings })
+    if (reload) void this.connect()
     const { timeout, concurrency, defaultMode, ...appSettings } = settings
     this.persist(settingsKey, settings.rememberPreferences ? { ...appSettings, timeout, concurrency, defaultMode } : appSettings)
   }
@@ -142,12 +145,14 @@ export class HuntWickSession {
     this.eligibleHistoryId = null
     this.clearError()
     const historyCleared = this.persist(historyKey, null)
+    const resetCatalog = this.state.settings.includeNsfw || this.state.settings.includeExcluded
     const settingsCleared = this.persist(settingsKey, null)
     this.update({
       run: null,
       ...(historyCleared ? { history: [] } : {}),
       ...(settingsCleared ? { settings: parseSettings(null) } : {}),
     })
+    if (settingsCleared && resetCatalog) void this.connect()
     return historyCleared && settingsCleared
   }
 

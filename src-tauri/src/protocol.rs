@@ -149,6 +149,8 @@ pub struct Profile {
     pub platform: String,
     pub url: String,
     pub status: Status,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
 }
 
 #[derive(Deserialize)]
