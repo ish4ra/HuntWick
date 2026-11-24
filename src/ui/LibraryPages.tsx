@@ -29,13 +29,14 @@ export function Intro({ label, title, description }: { label: string; title: str
 export function HistoryPage({ ws, navigate }: { ws: Workspace; navigate: (page: Page) => void }) {
   const [confirm, setConfirm] = useState(false)
   const [query, setQuery] = useState('')
+  const historyLocation = ws.hosted ? 'in this browser' : 'on this device'
   const filtered = ws.history.filter((r) => r.username.toLowerCase().includes(query.trim().toLowerCase()))
   return (
     <>
       <Intro
         label="LOCAL RECORDS"
         title="Search history"
-        description="Revisit searches saved on this device."
+        description={`Revisit searches saved ${historyLocation}.`}
       />
       <div className="pref-banner">
         <ShieldCheck size={21} />
@@ -43,8 +44,8 @@ export function HistoryPage({ ws, navigate }: { ws: Workspace; navigate: (page: 
           <strong>Local search history</strong>
           <small>
             {ws.settings.saveHistory
-              ? 'New searches are saved on this device.'
-              : 'Enable history to save future searches on this device.'}
+              ? `New searches are saved ${historyLocation}.`
+              : `Enable history to save future searches ${historyLocation}.`}
           </small>
         </div>
         <Toggle
@@ -68,7 +69,7 @@ export function HistoryPage({ ws, navigate }: { ws: Workspace; navigate: (page: 
       </div>
       {confirm && (
         <div className="confirmation" role="alert">
-          <span>Delete all saved searches from this device?</span>
+          <span>Delete all saved searches from this {ws.hosted ? 'browser' : 'device'}?</span>
           <button className="quiet small" onClick={() => setConfirm(false)}>
             Keep history
           </button>
@@ -181,15 +182,21 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
       <Intro
         label="SOURCE DIRECTORY"
         title="Platforms"
-        description="Explore the platform catalog and choose which sites to include in searches."
+        description={
+          ws.hosted
+            ? 'Choose which approved platforms to include in web searches.'
+            : 'Explore the platform catalog and choose which sites to include in searches.'
+        }
       />
       <div className="library-stats">
         {[
           { label: 'Catalog platforms', value: sites.length, Icon: Database },
           { label: 'Enabled platforms', value: enabled, Icon: Layers3 },
           {
-            label: 'Quick search platforms',
-            value: sites.filter((s) => s.quick && !disabled.has(s.name)).length,
+            label: ws.hosted ? 'Disabled platforms' : 'Quick search platforms',
+            value: ws.hosted
+              ? sites.length - enabled
+              : sites.filter((s) => s.quick && !disabled.has(s.name)).length,
             Icon: Zap,
           },
         ].map(({ label, value, Icon }) => (
@@ -244,7 +251,7 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
             <option value="all">All platforms</option>
             <option value="enabled">Enabled</option>
             <option value="disabled">Disabled</option>
-            <option value="quick">Quick search</option>
+            {!ws.hosted && <option value="quick">Quick search</option>}
           </select>
         </div>
         {!filtered.length ? (
@@ -254,7 +261,9 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
           >
             {ws.catalog
               ? 'Try another filter or platform name.'
-              : 'The platform catalog loads from the local engine.'}
+              : ws.hosted
+                ? 'The hosted platform catalog could not be loaded.'
+                : 'The platform catalog loads from the local engine.'}
           </Empty>
         ) : (
           <>
@@ -264,7 +273,7 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
                   <tr>
                     <th>Platform</th>
                     <th>Category</th>
-                    <th>Search mode</th>
+                    {!ws.hosted && <th>Search mode</th>}
                     <th>Enabled</th>
                   </tr>
                 </thead>
@@ -273,15 +282,17 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
                     <tr key={s.name}>
                       <td className="strong">{s.name}</td>
                       <td>{s.category}</td>
-                      <td>
-                        {s.quick ? (
-                          <span className="quick-label">
-                            <Zap size={12} /> Quick &amp; full
-                          </span>
-                        ) : (
-                          'Full'
-                        )}
-                      </td>
+                      {!ws.hosted && (
+                        <td>
+                          {s.quick ? (
+                            <span className="quick-label">
+                              <Zap size={12} /> Quick &amp; full
+                            </span>
+                          ) : (
+                            'Full'
+                          )}
+                        </td>
+                      )}
                       <td>
                         <Toggle
                           checked={!disabled.has(s.name)}

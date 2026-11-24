@@ -6,6 +6,9 @@ import {
   ChevronDown,
   CircleDot,
   Globe2,
+  Github,
+  Gitlab,
+  ShieldCheck,
   Layers3,
   LocateFixed,
   Radar,
@@ -16,7 +19,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { validUsername, type Mode } from '../model'
-import { Busy, isActive, type Workspace } from './common'
+import { Busy, isActive, webPrivacy, type Workspace } from './common'
 import Results from './Results'
 
 function ScopeRadar({ active }: { active: boolean }) {
@@ -95,7 +98,15 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
   const quick =
     ws.catalog?.sites.filter((s) => s.quick && !ws.settings.disabledSites.includes(s.name)).length ?? 0
   const full = ws.catalog?.sites.filter((s) => !ws.settings.disabledSites.includes(s.name)).length ?? 0
-  const count = mode === 'quick' ? quick : full
+  const count = ws.hosted || mode === 'full' ? full : quick
+  function togglePlatform(platform: string) {
+    const disabled = ws.settings.disabledSites
+    ws.updateSettings({
+      disabledSites: disabled.includes(platform)
+        ? disabled.filter((name) => name !== platform)
+        : [...disabled, platform],
+    })
+  }
   useEffect(() => {
     if (focusToken) input.current?.focus()
   }, [focusToken])
@@ -108,16 +119,20 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
       return
     }
     setValidation('')
-    await ws.start(name, mode)
+    await ws.start(name, ws.hosted ? 'full' : mode)
   }
   return (
     <>
       <div className="page-intro search-intro">
         <div className="eyebrow">
-          <span /> PROFILE DISCOVERY
+          <span /> {ws.hosted ? 'WEB EDITION · PRIVATE PREVIEW' : 'PROFILE DISCOVERY'}
         </div>
         <h1>Username search</h1>
-        <p>Find public profiles across platforms with a single username.</p>
+        <p>
+          {ws.hosted
+            ? 'Check a username for public profiles on selected development platforms.'
+            : 'Find public profiles across platforms with a single username.'}
+        </p>
       </div>
       <section className="search-panel" aria-labelledby="target-heading">
         <div className="console-heading">
@@ -177,33 +192,56 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
                   {validation}
                 </p>
               )}
-              <div className="mode-heading" id="mode-label">
-                Search mode
-              </div>
-              <div className="modes" role="group" aria-labelledby="mode-label">
-                {(
-                  [
-                    { key: 'quick', name: 'Quick search', count: quick, Icon: Zap },
-                    { key: 'full', name: 'Full search', count: full, Icon: Layers3 },
-                  ] as const
-                ).map(({ key, name, count: n, Icon }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    className={'mode' + (mode === key ? ' active' : '')}
-                    disabled={active}
-                    aria-pressed={mode === key}
-                    onClick={() => setMode(key)}
-                  >
-                    <Icon size={17} />
-                    <span>
-                      <strong>{name}</strong>
-                      <small>{ws.catalog ? n : '—'} platforms</small>
-                    </span>
-                    <span className="radio-mark">{mode === key && <Check size={9} strokeWidth={4} />}</span>
-                  </button>
-                ))}
-              </div>
+              {ws.hosted ? (
+                <fieldset className="web-platforms" disabled={active}>
+                  <legend>Platforms to check</legend>
+                  {ws.catalog?.sites.map((site) => {
+                    const enabled = !ws.settings.disabledSites.includes(site.name)
+                    const Icon = site.name === 'GitHub' ? Github : site.name === 'GitLab' ? Gitlab : Globe2
+                    return (
+                      <label key={site.name} className={'platform-choice' + (enabled ? ' enabled' : '')}>
+                        <Icon size={16} />
+                        <span>{site.name}</span>
+                        <input type="checkbox" checked={enabled} onChange={() => togglePlatform(site.name)} />
+                      </label>
+                    )
+                  })}
+                  {!ws.catalog && <span className="scope-caption">Awaiting the hosted catalog…</span>}
+                </fieldset>
+              ) : (
+                <>
+                  {' '}
+                  <div className="mode-heading" id="mode-label">
+                    Search mode
+                  </div>
+                  <div className="modes" role="group" aria-labelledby="mode-label">
+                    {(
+                      [
+                        { key: 'quick', name: 'Quick search', count: quick, Icon: Zap },
+                        { key: 'full', name: 'Full search', count: full, Icon: Layers3 },
+                      ] as const
+                    ).map(({ key, name, count: n, Icon }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        className={'mode' + (mode === key ? ' active' : '')}
+                        disabled={active}
+                        aria-pressed={mode === key}
+                        onClick={() => setMode(key)}
+                      >
+                        <Icon size={17} />
+                        <span>
+                          <strong>{name}</strong>
+                          <small>{ws.catalog ? n : '—'} platforms</small>
+                        </span>
+                        <span className="radio-mark">
+                          {mode === key && <Check size={9} strokeWidth={4} />}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
             <ScopeRadar active={active} />
           </div>
@@ -245,20 +283,29 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
                 label="Timeout (seconds)"
                 value={ws.settings.timeout}
                 min={1}
-                max={60}
+                max={ws.maxTimeout}
                 onChange={(timeout) => ws.updateSettings({ timeout })}
               />
               <NumberSetting
                 label="Concurrent checks"
                 value={ws.settings.concurrency}
                 min={1}
-                max={20}
+                max={ws.maxConcurrency}
                 onChange={(concurrency) => ws.updateSettings({ concurrency })}
               />
             </fieldset>
           )}
         </form>
       </section>
+      {ws.hosted && (
+        <aside className="web-notice" aria-label="Authorized use and privacy">
+          <ShieldCheck size={18} />
+          <div>
+            <strong>For authorized testing</strong>
+            <p>Check only usernames you own or have permission to investigate. {webPrivacy}</p>
+          </div>
+        </aside>
+      )}
       {!ws.catalog && !ws.error && (
         <div className="catalog-notice">
           <Busy /> Loading platform catalog…
@@ -267,7 +314,9 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
       {ws.catalog && count === 0 && (
         <div className="catalog-notice">
           <CircleDot size={15} />
-          Enable platforms for this mode in the Platforms view.
+          {ws.hosted
+            ? 'Select at least one platform above to search.'
+            : 'Enable platforms for this mode in the Platforms view.'}
         </div>
       )}
       <Results key={ws.run?.id ?? 'empty'} ws={ws} />

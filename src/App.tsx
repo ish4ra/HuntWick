@@ -5,6 +5,9 @@ import {
   CircleHelp,
   Database,
   Fingerprint,
+  ExternalLink,
+  Github,
+  Globe2,
   History,
   Info,
   Menu,
@@ -20,7 +23,7 @@ import { useHuntWick } from './useHuntWick'
 import { HistoryPage, PlatformsPage } from './ui/LibraryPages'
 import { AboutPage, SettingsPage } from './ui/Preferences'
 import SearchPage from './ui/SearchPage'
-import { version, type Page } from './ui/common'
+import { desktopDownloadsUrl, repositoryUrl, version, type Page } from './ui/common'
 
 const workspaceLinks = [
   { page: 'Search', Icon: Search },
@@ -124,8 +127,8 @@ export default function App() {
               <ShieldCheck size={17} />
             </span>
             <div>
-              <strong>Local workspace</strong>
-              <small>Runs on this device</small>
+              <strong>{ws.hosted ? 'Web workspace' : 'Local workspace'}</strong>
+              <small>{ws.hosted ? 'Private preview' : 'Runs on this device'}</small>
             </div>
           </div>
           <div className="version-line">
@@ -151,16 +154,35 @@ export default function App() {
             <Menu size={19} />
           </button>
           <div className="breadcrumb">
-            <Fingerprint size={17} />
-            <span>Workspace</span>
+            <>{ws.hosted ? <Globe2 size={17} /> : <Fingerprint size={17} />}</>
+            <span>{ws.hosted ? 'HuntWick Web' : 'Workspace'}</span>
             <ChevronRight size={13} />
             <strong>{page}</strong>
           </div>
           <div className="top-right">
-            <span className="desktop-label">
-              <Monitor size={13} />
-              {ws.desktop ? 'Desktop edition' : 'Desktop preview'}
-            </span>
+            {ws.hosted ? (
+              <div className="web-header-links">
+                <a href={repositoryUrl} target="_blank" rel="noreferrer" aria-label="HuntWick on GitHub">
+                  <Github size={15} />
+                  <span>GitHub</span>
+                </a>
+                <a
+                  href={desktopDownloadsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Get HuntWick desktop installers"
+                >
+                  <Monitor size={15} />
+                  <span>Get desktop</span>
+                  <ExternalLink size={11} />
+                </a>
+              </div>
+            ) : (
+              <span className="desktop-label">
+                <Monitor size={13} />
+                {ws.desktop ? 'Desktop edition' : 'Desktop preview'}
+              </span>
+            )}
             <i className="separator" />
             <button
               className="icon-button"

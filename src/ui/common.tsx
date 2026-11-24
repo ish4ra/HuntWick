@@ -5,6 +5,10 @@ import { activeRun, type Run, type Status } from '../model'
 
 export type Workspace = ReturnType<typeof useHuntWick>
 export type Page = 'Search' | 'History' | 'Platforms' | 'Settings' | 'About'
+export const repositoryUrl = 'https://github.com/ish4ra/HuntWick'
+export const desktopDownloadsUrl = repositoryUrl + '/actions/runs/45294603221'
+export const webPrivacy =
+  'The service operator receives your IP address and the username you submit. Selected platforms receive the username and the server’s IP address.'
 export const version = '0.1.0-rc.1'
 export const statuses: Record<Status, string> = {
   found: 'Found',

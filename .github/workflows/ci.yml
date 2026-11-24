@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches-ignore: [feat/web-edition]
   pull_request:
   workflow_dispatch:
 
@@ -15,4 +15,5 @@ concurrency:
 
 jobs:
   verify:
+    if: github.event_name != 'pull_request' || github.head_ref != 'feat/web-edition'
     uses: ./.github/workflows/verify-and-package.yml

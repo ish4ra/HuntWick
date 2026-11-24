@@ -9,3 +9,6 @@ __pycache__/
 engine/build/
 *.log
 .DS_Store
+.env
+.env.*
+!.env.example
