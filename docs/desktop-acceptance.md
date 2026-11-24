@@ -28,4 +28,4 @@ Live platform responses can change. This Linux run checked two platforms and pro
 
 ## Authorized positive match — November 24
 
-The owner authorized one GitHub-only check of `ish4ra`. The RC's frozen Linux Sherlock executable received one selected site, concurrency 1 and a 15-second timeout. With TLS certificate verification enabled, it emitted a GitHub result with status `found`, URL `https://www.github.com/ish4ra`, and then `done`. The expected profile is `https://github.com/ish4ra`. This exercised the actual packaged engine directly. Physical Windows and macOS interactive sign-off remains outstanding.
+An explicitly authorized single-platform test with the frozen RC engine returned a verified match. The returned HTTPS URL resolved to the expected public profile. The test used concurrency 1, a 15-second timeout and certificate verification. Account identifiers are omitted.
