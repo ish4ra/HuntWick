@@ -1,7 +1,8 @@
 FROM node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54 AS frontend
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+RUN --mount=type=secret,id=build_ca,target=/etc/ssl/certs/ca-certificates.crt \
+    NODE_USE_SYSTEM_CA=1 npm ci --no-audit --no-fund
 COPY index.html tsconfig.json vite.config.ts ./
 COPY public/ public/
 COPY src/ src/
@@ -15,7 +16,8 @@ WORKDIR /app
 COPY --from=uv /uv /usr/local/bin/uv
 COPY web/pyproject.toml web/uv.lock ./web/
 COPY engine/pyproject.toml ./engine/
-RUN uv sync --project web --locked --no-dev --no-cache --python /usr/local/bin/python
+RUN --mount=type=secret,id=build_ca,target=/etc/ssl/certs/ca-certificates.crt \
+    uv sync --system-certs --project web --locked --no-dev --no-cache --python /usr/local/bin/python
 
 FROM python-base
 WORKDIR /app

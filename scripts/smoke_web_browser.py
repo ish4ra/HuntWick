@@ -27,7 +27,7 @@ def main():
         page.locator("#username").fill("with_underscore")
         page.locator('button[type="submit"]').click()
         page.get_by_role("button", name="All results").click()
-        expect(page.get_by_role("cell", name="Inconclusive", exact=True)).to_be_visible()
+        expect(page.get_by_role("cell").get_by_text("Inconclusive", exact=True)).to_be_visible()
         page.get_by_role("button", name="Export", exact=True).click()
         with page.expect_download() as result:
             page.get_by_role("button", name="Export CSV").click()

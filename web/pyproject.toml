@@ -9,7 +9,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["httpx>=0.28,<1"]
+dev = ["httpx>=0.28,<1", "playwright==1.62.0"]
 
 [tool.uv.sources]
 huntwick-engine = { path = "../engine", package = false }
