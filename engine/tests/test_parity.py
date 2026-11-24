@@ -1,12 +1,10 @@
 """Compare the installed Sherlock CLI and HuntWick on identical offline pages."""
 import csv
-import io
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -57,26 +55,28 @@ def reply(url):
     return response
 
 
-def run_cli():
+def run_cli(directory):
     # Exercise the official argument parser, loader, classifier and CSV writer in
     # a fresh interpreter. Only replace the network, including the update check.
     from sherlock_project.sherlock import main
-    with tempfile.TemporaryDirectory() as directory:
-        manifest = Path(directory) / 'sites.json'
-        manifest.write_text(json.dumps(rules()))
-        args = ['sherlock', HANDLE, '--json', str(manifest), '--ignore-exclusions', '--no-color', '--folderoutput', directory, '--csv', '--print-all']
-        with (patch.object(sys,'argv',args), patch.object(requests.Session, 'request', lambda self,method,url,**kw:reply(url)), redirect_stdout(io.StringIO())):
-            main()
-        with (Path(directory)/f'{HANDLE}.csv').open() as report:
-            return {row['name']:row['exists'] for row in csv.DictReader(report)}
+    manifest = Path(directory) / 'sites.json'
+    manifest.write_text(json.dumps(rules()), encoding='utf-8')
+    args = ['sherlock', HANDLE, '--json', str(manifest), '--ignore-exclusions', '--no-color',
+            '--folderoutput', directory, '--csv', '--print-all']
+    with patch.object(sys, 'argv', args), patch.object(requests.Session, 'request', lambda self, method, url, **kw: reply(url)):
+        main()
 
 
 class ParityTests(unittest.TestCase):
     def test_official_cli_and_adapter_classifications(self):
         sys.path.insert(0, str(ENGINE))
         import adapter
-        cli = subprocess.run([sys.executable, __file__, '--upstream'], check=True, capture_output=True, text=True, timeout=20)
-        official = json.loads(cli.stdout)
+        with tempfile.TemporaryDirectory() as directory:
+            cli = subprocess.run([sys.executable, __file__, '--upstream', directory],
+                                 capture_output=True, timeout=60)
+            self.assertEqual(cli.returncode, 0, cli.stderr.decode('utf-8', errors='replace'))
+            with (Path(directory) / f'{HANDLE}.csv').open(encoding='utf-8', newline='') as report:
+                official = {row['name']: row['exists'] for row in csv.DictReader(report)}
         with patch.object(adapter, 'fetch', lambda url,timeout:reply(url)):
             for name, rule in rules().items():
                 with self.subTest(name=name):
@@ -85,4 +85,4 @@ class ParityTests(unittest.TestCase):
 
 
 if __name__ == '__main__' and '--upstream' in sys.argv:
-    print(json.dumps(run_cli()))
+    run_cli(sys.argv[-1])

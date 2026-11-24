@@ -66,7 +66,17 @@ jobs:
           npm test
           uv run --project engine --frozen python -m unittest discover -s scripts -p test_smoke_desktop.py
           npm run build
-          uv run --project engine --frozen python -m unittest discover -s engine/tests
+      - name: Check engine parity and process lifecycle
+        run: |
+          if ! uv run --project engine --frozen python -m unittest discover -v -s engine/tests > engine-tests.log 2>&1; then
+            cat engine-tests.log
+            echo '### Engine regression failure' >> "$GITHUB_STEP_SUMMARY"
+            echo '```text' >> "$GITHUB_STEP_SUMMARY"
+            tail -80 engine-tests.log >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          cat engine-tests.log
       - name: Freeze the native engine
         run: |
           uv run --project engine --frozen python engine/build.py
