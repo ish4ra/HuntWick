@@ -175,13 +175,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
           ARCHIVE_SHA256: ${{ steps.upload.outputs.artifact-digest }}
-        run: |
-          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/huntwick.zip"
-          uv run --project engine --frozen python -c '
-          import hashlib, os, pathlib
-          archive = pathlib.Path(os.environ["RUNNER_TEMP"]) / "huntwick.zip"
-          with archive.open("rb") as stream:
-              digest = hashlib.file_digest(stream, "sha256").hexdigest()
-          if digest != os.environ["ARCHIVE_SHA256"]:
-              raise SystemExit("Downloaded ZIP does not match the upload digest")
-          print("Verified downloaded ZIP SHA256", digest)'
+        run: uv run --project engine --frozen python scripts/check_uploaded_archive.py
