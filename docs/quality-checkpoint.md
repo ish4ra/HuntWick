@@ -19,3 +19,16 @@ TikTok and YouTube use structured owner metadata on their public profile pages. 
 Five-run median source-engine measurements on Linux used synthetic 16 KiB pages, 8 ms simulated transport and eight workers. Deferring Sherlock’s dataframe dependency until search reduced catalog completion from 872 to 309 ms. Quick completion moved from 754 to 865 ms and Full from 1264 to 1177 ms. Cancellation after worker readiness measured 6.8 and 6.6 ms. These measurements exclude live network latency. Reproduce with engine/tests/profile_search.py and compare identical environments.
 
 Next gates are reviewing candidate artifacts, owner testing on representative hardware, restricted hosting validation and owner selection of an identity from the review board.
+
+## Updated RC installers
+
+All four jobs passed for 98e2235. The installed-engine checks and desktop startup probes passed on each runner. The package version remains 0.1.0-rc.1. Use the run and archive digest to identify this quality build. [Desktop CI](https://github.com/ish4ra/HuntWick/actions/runs/45379312570)
+
+| Installer archive | GitHub archive SHA256 |
+| --- | --- |
+| [huntwick-aarch64-apple-darwin](https://github.com/ish4ra/HuntWick/actions/runs/45379312570/artifacts/14914720640) | `fb3db359da449d2232bdb72eaae0e119589fedb9b7d4d5909cd62e47be1b8f2f` |
+| [huntwick-x86_64-apple-darwin](https://github.com/ish4ra/HuntWick/actions/runs/45379312570/artifacts/14914417896) | `feb6c68451f7ebf6fb93019b3f5c25f6da13a58c83457d9fde0d27edb20546e1` |
+| [huntwick-x86_64-pc-windows-msvc](https://github.com/ish4ra/HuntWick/actions/runs/45379312570/artifacts/14913487308) | `e763a87793397981ceb3d4bed163513c82747df8bdb5c7f1d28e597fa2016112` |
+| [huntwick-x86_64-unknown-linux-gnu](https://github.com/ish4ra/HuntWick/actions/runs/45379312570/artifacts/14914775922) | `eea40404d5ee0db47369bc215793bd438b9aa303fa8a5c3171d3cf1f5352a700` |
+
+Extract the archive and verify the individual installer against its included manifest. Owner acceptance on representative devices and a release decision remain pending.
