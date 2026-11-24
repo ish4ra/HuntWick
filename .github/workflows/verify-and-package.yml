@@ -152,6 +152,12 @@ jobs:
           chmod +x "${appimage[0]}"
           (cd "$RUNNER_TEMP" && "${appimage[0]}" --appimage-extract >/dev/null)
           uv run --project engine --frozen python scripts/smoke_engine.py "$RUNNER_TEMP/squashfs-root"
+      - name: Exercise a signed AppImage upgrade on a private local feed
+        if: runner.os == 'Linux' && !inputs.release-signing
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+        run: |
+          dbus-run-session -- xvfb-run -a uv run --project engine --frozen python scripts/check_appimage_update.py
       - name: Verify staged installers and report SHA-256
         run: uv run --project engine --frozen python scripts/stage_installers.py "$TARGET" --verify
       - name: Upload verified installers
