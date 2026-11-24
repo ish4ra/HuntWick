@@ -23,7 +23,7 @@ import {
   useElapsed,
   type Workspace,
 } from './common'
-import type { Result, Status } from '../model'
+import { countStatuses, matchLinks, visibleIn, type Result, type ResultView, type Status } from '../model'
 
 function ProfileLink({ row, ws }: { row: Result; ws: Workspace }) {
   if (!row.url) return <span className="muted">Unavailable</span>
@@ -37,6 +37,12 @@ function ProfileLink({ row, ws }: { row: Result; ws: Workspace }) {
     </span>
   )
 }
+function Evidence({ row }: { row: Result }) {
+  return <>
+    {row.message && <small className="row-detail">{row.message}</small>}
+    {row.reason && row.reason !== row.message && <small className="row-detail">{row.reason}</small>}
+  </>
+}
 function StatusPill({ status }: { status: Status }) {
   return (
     <span className={'result-status status-' + status}>
@@ -48,7 +54,8 @@ function StatusPill({ status }: { status: Status }) {
 export default function Results({ ws }: { ws: Workspace }) {
   const { run } = ws
   const [layout, setLayout] = useState<'table' | 'cards'>('table')
-  const [filter, setFilter] = useState<Status | 'all'>('found')
+  const [view, setView] = useState<ResultView>('balanced')
+  const [filter, setFilter] = useState<Status | 'all'>('all')
   const [category, setCategory] = useState('')
   const [query, setQuery] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -57,26 +64,26 @@ export default function Results({ ws }: { ws: Workspace }) {
   const elapsed = useElapsed(run)
   const active = isActive(run)
   const rows = run?.results ?? []
-  const found = rows.filter((r) => r.status === 'found').length
-  const matchLinks = [...new Set(rows.filter((r) => r.status === 'found' && r.url).map((r) => r.url))].join(
-    '\n',
-  )
-  const missing = rows.filter((r) => r.status === 'not_found').length
-  const uncertain = rows.filter(
-    (r) => r.status !== 'found' && r.status !== 'not_found' && r.status !== 'cancelled',
-  ).length
+  const counts = countStatuses(rows)
+  const matches = counts.found + counts.possible
+  const views: { key: ResultView; label: string; count: number; hint: string }[] = [
+    { key: 'balanced', label: 'Balanced', count: matches, hint: 'Verified and possible matches' },
+    { key: 'strict', label: 'Strict', count: counts.found, hint: 'Verified matches only' },
+    { key: 'diagnostics', label: 'Diagnostics', count: rows.length - matches, hint: 'Non-match statuses and check failures' },
+    { key: 'all', label: 'All results', count: rows.length, hint: 'Every platform result' },
+  ]
   const checked = run?.checked ?? 0
   const filtered = useMemo(
     () =>
       (run?.results ?? [])
         .filter(
           (r) =>
-            (filter === 'all' || r.status === filter) &&
+            visibleIn(r.status, view) && (filter === 'all' || r.status === filter) &&
             (!category || r.category === category) &&
             (r.platform + ' ' + r.url).toLowerCase().includes(query.trim().toLowerCase()),
         )
         .sort((a, b) => a.platform.localeCompare(b.platform) * (ascending ? 1 : -1)),
-    [run?.results, filter, category, query, ascending],
+    [run?.results, view, filter, category, query, ascending],
   )
   const categories = [...new Set(rows.map((row) => row.category))].sort()
   return (
@@ -93,7 +100,10 @@ export default function Results({ ws }: { ws: Workspace }) {
               {active ? <Busy /> : <CircleCheck size={14} />} {phases[run.phase]}
             </span>
           )}
-          {run && <CopyLink url={matchLinks} bulk />}
+          {run && <>
+            <CopyLink url={matchLinks(rows, 'found')} action="Copy verified links" />
+            <CopyLink url={matchLinks(rows, 'possible')} action="Copy possible links" />
+          </>}
           <div className="menu-anchor">
             <button
               className="quiet small"
@@ -135,18 +145,16 @@ export default function Results({ ws }: { ws: Workspace }) {
               </span>
               <span className="mono">{elapsed} elapsed</span>
             </div>
-            <progress aria-label="Search progress" max={Math.max(1, run.sites.length)} value={checked} />
+            <div className="progress-caption">
+              <span>{checked} checked of {run.sites.length} selected</span>
+              <span>{run.sites.length - rows.length} pending</span>
+            </div>
+            <progress aria-label="Selected platforms with an outcome" max={Math.max(1, run.sites.length)} value={rows.length} />
             <dl className="stats">
-              {[
-                ['Total', run.sites.length],
-                ['Checked', checked],
-                ['Found', found],
-                ['Not found', missing],
-                ['Inconclusive', uncertain],
-              ].map(([name, value]) => (
-                <div key={name}>
-                  <dt>{name}</dt>
-                  <dd>{value}</dd>
+              {(Object.keys(statuses) as Status[]).map(status => (
+                <div key={status}>
+                  <dt>{statuses[status]}</dt>
+                  <dd>{counts[status]}</dd>
                 </div>
               ))}
             </dl>
@@ -158,22 +166,14 @@ export default function Results({ ws }: { ws: Workspace }) {
           </div>
         )}
         <div className="results-toolbar">
-          <div className="filter-tabs">
-            <button
-              className={filter === 'found' ? 'chosen' : ''}
-              aria-pressed={filter === 'found'}
-              onClick={() => setFilter('found')}
-            >
-              <span className="tiny-dot" />
-              Matches <b>{found}</b>
-            </button>
-            <button
-              className={filter === 'all' ? 'chosen' : ''}
-              aria-pressed={filter === 'all'}
-              onClick={() => setFilter('all')}
-            >
-              All results <b>{rows.length}</b>
-            </button>
+          <div className="filter-tabs" role="group" aria-label="Result view">
+            {views.map(option => (
+              <button key={option.key} className={view === option.key ? 'chosen' : ''}
+                title={option.hint} aria-pressed={view === option.key}
+                onClick={() => { setView(option.key); setFilter('all') }}>
+                {option.label} <b>{option.count}</b>
+              </button>
+            ))}
           </div>
           <div className="actions toolbar-actions">
             <button
@@ -206,6 +206,7 @@ export default function Results({ ws }: { ws: Workspace }) {
             </div>
           </div>
         </div>
+        {run && <p className="view-description">{views.find(option => option.key === view)?.hint}</p>}
         {filtersOpen && (
           <div className="filters">
             <label>
@@ -224,7 +225,7 @@ export default function Results({ ws }: { ws: Workspace }) {
               <select
                 aria-label="Status"
                 value={filter}
-                onChange={(e) => setFilter(e.target.value as typeof filter)}
+                onChange={(e) => { setView('all'); setFilter(e.target.value as typeof filter) }}
               >
                 <option value="all">All statuses</option>
                 {Object.entries(statuses).map(([k, v]) => (
@@ -278,7 +279,7 @@ export default function Results({ ws }: { ws: Workspace }) {
                   <span>{row.category}</span>
                 </div>
                 <ProfileLink row={row} ws={ws} />
-                {row.message && <small>{row.message}</small>}
+                <Evidence row={row} />
               </article>
             ))}
           </div>
@@ -311,7 +312,7 @@ export default function Results({ ws }: { ws: Workspace }) {
                     </td>
                     <td title={row.message}>
                       <StatusPill status={row.status} />
-                      {row.message && <small className="row-detail">{row.message}</small>}
+                      <Evidence row={row} />
                     </td>
                     <td>{row.category}</td>
                     <td>

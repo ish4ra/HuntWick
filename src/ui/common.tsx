@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Check, Copy, LoaderCircle } from 'lucide-react'
 import { useHuntWick } from '../useHuntWick'
-import { activeRun, type Run, type Status } from '../model'
+import { activeRun, type Run } from '../model'
+export { statusLabels as statuses } from '../model'
 
 export type Workspace = ReturnType<typeof useHuntWick>
 export type Page = 'Search' | 'History' | 'Platforms' | 'Settings' | 'About'
@@ -10,15 +11,6 @@ export const desktopDownloadsUrl = repositoryUrl + '/actions/runs/45294603221'
 export const webPrivacy =
   'The service operator receives your IP address and the username you submit. Selected platforms receive the username and the server’s IP address.'
 export const version = '0.1.0-rc.1'
-export const statuses: Record<Status, string> = {
-  found: 'Found',
-  not_found: 'Not found',
-  inconclusive: 'Inconclusive',
-  timed_out: 'Timed out',
-  blocked: 'Blocked',
-  cancelled: 'Cancelled',
-  error: 'Error',
-}
 export const phases: Record<Run['phase'], string> = {
   running: 'Running',
   cancelling: 'Cancelling',
@@ -65,7 +57,7 @@ async function copyText(text: string) {
     if (previous instanceof HTMLElement) previous.focus()
   }
 }
-export function CopyLink({ url, bulk = false }: { url: string; bulk?: boolean }) {
+export function CopyLink({ url, action }: { url: string; action?: string }) {
   const [status, setStatus] = useState<'idle' | 'copied' | 'error'>('idle')
   const timer = useRef<number | undefined>(undefined)
   useEffect(() => () => window.clearTimeout(timer.current), [])
@@ -79,18 +71,18 @@ export function CopyLink({ url, bulk = false }: { url: string; bulk?: boolean })
     window.clearTimeout(timer.current)
     timer.current = window.setTimeout(() => setStatus('idle'), 2200)
   }
-  const label = bulk ? 'Copy all matching profile links' : 'Copy profile link'
+  const label = action ?? 'Copy profile link'
   return (
     <span className="copy-wrap">
       <button
-        className={bulk ? 'quiet small' : 'icon-button'}
+        className={action ? 'quiet small' : 'icon-button'}
         title={label}
         aria-label={label}
         disabled={!url}
         onClick={copy}
       >
         {status === 'copied' ? <Check size={15} /> : <Copy size={15} />}
-        {bulk && <span>Copy matches</span>}
+        {action && <span>{action}</span>}
       </button>
       {status !== 'idle' && (
         <span className="copy-feedback" role="status">

@@ -121,7 +121,7 @@ export function HistoryPage({ ws, navigate }: { ws: Workspace; navigate: (page: 
                   <small>{dateTime(run.startedAt)}</small>
                 </div>
                 <span className="history-phase">{phases[run.phase]}</span>
-                <span>{run.results.filter((r) => r.status === 'found').length} matches</span>
+                <span>{run.results.filter(r => r.status === 'found').length} verified · {run.results.filter(r => r.status === 'possible').length} possible</span>
                 <button
                   className="quiet small"
                   disabled={isActive(ws.run)}
@@ -157,15 +157,21 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
   const sites = ws.catalog?.sites ?? []
   const categories = [...new Set(sites.map((s) => s.category))].sort()
   const disabled = useMemo(() => new Set(ws.settings.disabledSites), [ws.settings.disabledSites])
-  const filtered = sites
+  const unavailable = ws.catalog?.unavailable ?? []
+  const directory = [
+    ...sites.map(site => ({ ...site, reason: '' })),
+    ...unavailable.map(entry => ({ ...entry, category: '', quick: false })),
+  ]
+  const filtered = directory
     .filter(
       (s) =>
         s.name.toLowerCase().includes(query.trim().toLowerCase()) &&
         (!category || s.category === category) &&
         (scope === 'all' ||
           (scope === 'quick' && s.quick) ||
-          (scope === 'enabled' && !disabled.has(s.name)) ||
-          (scope === 'disabled' && disabled.has(s.name))),
+          (scope === 'enabled' && !s.reason && !disabled.has(s.name)) ||
+          (scope === 'unavailable' && !!s.reason) ||
+          (scope === 'disabled' && !s.reason && disabled.has(s.name))),
     )
     .sort((a, b) => a.name.localeCompare(b.name))
   const pages = Math.max(1, Math.ceil(filtered.length / 20))
@@ -190,7 +196,7 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
       />
       <div className="library-stats">
         {[
-          { label: 'Catalog platforms', value: sites.length, Icon: Database },
+          { label: 'Available platforms', value: sites.length, Icon: Database },
           { label: 'Enabled platforms', value: enabled, Icon: Layers3 },
           {
             label: ws.hosted ? 'Disabled platforms' : 'Quick search platforms',
@@ -252,6 +258,7 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
             <option value="enabled">Enabled</option>
             <option value="disabled">Disabled</option>
             {!ws.hosted && <option value="quick">Quick search</option>}
+            {!ws.hosted && <option value="unavailable">Unavailable ({unavailable.length})</option>}
           </select>
         </div>
         {!filtered.length ? (
@@ -281,6 +288,7 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
                   {filtered.slice(page * 20, (page + 1) * 20).map((s) => (
                     <tr key={s.name}>
                       <td className="strong">{s.name}</td>
+                      {s.reason ? <td colSpan={3}><strong>Unavailable</strong><small className="exclusion-reason">{s.reason}</small></td> : <>
                       <td>{s.category}</td>
                       {!ws.hosted && (
                         <td>
@@ -300,6 +308,7 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
                           onChange={() => toggle(s.name)}
                         />
                       </td>
+                      </>}
                     </tr>
                   ))}
                 </tbody>
