@@ -31,3 +31,17 @@ All four jobs for commit `4f8ae0c0c61a45e12d7f59e357f44700a15dcf55` passed. Each
 | macOS ARM64 | `66dd03354e96c3fa7b4ea973ab576553775d3ea73594aa13d33b02726c55e125` | [DMG](https://github.com/ish4ra/HuntWick/actions/runs/45149732056/artifacts/14805667868) |
 | macOS x64 | `9f4a46c1d1e1ec5ed99627f0ecc0a2184eed6eeec4a0c68fe2437b518d5021c6` | [DMG](https://github.com/ish4ra/HuntWick/actions/runs/45149732056/artifacts/14806113599) |
 | Linux x64 | `321a71e5dfa05727337d9851cbdc1136b6a02b2da030cd67fc585d46df250fd1` | [DEB and AppImage](https://github.com/ish4ra/HuntWick/actions/runs/45149732056/artifacts/14806855697) |
+
+## Owner sign-off and stable promotion
+
+For the Windows and macOS interactive checks, use the corrected RC installers: [Windows NSIS](https://github.com/ish4ra/HuntWick/actions/runs/45294603221/artifacts/14877010845), [Apple Silicon DMG](https://github.com/ish4ra/HuntWick/actions/runs/45294603221/artifacts/14876337739), [Intel DMG](https://github.com/ish4ra/HuntWick/actions/runs/45294603221/artifacts/14876781277).
+
+- On each target, verify the checksum, install using the [unsigned installation instructions](packaging.md), and launch from the applications menu. Record the OS, architecture, security prompt and displayed RC version.
+- Enable only the authorized account's platform. Search its handle, confirm Found, open the result in the default browser, and compare the destination and displayed handle with the owner's expected public URL. Record the outcome and date. Keep unrelated accounts and private profile details out of the evidence.
+- Exercise Cancel, Save and overwrite in the native export dialog using a temporary file. Reopen CSV, JSON and HTML, compare their records, and confirm the CSV search timestamp. Quit during a bounded search, then relaunch and check history consent and preferences.
+
+After positive-match and owner sign-off, prepare a promotion commit setting version 0.1.0 in package.json, package-lock.json, the Tauri config, Cargo.toml, Cargo.lock and the displayed UI version. Finalize the README and CHANGELOG with the approved release date and limitations. Run the full installer matrix on that commit and verify the five stable-version filenames and their checksums. Obtain explicit merge approval. After merge, confirm main contains the approved release tree; with explicit publication approval, dispatch the Release workflow from main with channel stable. It rebuilds all four targets, verifies the manifests and publishes v0.1.0 with five installers and SHA256SUMS. Verify the public assets and hashes against the publication run.
+
+### Draft release notes for owner review
+
+HuntWick brings Sherlock-powered public username discovery to Windows, macOS and Linux with a bundled runtime, progressive results, cancellable searches, local exports and optional history. The candidate ships with 396 compatible platforms and 12 Quick sites. A shared handle cannot establish account ownership. Site behavior can change, and ambiguous responses can remain inconclusive. Desktop installers are unsigned; see the platform instructions before installation.

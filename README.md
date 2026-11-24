@@ -46,3 +46,5 @@ The bundled adapter invokes the official Sherlock Python library. HuntWick appli
 ## Roadmap
 
 Phase 1 focuses on a single bundled engine, reproducible native packages and local privacy controls. Candidates for later phases include better site-specific evidence and regression fixtures, signed builds and updates, an optional second engine, history comparison, localization and PDF reports.
+
+The next planned milestone is **HuntWick Web Edition** on a future `feat/web-edition` branch. The plan reuses the React interface, branding, search model and Sherlock adapter with a lightweight Python backend, progressive results and responsive browser layouts. Hosting evaluation will cover free-tier capacity, rate limits, privacy and abuse prevention. The intended destination is `huntwick.isharalakshan.xyz`, with a future listing in the Tools section of `isharalakshan.xyz`. Desktop release approval comes first.

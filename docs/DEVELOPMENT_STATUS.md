@@ -24,3 +24,7 @@ The Windows test harness at `a47935f` failed before launching the installed desk
 All four jobs passed in [run 45294603221](https://github.com/ish4ra/HuntWick/actions/runs/45294603221). The corrected Windows harness launched the installed desktop. Apple Silicon completed successfully in this run. Intel macOS and Linux also passed. All four archives were uploaded after verification of the five installer checksums. See the [RC archive links and digests](release-checklist.md#verified-release-candidate).
 
 The [Linux interactive acceptance report](desktop-acceptance.md) distinguishes installed-RC tests from prior native sessions. The Linux AppImage separately launched through AppRun in extract-and-run mode and completed the GUI handshake with the OS graphics library available. Windows and macOS installer dialogs, default-browser handoff, native export dialogs and unsigned-install prompts still warrant interactive checks on representative user machines. The candidate is ready for approval review. Packaging remains at 0.1.0-rc.1.
+
+### November 24 promotion gate
+
+The RC installer matrix and Linux desktop evidence stand. A live Found result and public URL comparison still require an explicitly authorized account. Known blocked, challenge, timeout and ambiguous cases are covered by deterministic engine tests. Use the [owner sign-off checklist and draft release notes](release-checklist.md#owner-sign-off-and-stable-promotion) before the version change. Web Edition is the next planned milestone; its branch and deployment are future work.
