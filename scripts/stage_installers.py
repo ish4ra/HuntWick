@@ -10,8 +10,8 @@ from pathlib import Path
 
 FORMATS = {
     "x86_64-pc-windows-msvc": ("nsis/*.exe",),
-    "aarch64-apple-darwin": ("dmg/*.dmg",),
-    "x86_64-apple-darwin": ("dmg/*.dmg",),
+    "aarch64-apple-darwin": ("dmg/*.dmg", "macos/*.app.tar.gz"),
+    "x86_64-apple-darwin": ("dmg/*.dmg", "macos/*.app.tar.gz"),
     "x86_64-unknown-linux-gnu": ("deb/*.deb", "appimage/*.AppImage"),
 }
 
@@ -31,7 +31,7 @@ def main():
     if not args.verify:
         output.mkdir(parents=True, exist_ok=True)
     for pattern in FORMATS[target]:
-        installer = output / f"HuntWick-{version}-{target}{Path(pattern).suffix}"
+        installer = output / f"HuntWick-{version}-{target}{''.join(Path(pattern).suffixes)}"
         if not args.verify:
             matches = list(bundles.glob(pattern))
             if len(matches) != 1:

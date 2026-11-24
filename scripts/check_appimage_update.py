@@ -5,11 +5,15 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
+import sqlite3
 import ssl
 import subprocess
 import tempfile
 import threading
 import time
+
+from smoke_desktop import desktop_environment
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = 'x86_64-unknown-linux-gnu'
@@ -32,9 +36,19 @@ def acceptance(tmp):
     env = dict(os.environ, HUNTWICK_UPDATER_PUBLIC_KEY=key.with_suffix('.key.pub').read_text().strip(),
                TAURI_SIGNING_PRIVATE_KEY=key.read_text().strip(), TAURI_SIGNING_PRIVATE_KEY_PASSWORD='')
     run(cli,'signer','sign','--app-version',VERSION,payload,env=env,stdout=subprocess.DEVNULL)
-    cert, pem = tmp/'cert.pem', tmp/'server.key'
-    run('openssl','req','-x509','-newkey','rsa:2048','-nodes','-days','1','-subj','/CN=localhost',
-        '-addext','subjectAltName=DNS:localhost,IP:127.0.0.1','-keyout',pem,'-out',cert,stderr=subprocess.DEVNULL)
+    ca, ca_key = tmp/'root.pem', tmp/'root.key'
+    cert, pem, csr = tmp/'cert.pem', tmp/'server.key', tmp/'server.csr'
+    run('openssl','req','-x509','-newkey','rsa:2048','-nodes','-days','1','-subj','/CN=HuntWick fixture root',
+        '-addext','basicConstraints=critical,CA:TRUE','-addext','keyUsage=critical,keyCertSign',
+        '-keyout',ca_key,'-out',ca,stderr=subprocess.DEVNULL)
+    run('openssl','req','-new','-newkey','rsa:2048','-nodes','-subj','/CN=localhost',
+        '-keyout',pem,'-out',csr,stderr=subprocess.DEVNULL)
+    extensions = tmp/'server.ext'
+    extensions.write_text('basicConstraints=critical,CA:FALSE\nextendedKeyUsage=serverAuth\n'
+                          'subjectAltName=DNS:localhost,IP:127.0.0.1\n')
+    run('openssl','x509','-req','-in',csr,'-CA',ca,'-CAkey',ca_key,'-CAcreateserial',
+        '-days','1','-extfile',extensions,'-out',cert,stderr=subprocess.DEVNULL)
+    run('openssl','verify','-purpose','sslserver','-verify_ip','127.0.0.1','-CAfile',ca,cert)
 
     attempts = {'/updates-preview/latest.json':0, '/updates-stable/latest.json':0}
 
@@ -86,27 +100,57 @@ def acceptance(tmp):
         (checkout/'node_modules').symlink_to(ROOT/'node_modules',target_is_directory=True)
         (checkout/'engine/dist').symlink_to(ROOT/'engine/dist',target_is_directory=True)
         service=checkout/'src-tauri/src/updates.rs'
-        service.write_text(service.read_text().replace('https://github.com/ish4ra/HuntWick/releases/download/',origin))
+        # The source bundle already locks reqwest through the updater. Restrict this
+        # disposable client's trust store to the fixture CA for manifests and downloads.
+        manifest_path=checkout/'src-tauri/Cargo.toml'
+        manifest_path.write_text(manifest_path.read_text().replace('[dependencies]', '[dependencies]\n'
+            'reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider"] }'))
+        shutil.copyfile(ca,checkout/'src-tauri/src/fixture-ca.pem')
+        run('cargo','metadata','--offline','--format-version','1','--filter-platform',TARGET,
+            '--manifest-path',manifest_path,stdout=subprocess.DEVNULL)
+        service.write_text(service.read_text().replace('https://github.com/ish4ra/HuntWick/releases/download/',origin)
+            .replace('.updater_builder()', '.updater_builder().configure_client(|c| c.tls_certs_only(['
+                     'reqwest::Certificate::from_pem(include_bytes!("fixture-ca.pem")).unwrap()]))')
+            .replace('.map_err(|_| "The signed update feed could not be checked. Retry or open Releases.")',
+                     '.map_err(|e| format!("fixture feed: {e:?}"))'))
+        # The old client confirms its real catalog and rendered UI, then stays alive
+        # for the update. Keep install_verified true so the normal exit hook permits restart.
+        native=checkout/'src-tauri/src/main.rs'
+        native.write_text(native.read_text().replace('    app.exit(0);', '    let _ = app;')
+            .replace('    site_count: usize,\n) -> Result', '    site_count: usize,\n    step: Option<String>,\n) -> Result')
+            .replace('    state.runtime.lock().unwrap().confirm_install(site_count)?;',
+                     '    if let Some(step) = step { eprintln!("fixture step: {step}"); return Ok(()); }\n'
+                     '    state.runtime.lock().unwrap().confirm_install(site_count)?;'))
         driver=checkout/'src/useHuntWick.ts'
         orig="void invoke('confirm_install', { siteCount })"
         assert orig in driver.read_text()
         driver.write_text(driver.read_text().replace(orig, """void (async()=>{
+          const report=(step:string)=>invoke('confirm_install',{siteCount,step})
           const check=(prerelease:boolean)=>invoke<{version:string}|null>('check_update',{prerelease})
           const mustReject=async(p:Promise<unknown>)=>{
             try {await p} catch {return}
             throw Error('Expected update operation to fail')
           }
+          await invoke('confirm_install',{siteCount})
+          localStorage.setItem('huntwick.preferences.v1', JSON.stringify({historyEnabled:true,theme:'light'}))
+          localStorage.setItem('huntwick.history.v1', JSON.stringify([{id:'fixture-preservation'}]))
+          await report('missing manifest')
           await mustReject(check(false))
+          await report('stable isolation')
           if (await check(false)) throw Error('Stable check accepted a prerelease')
+          await report('downgrade')
           if (await check(true)) throw Error('Downgrade accepted')
+          await report('unsupported platform')
           await mustReject(check(true))
+          await report('invalid signature')
           const damaged=await check(true)
           if (!damaged) throw Error('Missing signature fixture')
           await mustReject(invoke('install_update',{version:damaged.version}))
+          await report('signed candidate')
           const valid=await check(true)
           if (!valid) throw Error('Missing valid update')
           await invoke('install_update',{version:valid.version})
-        })().catch(console.error)"""))
+        })().catch(e=>invoke('confirm_install',{siteCount,step:'FAILED '+String(e)}))"""))
         app=checkout/'src/App.tsx'
         # Avoid a background stable-feed check competing with the explicit preview check.
         app.write_text(app.read_text().replace('ws.desktop && <Updates','ws.desktop && !("__HUNTWICK_VERIFY_INSTALL__" in window) && <Updates'))
@@ -118,23 +162,47 @@ def acceptance(tmp):
         shutil.copy2(old,installed)
         with payload.open('rb') as stream:
             expected=hashlib.file_digest(stream,'sha256').digest()
-        env.update(SSL_CERT_FILE=str(cert),NO_PROXY='localhost,127.0.0.1',no_proxy='localhost,127.0.0.1',
+        env=desktop_environment(os.environ,False)
+        env.update(APPIMAGE_EXTRACT_AND_RUN='1', LIBGL_ALWAYS_SOFTWARE='1', WEBKIT_DISABLE_DMABUF_RENDERER='1',
+                   NO_PROXY='localhost,127.0.0.1',no_proxy='localhost,127.0.0.1',
                    XDG_CONFIG_HOME=str(tmp/'prefs'),XDG_DATA_HOME=str(tmp/'data'),XDG_CACHE_HOME=str(tmp/'cache'))
-        p=subprocess.Popen([installed,'--verify-install'],env=env)
+        log=tmp/'installed.log'
+        with log.open('wb') as output:
+            p=subprocess.Popen([installed,'--verify-install'],env=env,cwd=tmp,stdout=output,
+                               stderr=subprocess.STDOUT,start_new_session=True)
         try:
-            end=time.monotonic()+120
+            end=time.monotonic()+180
+            # Only the replacement's --verify-install can print the candidate version.
             while time.monotonic()<end:
-                if installed.stat().st_size==payload.stat().st_size:
-                    with installed.open('rb') as f:
-                        if hashlib.file_digest(f,'sha256').digest()==expected:break
+                detail=log.read_text(errors='replace')
+                if f'HuntWick {VERSION} verified installed catalog and search form' in detail:
+                    break
+                if 'fixture step: FAILED' in detail or p.poll() not in (None,0):
+                    break
                 time.sleep(.5)
             else:
-                raise RuntimeError(f'Image replacement failed after feed requests {attempts}, client exit {p.poll()}.')
+                detail=log.read_text(errors='replace')
+            if f'HuntWick {VERSION} verified installed catalog and search form' not in detail:
+                raise RuntimeError(f'Restart verification failed, requests {attempts}, exit {p.poll()}. '
+                                   + ' | '.join(detail.splitlines()[-12:])[:3000])
+            with installed.open('rb') as f:
+                if hashlib.file_digest(f,'sha256').digest()!=expected:
+                    raise RuntimeError('Installed image does not match the signed candidate.')
             if list(attempts.values()) != [4,2]:
-                raise RuntimeError('Unexpected update feed request sequence.')
-            run(installed,'--verify-install',env=env,timeout=90)
+                raise RuntimeError(f'Unexpected update feed requests: {attempts}')
+            preserved={}
+            for database in (tmp/'data').rglob('*.localstorage'):
+                with sqlite3.connect(database) as db:
+                    for name,value in db.execute('SELECT key,value FROM ItemTable'):
+                        preserved[name]=value.decode('utf-16-le') if isinstance(value,bytes) else value
+            if (json.loads(preserved['huntwick.preferences.v1'])['theme']!='light'
+                    or json.loads(preserved['huntwick.history.v1'])[0]['id']!='fixture-preservation'):
+                raise RuntimeError('Local preferences or history changed across the update.')
         finally:
-            if p.poll() is None:p.terminate()
+            try:
+                os.killpg(p.pid,signal.SIGTERM)
+            except ProcessLookupError:
+                pass
             p.wait(timeout=20)
             server.shutdown()
 

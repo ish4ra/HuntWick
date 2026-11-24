@@ -278,6 +278,10 @@ fn confirm_install(
     site_count: usize,
 ) -> Result<(), String> {
     state.runtime.lock().unwrap().confirm_install(site_count)?;
+    println!(
+        "HuntWick {} verified installed catalog and search form",
+        app.package_info().version
+    );
     app.exit(0);
     Ok(())
 }
