@@ -69,4 +69,9 @@ def describe(sites, version):
         category = next((group for group, names in GROUPS.items() if name in names), default)
         entries.append({'name': name, 'url': sites[name]['urlMain'], 'category': category, 'quick': name in QUICK})
     return {'type': 'catalog', 'version': version, 'updatedAt': UPDATED_AT,
-            'databaseVersion': DATABASE_VERSION, 'sites': entries}
+            'databaseVersion': DATABASE_VERSION, 'sites': entries, 'unavailable': [
+                {'name': 'Instagram', 'reason': 'The bundled lookup uses a third-party mirror.'},
+                {'name': 'X (Twitter)', 'reason': 'The bundled lookup uses a third-party Nitter instance.'},
+                {'name': 'Reddit', 'reason': 'Disabled by the pinned upstream exclusions.'},
+                {'name': 'Facebook', 'reason': 'No public profile rule in the pinned database.'},
+            ]}
