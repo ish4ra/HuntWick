@@ -55,6 +55,10 @@ Phase 1 focuses on a single bundled engine, reproducible native packages and loc
 
 The access-restricted web branch serves the shared interface through FastAPI. Its preview catalog covers GitHub and GitLab. The service requires operator credentials and limits concurrent work. Deployment awaits owner approval. [Setup and privacy](https://github.com/ish4ra/HuntWick/blob/feat/web-edition/docs/web-deployment.md)
 
+![Authenticated browser search and CSV export menu using a synthetic handle](docs/readme-assets/web-search.gif)
+
+[Desktop browser screenshot](docs/screenshots/web-desktop.png) · [Mobile screenshot](docs/screenshots/web-mobile.png) · [Web CI](https://github.com/ish4ra/HuntWick/actions/runs/45377424404)
+
 ```mermaid
 flowchart LR
     UI[React search workspace] --> Native[Tauri desktop]

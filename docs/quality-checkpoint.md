@@ -19,3 +19,7 @@ TikTok and YouTube use structured owner metadata on their public profile pages. 
 Five-run median source-engine measurements on Linux used synthetic 16 KiB pages, 8 ms simulated transport and eight workers. Deferring Sherlock’s dataframe dependency until search reduced catalog completion from 872 to 309 ms. Quick completion moved from 754 to 865 ms and Full from 1264 to 1177 ms. Cancellation after worker readiness measured 6.8 and 6.6 ms. These measurements exclude live network latency. Reproduce with engine/tests/profile_search.py and compare identical environments.
 
 Next gates are reviewing candidate artifacts, owner testing on representative hardware, restricted hosting validation and owner selection of an identity from the review board.
+
+## Web verification
+
+Web CI passed on the code at 72e0a3a. The local production image also passed authenticated HTTP and Chromium checks under a 512 MiB container limit. The smoke selected GitHub alone and used a synthetic handle that its rule rejects before network I/O. The browser rendered that result and exported the matching CSV. The same image denied anonymous access and enforced the six-search budget. Backend fixtures cover disconnect cleanup and cancellation. The next deployment step requires an authorized Render workspace and deployment approval. [Web CI run](https://github.com/ish4ra/HuntWick/actions/runs/45377424404) · [Owner deployment steps](web-deployment.md)
