@@ -126,7 +126,12 @@ def acceptance(tmp):
         assert orig in driver.read_text()
         shutil.copyfile(ROOT/'scripts/fixtures/drive_upgrade.ts',checkout/'src/driveUpgrade.ts')
         driver.write_text("import {driveUpgrade} from './driveUpgrade'\n"+driver.read_text().replace(
-            orig, "void driveUpgrade(siteCount).catch(e=>invoke('confirm_install',{siteCount,step:'FAILED '+String(e)}))"))
+            orig, "void driveUpgrade(siteCount).catch(e=>invoke('confirm_install',{siteCount,step:'FAILED '+String(e)}))")
+            .replace('    void session.connect()', "    void invoke('confirm_install',{siteCount:0,step:'UI mounted'})\n"
+                     "    void session.connect()")
+            .replace("    if (!state.ready", "    if (state.error) void invoke('confirm_install',{siteCount:0,"
+                     "step:'FAILED '+state.error})\n    if (!state.ready")
+            .replace('[state.ready, state.catalog]', '[state.ready, state.catalog, state.error]'))
         app=checkout/'src/App.tsx'
         # Avoid a background stable-feed check competing with the explicit preview check.
         app.write_text(app.read_text().replace('ws.desktop && <Updates','ws.desktop && !("__HUNTWICK_VERIFY_INSTALL__" in window) && <Updates'))
@@ -167,12 +172,16 @@ def acceptance(tmp):
             if list(attempts.values()) != [4,2]:
                 raise RuntimeError(f'Unexpected update feed requests: {attempts}')
             preserved={}
-            for database in (tmp/'data').rglob('*.localstorage'):
+            data=tmp/'data'
+            for database in (*data.rglob('*.localstorage'), *data.rglob('localstorage.sqlite3')):
                 with sqlite3.connect(database) as db:
                     for name,value in db.execute('SELECT key,value FROM ItemTable'):
                         preserved[name]=value.decode('utf-16-le') if isinstance(value,bytes) else value
-            if (json.loads(preserved['huntwick.preferences.v1'])['theme']!='light'
-                    or json.loads(preserved['huntwick.history.v1'])[0]['id']!='fixture-preservation'):
+            prefs=json.loads(preserved.get('huntwick.preferences.v1','{}'))
+            history=json.loads(preserved.get('huntwick.history.v1','[]'))
+            if (prefs.get('theme')!='light' or prefs.get('saveHistory') is not True or len(history)!=1
+                    or history[0].get('id')!='fixture-preservation'
+                    or history[0].get('results',[{}])[0].get('status')!='not_found'):
                 raise RuntimeError('Local preferences or history changed across the update.')
         finally:
             try:
