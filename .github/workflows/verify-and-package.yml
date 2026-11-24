@@ -70,6 +70,8 @@ jobs:
         run: |
           if ! uv run --project engine --frozen python -m unittest discover -v -s engine/tests > engine-tests.log 2>&1; then
             cat engine-tests.log
+            # Expose the deterministic fixture failure in the public check annotation.
+            python -c 'from pathlib import Path; s=Path("engine-tests.log").read_bytes().decode("utf-8", errors="replace"); print("::error title=Engine regression::" + s[-3800:].replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A"))'
             echo '### Engine regression failure' >> "$GITHUB_STEP_SUMMARY"
             echo '```text' >> "$GITHUB_STEP_SUMMARY"
             tail -80 engine-tests.log >> "$GITHUB_STEP_SUMMARY"
