@@ -10,6 +10,10 @@ Use the commit and package version printed in the candidate's CI run. Record the
 6. Switch theme and density, restart, and verify preferences and history consent. Test clearing local data and restoring platform defaults. Distinguish access blocks and timeouts from confirmed matches using deterministic fixtures.
 7. Review the MIT and dependency notices, unsigned installation instructions, and known limitations. Test the Windows minimum version and macOS security prompts on representative machines. Obtain explicit approval of final artifacts and version before merge or public release.
 
+## Current RC.2 candidate
+
+The four-platform matrix passed. Download the five candidate installers and review the updater evidence, archive digests and owner device checks. [RC.2 acceptance](rc2-acceptance.md)
+
 ## Verified release candidate
 
 All four jobs passed at commit `6cf7c32d4c104cd2d77efa966cbe72610bacdc1f`. CI launched the installed Windows app, both macOS app bundles and the installed Debian app. Each completed the webview and native catalog handshake. CI rehashed all five installers against the staged manifests before upload. The SHA256 values below are GitHub's archive digests. Each archive also contains the individual installer manifest. [Corrected RC run](https://github.com/ish4ra/HuntWick/actions/runs/45294603221)

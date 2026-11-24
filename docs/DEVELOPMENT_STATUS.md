@@ -1,5 +1,9 @@
 # HuntWick v0.1.0 development status
 
+## Current RC.2 candidate
+
+The four-platform matrix passed. Download the five candidate installers and review the updater evidence, archive digests and owner device checks. [RC.2 acceptance](rc2-acceptance.md)
+
 ## November 23 release validation
 
 The development branch is `feat/phase-1-desktop-mvp`. The first complete application checkpoint is `83c76a9`. All four jobs for `4f8ae0c0c61a45e12d7f59e357f44700a15dcf55` built the alpha installers and executed their bundled Sherlock engines. The archives, digests and manual tests are listed in the [release checklist](release-checklist.md).
