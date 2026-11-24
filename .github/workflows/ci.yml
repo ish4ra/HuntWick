@@ -15,4 +15,7 @@ concurrency:
 
 jobs:
   verify:
+    permissions:
+      contents: read
+      actions: read
     uses: ./.github/workflows/verify-and-package.yml

@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   build:
@@ -162,9 +163,25 @@ jobs:
       - name: Verify staged installers and report SHA-256
         run: uv run --project engine --frozen python scripts/stage_installers.py "$TARGET" --verify
       - name: Upload verified installers
+        id: upload
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: huntwick-${{ matrix.target }}
           path: installers/${{ matrix.target }}/
           if-no-files-found: error
           compression-level: 0
+      - name: Verify the uploaded archive digest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARCHIVE_SHA256: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/huntwick.zip"
+          uv run --project engine --frozen python -c '
+          import hashlib, os, pathlib
+          archive = pathlib.Path(os.environ["RUNNER_TEMP"]) / "huntwick.zip"
+          with archive.open("rb") as stream:
+              digest = hashlib.file_digest(stream, "sha256").hexdigest()
+          if digest != os.environ["ARCHIVE_SHA256"]:
+              raise SystemExit("Downloaded ZIP does not match the upload digest")
+          print("Verified downloaded ZIP SHA256", digest)'
