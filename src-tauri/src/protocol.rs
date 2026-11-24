@@ -12,6 +12,14 @@ pub struct Catalog {
     pub database_version: String,
     pub updated_at: String,
     pub sites: Vec<Site>,
+    #[serde(default)]
+    pub unavailable: Vec<Unavailable>,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+pub struct Unavailable {
+    pub name: String,
+    pub reason: String,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -127,6 +135,7 @@ pub fn public_https(raw: &str) -> Result<(), String> {
 #[serde(rename_all = "snake_case")]
 pub enum Status {
     Found,
+    Possible,
     NotFound,
     Inconclusive,
     TimedOut,

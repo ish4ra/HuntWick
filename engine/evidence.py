@@ -3,6 +3,7 @@ from html.parser import HTMLParser
 import re
 from urllib.parse import urljoin, urlsplit
 
+from mainstream import mainstream_evidence
 from sherlock_project.result import QueryStatus
 
 
@@ -101,6 +102,11 @@ def classify(rule, profile, username, upstream, response):
             return 'not_found'
     if not 200 <= code < 300:
         return 'inconclusive'
+    platform = mainstream_evidence(profile, username, response)
+    if platform is not None:
+        if platform[0] in {'found', 'possible'} and upstream is not QueryStatus.CLAIMED:
+            return 'inconclusive'
+        return platform[0]
     if upstream is QueryStatus.AVAILABLE:
         if rule['errorType'] == 'status_code':
             return 'not_found'  # e.g. an explicitly configured 204
@@ -122,10 +128,19 @@ def classify(rule, profile, username, upstream, response):
     github_login = head.meta.get('octolytics-dimension-user_login', '')
     if urlsplit(profile).hostname in {'github.com', 'www.github.com'} and github_login.casefold() == username.casefold():
         return 'found'
+    handle = head.meta.get('profile:username', '')
+    if handle and handle.casefold() != username.casefold():
+        return 'inconclusive'
+    if any(not equivalent(urljoin(profile, link), profile) for link in (head.canonical, head.meta.get('og:url')) if link):
+        return 'inconclusive'
     identity_url = head.meta.get('og:url') or head.canonical
     if identity_url and equivalent(urljoin(profile, identity_url), profile):
         if head.meta.get('profile:username', '').casefold() == username.casefold():
             return 'found'
         if head.meta.get('og:type', '').lower() == 'profile' and re.search(r'(?<![\w.-])' + re.escape(username) + r'(?![\w.-])', head.title, re.I):
             return 'found'
+        if re.match(r'^@' + re.escape(username) + r'(?:\s*[-|·]|$)', head.title.strip(), re.I):
+            return 'possible'
+    elif not identity_url and head.meta.get('og:type') == 'profile' and head.meta.get('profile:username', '').casefold() == username.casefold():
+        return 'possible'
     return 'inconclusive'

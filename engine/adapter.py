@@ -9,7 +9,7 @@ from time import monotonic
 from urllib.parse import urljoin, urlsplit
 
 import requests
-from sherlock_project import __version__, sherlock as sherlock_core
+from sherlock_project import __version__
 from sherlock_project.notify import QueryNotify
 from urllib3.exceptions import ReadTimeoutError
 
@@ -73,7 +73,7 @@ class ProfileSession:
 
 
 # This executable is the only consumer, with Sherlock pinned in uv.lock.
-sherlock_core.SherlockFuturesSession = ProfileSession
+
 
 
 def check_site(name, definition, username, timeout):
@@ -85,6 +85,8 @@ def check_site(name, definition, username, timeout):
     # Sherlock attaches the future to this dictionary. Never share it across runs.
     rule = {**definition, 'request_method': 'GET'}
     try:
+        from sherlock_project import sherlock as sherlock_core
+        sherlock_core.SherlockFuturesSession = ProfileSession
         report = sherlock_core.sherlock(username, {name: rule}, QueryNotify(), timeout=timeout)
         future = rule.get('request_future')
         if future is None:  # platform-specific username syntax

@@ -164,7 +164,13 @@ export function applyEvent(run: Run, event: unknown, catalog: Catalog, now: stri
     if (!site) return run
     const result: Result = { platform, url: safeUrl(event.url), status: event.status, category: site.category,
       ...(shortString(event.reason) ? { reason: event.reason } : {}),
-      message: typeof event.message === 'string' ? event.message.slice(0, 2048) : '' }
+      message: typeof event.message === 'string' ? event.message.slice(0, 2048) : ({
+        possible: 'Account-specific evidence was incomplete. Review the public page.',
+        blocked: 'The service restricted access or rate limited the request.',
+        timed_out: 'The platform check exceeded its time limit.',
+        error: 'The platform check could not be completed.',
+        inconclusive: 'The check returned insufficient evidence or the platform rejected this username format.',
+      } as Partial<Record<Status, string>>)[event.status] ?? '' }
     return { ...run, results: [...run.results, result], checked: run.checked + (result.status === 'cancelled' ? 0 : 1) }
   }
   if (event.type === 'done' && run.phase === 'cancelling') return cancelRun(run, catalog, now)
