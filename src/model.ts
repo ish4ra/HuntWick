@@ -37,6 +37,8 @@ export interface Run {
   error: string | null
 }
 export interface Settings {
+  radarSound: boolean
+  radarVolume: number
   rememberPreferences: boolean
   timeout: number
   concurrency: number
@@ -187,6 +189,8 @@ function boundedInt(value: unknown, max: number, fallback: number): number {
 export function parseSettings(input: unknown): Settings {
   const value = record(input) ? input : {}
   return {
+    radarSound: value.radarSound === true,
+    radarVolume: typeof value.radarVolume === 'number' && Number.isFinite(value.radarVolume) ? Math.max(0,Math.min(100,value.radarVolume)) : 40,
     rememberPreferences: value.rememberPreferences === true,
     timeout: boundedInt(value.timeout, 60, 10), concurrency: boundedInt(value.concurrency, 20, 8),
     saveHistory: value.saveHistory === true, defaultMode: value.defaultMode === 'full' ? 'full' : 'quick',

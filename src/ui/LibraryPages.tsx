@@ -12,7 +12,7 @@ import {
   Trash2,
   Zap,
 } from 'lucide-react'
-import { dateTime, Empty, isActive, phases, Toggle, type Page, type Workspace } from './common'
+import { PlatformMark, dateTime, Empty, isActive, phases, Toggle, type Page, type Workspace } from './common'
 
 export function Intro({ label, title, description }: { label: string; title: string; description: string }) {
   return (
@@ -119,6 +119,7 @@ export function HistoryPage({ ws, navigate }: { ws: Workspace; navigate: (page: 
                 <div className="history-name">
                   <strong>@{run.username}</strong>
                   <small>{dateTime(run.startedAt)}</small>
+                  <span>{run.results.filter(r=>r.status==='found'||r.status==='possible').slice(0,4).map(r=><span key={r.platform} title={r.platform}><PlatformMark name={r.platform}/></span>)}</span>
                 </div>
                 <span className="history-phase">{phases[run.phase]}</span>
                 <span>{run.results.filter(r => r.status === 'found').length} verified · {run.results.filter(r => r.status === 'possible').length} possible</span>
@@ -287,7 +288,7 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
                 <tbody>
                   {filtered.slice(page * 20, (page + 1) * 20).map((s) => (
                     <tr key={s.name}>
-                      <td className="strong">{s.name}</td>
+                      <td className="strong"><PlatformMark name={s.name}/> {s.name}</td>
                       {s.reason ? <td colSpan={3}><strong>Unavailable</strong><small className="exclusion-reason">{s.reason}</small></td> : <>
                       <td>{s.category}</td>
                       {!ws.hosted && (

@@ -354,6 +354,7 @@ def create_app(*, password=None, public_origin=None, limits=None, command=DEFAUL
             raise HTTPException(404, 'Not found.')
         return FileResponse(static / asset)
 
+    app.mount('/platforms', StaticFiles(directory=static / 'platforms',check_dir=False))
     app.mount('/assets', StaticFiles(directory=static / 'assets',check_dir=False))
     return app
 

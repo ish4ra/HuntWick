@@ -324,7 +324,7 @@ tr:last-child td { border-bottom: 0; }
   .console-body { grid-template-columns: minmax(0,1fr) 23%; }
 }
 @media (max-width: 520px) {
-  .scope-radar { display: none; }
+  .scope-radar { min-height: 170px; }
   .console-body { display: block; }
   .top-right .desktop-label, .top-right .separator { display: none; }
   .console-heading, .console-foot { padding-inline: 14px; }
@@ -403,3 +403,11 @@ tr:last-child td { border-bottom: 0; }
 .result-status.status-possible i { background: var(--warn); }
 .view-description { margin: 0; padding: 8px 15px; color: var(--muted); font-size: 11px; border-bottom: 1px solid var(--sub-line); }
 .exclusion-reason { display: block; margin-top: 3px; font-size: 11px; color: var(--muted); }
+
+.brand-mark { display:inline-block; width:19px; height:19px; margin:0 4px; flex:none; vertical-align:middle; background:currentColor; mask-size:contain;mask-position:center;mask-repeat:no-repeat; }
+.discovery-dot {position:absolute; z-index:2; width:14px;height:14px; margin:-7px;border:3px solid #193b33;border-radius:50%;background:#83f7b6;box-shadow:0 0 5px #83f7b6;cursor:pointer;animation:blip .45s ease-out;}
+.discovery-dot.possible {background:#edb666;border-radius:3px;box-shadow:0 0 5px #edb666;}
+.radar-detail {position:absolute;bottom:0;left:0;right:0;z-index:3;background:#101b1b;color:#edf6f3;padding:3px;font-size:11px;}
+.radar-detail button {color:inherit;background:transparent;border:0;}
+@keyframes blip {from {outline:5px solid currentColor;} to {outline:0 solid transparent;}}
+@media(prefers-reduced-motion:reduce){.scanning .sweep,.discovery-dot{animation:none;}}

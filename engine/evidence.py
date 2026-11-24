@@ -54,7 +54,7 @@ def equivalent(url1, url2):
     return parts(url1) == parts(url2)
 
 
-GATE_TITLE = re.compile(r'^(?:sign[ -]?in|log[ -]?in|just a moment|access denied|attention required|verify (?:you are|your)|security (?:check|challenge)|authentication required|rate limit|too many requests)\b', re.I)
+GATE_TITLE = re.compile(r'^(?:sign[ -]?in|log[ -]?in|just a moment|access denied|attention required|verify (?:you are|your)|security (?:check|challenge)|authentication required|age verification|verify your age|age check|rate limit|too many requests)\b', re.I)
 GATE_PATH = re.compile(r'/(?:log[_-]?in|sign[_-]?in|auth|captcha|challenge|checkpoint)(?:[/?.#]|$)', re.I)
 MISSING_TITLE = re.compile(r'\b(?:404|not found|does not exist|unavailable|suspended|deactivated)\b', re.I)
 
