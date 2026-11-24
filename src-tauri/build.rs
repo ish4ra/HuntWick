@@ -1,5 +1,7 @@
 fn main() {
     const COMMANDS: &[&str] = &[
+        "check_update",
+        "install_update",
         "catalog",
         "confirm_install",
         "start_search",

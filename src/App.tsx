@@ -1,3 +1,4 @@
+import { Updates } from "./ui/Updates"
 import { useCallback, useEffect, useState } from 'react'
 import {
   AlertCircle,
@@ -191,6 +192,7 @@ export default function App() {
             {page === 'Search' && <SearchPage ws={ws} focusToken={focusToken} />}
             {page === 'History' && <HistoryPage ws={ws} navigate={navigate} />}
             {page === 'Platforms' && <PlatformsPage ws={ws} />}
+            {ws.desktop && <Updates ws={ws} visible={page === 'Settings' || page === 'About'}/ >}
             {page === 'Settings' && <SettingsPage ws={ws} />}
             {page === 'About' && <AboutPage ws={ws} />}
           </div>

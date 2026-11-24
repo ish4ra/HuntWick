@@ -3,6 +3,7 @@
 mod dialog;
 mod process;
 mod protocol;
+mod updates;
 
 use process::{communicate, Process};
 use protocol::{public_https, read_catalog, stream_search, Catalog, Profile, SearchRequest};
@@ -19,6 +20,7 @@ use tauri::{AppHandle, Emitter, Manager, State};
 #[derive(Default)]
 struct Runtime {
     shutting_down: bool,
+    updating: bool,
     verify_install: bool,
     install_verified: bool,
     catalog: Option<Catalog>,
@@ -107,7 +109,7 @@ async fn catalog(
     let _gate = state.catalog_gate.lock().await;
     let (process, input, output) = {
         let mut runtime = state.runtime.lock().unwrap();
-        if runtime.shutting_down {
+        if runtime.shutting_down || runtime.updating {
             return Err("The application is closing.".into());
         }
         if let Some(catalog) = &runtime.catalog {
@@ -145,7 +147,7 @@ async fn start_search(
 ) -> Result<(), String> {
     let ((process, input, output), policy) = {
         let mut runtime = state.runtime.lock().unwrap();
-        if runtime.shutting_down {
+        if runtime.shutting_down || runtime.updating {
             return Err("The application is closing.".into());
         }
         if runtime.search.is_some() {
@@ -290,6 +292,8 @@ fn main() {
             .append_invoke_initialization_script("\n;window.__HUNTWICK_VERIFY_INSTALL__ = true;");
     }
     builder
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(updates::Pending::default())
         .manage(Engine {
             runtime: Mutex::new(Runtime {
                 verify_install,
@@ -299,6 +303,8 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             catalog,
+            updates::check_update,
+            updates::install_update,
             start_search,
             cancel_search,
             open_url,

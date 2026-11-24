@@ -22,3 +22,10 @@ On macOS, run `shasum -a 256 <image.dmg>`, open the verified image and drag Hunt
 On Linux, run `sha256sum <installer>`. Install the Debian package through your distribution's package installer to resolve OS libraries, or mark the AppImage executable and launch it on a compatible x64 system with FUSE support. The engine is included in both formats.
 
 The release workflow requires manual dispatch. Review all platform checks and artifact hashes before publishing a tagged release. CI test builds can be evaluated independently of release publication.
+## Update signing and recovery
+
+Create a production key on an owner-controlled computer with `npm run tauri -- signer generate -w /secure/path/huntwick.key`. Use a strong password and encrypted offline backups. Store the private file contents in Actions secret UPDATER_PRIVATE_KEY, the password in secret UPDATER_KEY_PASSWORD and the public file contents in repository variable UPDATER_PUBLIC_KEY. The compiled desktop stores only the public key. Losing the private key requires a manually distributed trust transition.
+
+The manual release workflow requires signing material. It uploads the platform artifacts and version-specific manifest to a versioned release and updates the selected GitHub Releases feed. Preview is opt-in. Normal matrix builds sign disposable test artifacts. A build without a configured verification key directs the user to manual downloads. Linux DEB uses manual package installation. Compare the installer SHA256 with the versioned release manifest. macOS Gatekeeper and Developer ID notarization are separate from Tauri signatures. Follow the unsigned-build instructions above.
+
+Production acceptance requires installing one version and updating to a newer signed build on representative devices, checking retained preferences, cancellation, tamper rejection and restart. Owner approval is required before enabling the public feed.

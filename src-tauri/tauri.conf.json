@@ -18,6 +18,7 @@
       "devCsp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' ws://127.0.0.1:1420 ipc: http://ipc.localhost; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'"
     }
   },
+  "plugins": { "updater": { "pubkey": "", "requireSignedVersion": true } },
   "bundle": {
     "active": true,
     "resources": { "../engine/dist/huntwick-engine/": "engine/" },
