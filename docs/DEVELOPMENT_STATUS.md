@@ -16,3 +16,5 @@ The development branch is `feat/phase-1-desktop-mvp`. The first complete applica
 Keep the RC version until final platform results and remaining interactive acceptance checks are recorded. The stable version, merge and publication await review.
 
 Native CSV, HTML and JSON saves exposed a missing timestamp in CSV. Commit `43749cd` appends the original UTC start time to each CSV record. A regression test failed on the prior implementation and passed after the fix. New installer verification must include this commit.
+
+The Windows test harness at `a47935f` failed before launching the installed desktop because it indexed a copied environment dictionary with mixed-case `SystemRoot`. Commit `6cf7c32` normalizes Windows keys and supplies only System32 and the Windows root on PATH. A focused regression checks three casings, preservation of OS settings, and removal of inherited Python settings. The [corrected RC run](https://github.com/ish4ra/HuntWick/actions/runs/45294603221) is the acceptance run for this fix.
