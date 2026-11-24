@@ -28,3 +28,5 @@ The [Linux interactive acceptance report](desktop-acceptance.md) distinguishes i
 ### November 24 promotion gate
 
 The RC installer matrix and Linux desktop evidence stand. A live Found result and public URL comparison still require an explicitly authorized account. Known blocked, challenge, timeout and ambiguous cases are covered by deterministic engine tests. Use the [owner sign-off checklist and draft release notes](release-checklist.md#owner-sign-off-and-stable-promotion) before the version change. Web Edition is the next planned milestone; its branch and deployment are future work.
+
+The previously pending owner-authorized GitHub positive test passed on November 24. See the [recorded engine result](desktop-acceptance.md#authorized-positive-match--november-24). Desktop remains at RC.1 for owner device checks and release approval.

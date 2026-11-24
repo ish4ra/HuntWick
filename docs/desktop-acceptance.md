@@ -25,3 +25,7 @@ The installed Debian release candidate completed a live search in the native Tau
 | Local history and appearance | A native session began with history off. After opting in, the tester reopened the app, saw two completed searches and one cancelled search, and opened a saved run. Switching from Dark to Light changed the visible workspace colors. |
 
 Live platform responses can change. This Linux run checked two platforms and produced no confirmed matches. Positive-match accuracy and the other catalog entries need separate evidence. Interactive checks on Windows and macOS remain separate release tasks. [Release checklist](release-checklist.md)
+
+## Authorized positive match — November 24
+
+The owner authorized one GitHub-only check of `ish4ra`. The RC's frozen Linux Sherlock executable received one selected site, concurrency 1 and a 15-second timeout. With TLS certificate verification enabled, it emitted a GitHub result with status `found`, URL `https://www.github.com/ish4ra`, and then `done`. The expected profile is `https://github.com/ish4ra`. This exercised the actual packaged engine directly. Physical Windows and macOS interactive sign-off remains outstanding.
