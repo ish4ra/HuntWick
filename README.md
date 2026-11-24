@@ -18,6 +18,13 @@ The installers bundle the Python runtime and Sherlock. Launch HuntWick from your
 
 ## Search workspace
 
+The radar places a mint marker for each verified profile and an amber marker for each possible match. Focus a marker to inspect the platform and confidence. Positions represent discovery order. Detection sounds are optional and start off. Platform marks are bundled locally.
+
+Desktop Settings can include adult-labeled platforms after confirmation and enable experimental upstream-excluded checks separately. The diagnostic JSON export omits handles and profile URLs. [Coverage and CLI comparison](docs/catalog-audit.md)
+
+Settings and About provide stable and prerelease update checks. Installation requires a newer, signed release and a configured production verification key. The manual download path remains available for Debian and development builds. [Signing and installation](docs/packaging.md)
+
+
 - See the selected scope, progress, elapsed time and outcome counts. Cancel an active search to keep the results received so far.
 - Balanced shows verified and possible matches. Strict requires stronger profile evidence. Use Diagnostics to inspect missing profiles, timeouts, access blocks, errors and inconclusive responses. Switch between table and card views, filter by category or text, and sort by platform.
 - Open public profile links in the system browser, copy links, or save local CSV, JSON and HTML reports. Exported files identify the search handle and can contain personal information.

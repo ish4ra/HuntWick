@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-rc.2 — unreleased
+
+- Added opt-in desktop catalog policies, per-platform diagnostics and a handle-free diagnostic export.
+- Added signed-update controls, live discovery markers, optional detection tones and bundled platform artwork.
+- Private web searches retain the two-platform allowlist.
+
 ## 0.1.0-rc.1 — unreleased
 
 - Add a local Tauri and React workspace for public username discovery with a bundled Sherlock engine and pinned platform definitions.
