@@ -14,14 +14,23 @@ TARGETS = {
     'x86_64-apple-darwin': ('darwin-x86_64', 'macos/*.app.tar.gz'),
 }
 
+def signed_archive(bundle, pattern):
+    files = sorted(path for path in bundle.glob(pattern) if path.is_file())
+    if len(files) != 1:
+        raise ValueError(f"Expected one native updater matching {pattern} under {bundle}, found {len(files)}: {files}")
+    archive = files[0]
+    signature = Path(str(archive) + '.sig')
+    if not signature.is_file() or not signature.read_text().strip():
+        raise ValueError(f"Missing Tauri signature for {archive}")
+    return archive
+
+
 def stage(target):
     platform, pattern = TARGETS[target]
     bundle = ROOT / 'src-tauri/target' / target / 'release/bundle'
-    source, = bundle.glob(pattern)
+    source = signed_archive(bundle, pattern)
     subprocess.run(["node", "scripts/verify-update.mjs", source, VERSION], check=True)
     signature = Path(str(source) + '.sig').read_text().strip()
-    if not signature:
-        raise ValueError('Missing Tauri signature')
     out = ROOT / 'installers' / target
     name = f'HuntWick-{VERSION}-{target}' + ''.join(Path(pattern).suffixes)
     shutil.copyfile(source, out / name)

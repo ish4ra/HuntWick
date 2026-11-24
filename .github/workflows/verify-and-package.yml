@@ -74,7 +74,7 @@ jobs:
           npm run lint
           npm run typecheck
           npm test
-          uv run --project engine --frozen python -m unittest discover -s scripts -p test_smoke_desktop.py
+          uv run --project engine --frozen python -m unittest discover -s scripts
           npm run build
       - name: Check engine parity and process lifecycle
         run: |
