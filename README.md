@@ -1,6 +1,10 @@
 # HuntWick
 
-**OSINT, simplified.**
+![HuntWick — OSINT, simplified.](docs/readme-assets/hero.svg)
+
+[Static hero](docs/readme-assets/hero-static.png) · [Desktop CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml?query=branch%3Afeat%2Fphase-1-desktop-mvp) · [Private Web Edition](https://github.com/ish4ra/HuntWick/tree/feat/web-edition)
+
+![Desktop CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml/badge.svg?branch=feat%2Fphase-1-desktop-mvp)
 
 HuntWick is a local desktop application for discovering public profiles that use a particular username. Enter a handle, choose **Quick search** for a curated set of platforms or **Full search** for every enabled compatible platform, then select **Search**. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
 
@@ -15,7 +19,7 @@ The installers bundle the Python runtime and Sherlock. Launch HuntWick from your
 ## Search workspace
 
 - See the selected scope, progress, elapsed time and outcome counts. Cancel an active search to keep the results received so far.
-- Start with matches, then use the other status filters to inspect missing profiles, timeouts, access blocks, errors and inconclusive responses. Switch between table and card views, filter by category or text, and sort by platform.
+- Balanced shows verified and possible matches. Strict requires stronger profile evidence. Use Diagnostics to inspect missing profiles, timeouts, access blocks, errors and inconclusive responses. Switch between table and card views, filter by category or text, and sort by platform.
 - Open public profile links in the system browser, copy links, or save local CSV, JSON and HTML reports. Exported files identify the search handle and can contain personal information.
 - Browse the installed platform catalog and disable individual sites. Counts reflect the actual bundled definitions, supported request types and current settings. The engine and database versions are available in Settings.
 - Choose a dark, light or system theme and the density of results. Use Ctrl+K or Cmd+K to return to the username field. Enable local history to reopen past searches.
@@ -47,4 +51,15 @@ The bundled adapter invokes the official Sherlock Python library. HuntWick appli
 
 Phase 1 focuses on a single bundled engine, reproducible native packages and local privacy controls. Candidates for later phases include better site-specific evidence and regression fixtures, signed builds and updates, an optional second engine, history comparison, localization and PDF reports.
 
-The next planned milestone is **HuntWick Web Edition** on a future `feat/web-edition` branch. The plan reuses the React interface, branding, search model and Sherlock adapter with a lightweight Python backend, progressive results and responsive browser layouts. Hosting evaluation will cover free-tier capacity, rate limits, privacy and abuse prevention. The intended destination is `huntwick.isharalakshan.xyz`, with a future listing in the Tools section of `isharalakshan.xyz`. Desktop release approval comes first.
+## Web Edition
+
+The access-restricted web branch serves the shared interface through FastAPI. Its preview catalog covers GitHub and GitLab. The service requires operator credentials and limits concurrent work. Deployment awaits owner approval. [Setup and privacy](https://github.com/ish4ra/HuntWick/blob/feat/web-edition/docs/web-deployment.md)
+
+```mermaid
+flowchart LR
+    UI[React search workspace] --> Native[Tauri desktop]
+    UI --> HTTP[Authenticated web service]
+    Native --> Engine[Sherlock adapter]
+    HTTP --> Engine
+    Engine --> Sites[Selected public platforms]
+```
