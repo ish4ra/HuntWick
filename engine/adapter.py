@@ -1,4 +1,5 @@
 """HuntWick's one-request NDJSON adapter for the official Sherlock library."""
+from functools import cache
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 import json
 import os
@@ -76,6 +77,13 @@ class ProfileSession:
 
 
 
+@cache
+def search_engine():
+    from sherlock_project import sherlock as core
+    core.SherlockFuturesSession = ProfileSession
+    return core
+
+
 def check_site(name, definition, username, timeout):
     profile = definition['url'].replace('{}', username)
     result = {'type': 'result', 'platform': name, 'url': profile, 'status': 'inconclusive'}
@@ -85,9 +93,7 @@ def check_site(name, definition, username, timeout):
     # Sherlock attaches the future to this dictionary. Never share it across runs.
     rule = {**definition, 'request_method': 'GET'}
     try:
-        from sherlock_project import sherlock as sherlock_core
-        sherlock_core.SherlockFuturesSession = ProfileSession
-        report = sherlock_core.sherlock(username, {name: rule}, QueryNotify(), timeout=timeout)
+        report = search_engine().sherlock(username, {name: rule}, QueryNotify(), timeout=timeout)
         future = rule.get('request_future')
         if future is None:  # platform-specific username syntax
             return result
@@ -158,6 +164,10 @@ def main():
             request = json.loads(line)
         except (ValueError, RecursionError):
             raise ValueError('Invalid JSON request.') from None
+        # Initialize the search runtime on the main thread before the parent-pipe
+        # watcher blocks in a Windows CRT read. Catalog requests stay lightweight.
+        if isinstance(request, dict) and request.get('op') == 'search':
+            search_engine()
         if os.getenv('HUNTWICK_PARENT_PIPE') == '1':
             threading.Thread(target=watch_parent, daemon=True).start()
         for event in events(request, load_sites()):
