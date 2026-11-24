@@ -124,33 +124,9 @@ def acceptance(tmp):
         driver=checkout/'src/useHuntWick.ts'
         orig="void invoke('confirm_install', { siteCount })"
         assert orig in driver.read_text()
-        driver.write_text(driver.read_text().replace(orig, """void (async()=>{
-          const report=(step:string)=>invoke('confirm_install',{siteCount,step})
-          const check=(prerelease:boolean)=>invoke<{version:string}|null>('check_update',{prerelease})
-          const mustReject=async(p:Promise<unknown>)=>{
-            try {await p} catch {return}
-            throw Error('Expected update operation to fail')
-          }
-          await invoke('confirm_install',{siteCount})
-          localStorage.setItem('huntwick.preferences.v1', JSON.stringify({historyEnabled:true,theme:'light'}))
-          localStorage.setItem('huntwick.history.v1', JSON.stringify([{id:'fixture-preservation'}]))
-          await report('missing manifest')
-          await mustReject(check(false))
-          await report('stable isolation')
-          if (await check(false)) throw Error('Stable check accepted a prerelease')
-          await report('downgrade')
-          if (await check(true)) throw Error('Downgrade accepted')
-          await report('unsupported platform')
-          await mustReject(check(true))
-          await report('invalid signature')
-          const damaged=await check(true)
-          if (!damaged) throw Error('Missing signature fixture')
-          await mustReject(invoke('install_update',{version:damaged.version}))
-          await report('signed candidate')
-          const valid=await check(true)
-          if (!valid) throw Error('Missing valid update')
-          await invoke('install_update',{version:valid.version})
-        })().catch(e=>invoke('confirm_install',{siteCount,step:'FAILED '+String(e)}))"""))
+        shutil.copyfile(ROOT/'scripts/fixtures/drive_upgrade.ts',checkout/'src/driveUpgrade.ts')
+        driver.write_text("import {driveUpgrade} from './driveUpgrade'\n"+driver.read_text().replace(
+            orig, "void driveUpgrade(siteCount).catch(e=>invoke('confirm_install',{siteCount,step:'FAILED '+String(e)}))"))
         app=checkout/'src/App.tsx'
         # Avoid a background stable-feed check competing with the explicit preview check.
         app.write_text(app.read_text().replace('ws.desktop && <Updates','ws.desktop && !("__HUNTWICK_VERIFY_INSTALL__" in window) && <Updates'))
