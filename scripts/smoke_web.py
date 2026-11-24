@@ -89,6 +89,8 @@ def main():
             script = Path(__file__).with_name("smoke_web_browser.py")
             subprocess.run([sys.executable, script, "--port", address.rsplit(":", 1)[1]],
                            env=env, check=True, timeout=90)
+            subprocess.run([sys.executable, Path(__file__).with_name("test_web_radar.py"), "--port", address.rsplit(":", 1)[1]],
+                           env=env, check=True, timeout=90)
         else:
             check_service(url, password, username)
         docker("stop", "--time", "5", container)

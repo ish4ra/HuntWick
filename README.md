@@ -53,6 +53,8 @@ Phase 1 focuses on a single bundled engine, reproducible native packages and loc
 
 ## Web Edition
 
+The browser radar displays actual verified and possible events. Select a marker for details. Optional synthesized detection sounds start off, and the browser loads platform logos from the same authenticated service. The desktop and mobile screenshots below use synthetic demonstration events.
+
 The access-restricted web branch serves the shared interface through FastAPI. Its preview catalog covers GitHub and GitLab. The service requires operator credentials and limits concurrent work. Deployment awaits owner approval. [Setup and privacy](https://github.com/ish4ra/HuntWick/blob/feat/web-edition/docs/web-deployment.md)
 
 ![Authenticated browser search and CSV export menu using a synthetic handle](docs/readme-assets/web-search.gif)
