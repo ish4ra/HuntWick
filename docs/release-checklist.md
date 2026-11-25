@@ -10,7 +10,11 @@ Use the commit and package version printed in the candidate's CI run. Record the
 6. Switch theme and density, restart, and verify preferences and history consent. Test clearing local data and restoring platform defaults. Distinguish access blocks and timeouts from confirmed matches using deterministic fixtures.
 7. Review the MIT and dependency notices, unsigned installation instructions, and known limitations. Test the Windows minimum version and macOS security prompts on representative machines. Obtain explicit approval of final artifacts and version before merge or public release.
 
-## Current RC.2 candidate
+## Current RC.3 candidate
+
+The candidate uses the combined desktop and web source with the approved Cut wordmark and Counter icon. The acceptance record tracks the production-signed downloads and remaining device tests. [RC.3 evidence](rc3-acceptance.md)
+
+## Historical RC.2 candidate
 
 The four-platform matrix passed. Download the five candidate installers and review the updater evidence, archive digests and owner device checks. [RC.2 acceptance](rc2-acceptance.md)
 

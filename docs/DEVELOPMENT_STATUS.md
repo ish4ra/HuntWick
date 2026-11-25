@@ -1,6 +1,10 @@
 # HuntWick v0.1.0 development status
 
-## Current RC.2 candidate
+## Current RC.3 candidate
+
+The candidate uses the combined desktop and web source with the approved Cut wordmark and Counter icon. The acceptance record tracks the production-signed downloads and remaining device tests. [RC.3 evidence](rc3-acceptance.md)
+
+## Historical RC.2 candidate
 
 The four-platform matrix passed. Download the five candidate installers and review the updater evidence, archive digests and owner device checks. [RC.2 acceptance](rc2-acceptance.md)
 

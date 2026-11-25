@@ -1,6 +1,6 @@
 # Main branch integration review
 
-The candidate branch is `integration/desktop-web`. Its merge commits preserve the histories of desktop `a7ea0ee` and web `9eecb98`. The target is the existing `main` branch. The animated README leads with the verified desktop RC.2 download and separately describes the authenticated Web Edition and its pending deployment.
+The candidate branch is `integration/desktop-web`. Its merge commits preserve the histories of desktop `a7ea0ee` and web `9eecb98`. The target is the existing `main` branch. The animated README leads with the desktop RC.3 acceptance record and separately describes the authenticated Web Edition and its pending deployment.
 
 ## Conflict decisions
 
@@ -8,9 +8,9 @@ The candidate branch is `integration/desktop-web`. Its merge commits preserve th
 | --- | --- |
 | Shared React model and session | Desktop retains both independent catalog controls, its full concurrency and timeout ranges, updater IPC and local diagnostics. The web build selects its authenticated HTTP bridge, caps concurrency at two and sends searches to the hosted allowlist. |
 | Search and Platforms | Hosted users choose enabled sites from GitHub and GitLab. Quick Search, the unavailable platform list and catalog expansion belong to the desktop UI. The service validates the request again before starting the worker. |
-| Appearance and application information | Shared responsive styles, icons and radar coexist with the native updates UI. The shared application info points to verified RC.2 downloads and displays privacy information for the active transport. |
+| Appearance and application information | Shared responsive styles, icons and radar coexist with the native updates UI. The shared application info points to RC.3 downloads and displays privacy information for the active transport. |
 | Engine and tests | Kept the portable desktop Sherlock CLI comparison test and native protocol. Hosted responses project only approved platform, URL and status fields. Service tests reject desktop policy flags and out-of-catalog sites. |
-| Documentation and workflows | Preserved both quality records, both privacy descriptions and the owner signing gate. Integration pushes run native checks without installer packaging. Web changes on a PR are eligible for the restricted Docker and browser jobs. Main pushes can build CI artifacts. Publication requires a separate owner action. |
+| Documentation and workflows | Preserved both quality records, both privacy descriptions and the owner signing gate. Integration pushes run native checks without installer packaging. The Web workflow runs the restricted Docker and Chromium checks on integration pushes. Main pushes can build CI artifacts. Publication requires a separate owner action. |
 
 ## Verification on the combined source
 
@@ -21,8 +21,7 @@ The candidate branch is `integration/desktop-web`. Its merge commits preserve th
 
 ## Owner review order
 
-1. Select the [wordmark](letterform-review/README.md) and [standalone icon](app-icon-review/README.md) independently. Apply the approved assets to desktop, web, the sidebar, platform icon packages, favicon and both README hero forms. Preserve previous studies in the review archive.
-2. Prepare RC.3 on the desktop branch. Advance the artifact-only production build ref to the reviewed version commit after authorization. Require all four platform jobs, five installers, native signatures, per-file manifests, ZIP digests and matching public-key fingerprints. Record the exact commit and retain those exact bytes with the run ID and digests before Actions retention expires. Only RC.2 installers exist at this checkpoint. [Production updater procedure](production-updater.md)
-3. Bring the final approved desktop and web commits into this integration branch by merging. Re-run the affected checks on the final tree and review the README, privacy boundaries and download targets against the selected release artifacts. Keep the proposal in draft until the owner approves the exact integration SHA.
-4. To put the reviewed project on main, use **Create a merge commit** on the integration PR. Retain both development branches. Confirm that main contains both input histories, renders the animated README and points to the correct candidate. This operation does not publish a GitHub release or deploy the web service.
-5. Obtain separate approval to publish a separately verified RC.4 prerelease and its preview feed. Test RC.3 → RC.4 in-app before recording production device acceptance. Stable promotion, DNS and hosting have independent owner gates.
+1. Review the integrated change set and release evidence. The signed candidate uses the same desktop and web implementation as the proposed main branch. The production build ref preserves the exact packaging commit. [RC.3 acceptance and downloads](rc3-acceptance.md)
+2. Open a draft PR from `integration/desktop-web` to `main` and record the reviewed SHA. The cloud proxy returned HTTP 403 for GitHub's PR API. [Open the comparison](https://github.com/ish4ra/HuntWick/compare/main...integration/desktop-web?expand=1)
+3. After owner approval, choose **Create a merge commit** to retain both histories. Review the README and RC.3 download links on main after the merge.
+4. Install RC.3 manually. Approval for an RC.4 prerelease and preview feed is a separate decision. Verify an in-app upgrade on representative macOS and Windows devices before stable promotion. Web hosting and the custom domain await owner approval. [Production updater procedure](production-updater.md)
