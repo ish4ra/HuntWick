@@ -8,7 +8,9 @@
 
 HuntWick Desktop is a local application for discovering public profiles that use a particular username. Enter a handle, choose **Quick search** for a curated set of platforms or **Full search** for every enabled compatible platform, then select **Search**. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
 
-![HuntWick running from the Linux RC Debian package with Quick and Full search options](docs/screenshots/desktop.png)
+![HuntWick RC.3 Linux desktop with Quick and Full search options](docs/screenshots/desktop-rc3.png)
+
+[Desktop in light mode](docs/screenshots/desktop-rc3-light.png) · [Web in light mode](docs/screenshots/web-light.png)
 
 ## Using the release candidate
 
