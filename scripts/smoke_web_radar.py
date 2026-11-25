@@ -24,7 +24,8 @@ def run(port, screenshots):
         page.add_init_script("""window.testPings=0;
           const create=AudioContext.prototype.createBufferSource;
           AudioContext.prototype.createBufferSource=function(){
-            window.testPings++;return create.call(this)
+            document.documentElement.dataset.testPings=String(++window.testPings);
+            return create.call(this)
           };""")
         page.route('**/api/search',synthetic)
         page.goto(origin)
@@ -55,7 +56,7 @@ def run(port, screenshots):
         page.get_by_role('button',name='Search',exact=True).first.click()
         page.locator('#username').fill('demo')
         page.locator('button[type=submit]').click()
-        page.wait_for_function('window.testPings === 1')
+        expect(page.locator('html')).to_have_attribute('data-test-pings','1')
         expect(dots).to_have_count(2)
         for dot in dots.all():
             box=dot.bounding_box()
