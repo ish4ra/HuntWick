@@ -22,8 +22,8 @@ def run(port, screenshots):
             events.append({'id':payload['id'],'type':'done'})
             route.fulfill(content_type='application/x-ndjson',body='\n'.join(map(json.dumps,events))+'\n')
         page.add_init_script("""window.testPings=0;
-          const create=AudioContext.prototype.createOscillator;
-          AudioContext.prototype.createOscillator=function(){
+          const create=AudioContext.prototype.createBufferSource;
+          AudioContext.prototype.createBufferSource=function(){
             window.testPings++;return create.call(this)
           };""")
         page.route('**/api/search',synthetic)
@@ -33,6 +33,11 @@ def run(port, screenshots):
         page.locator('button[type=submit]').click()
         dots=page.locator('.discovery-dot')
         expect(dots).to_have_count(2)
+        for dot in dots.all():
+            box=dot.bounding_box()
+            blip=dot.locator('.radar-blip').bounding_box()
+            assert box['width']==box['height']==24
+            assert blip['width']==blip['height'] and 3<=blip['width']<=4
         possible=page.get_by_role('button',name='GitLab · Possible Match',exact=True)
         possible.focus()
         expect(page.locator('.radar-detail')).to_contain_text('GitLab · Possible Match')
@@ -52,6 +57,11 @@ def run(port, screenshots):
         page.locator('button[type=submit]').click()
         page.wait_for_function('window.testPings === 1')
         expect(dots).to_have_count(2)
+        for dot in dots.all():
+            box=dot.bounding_box()
+            blip=dot.locator('.radar-blip').bounding_box()
+            assert box['width']==box['height']==24
+            assert blip['width']==blip['height'] and 3<=blip['width']<=4
         browser.close()
 
 

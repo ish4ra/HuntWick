@@ -1390,6 +1390,7 @@ dependencies = [
  "command-group",
  "gtk",
  "open",
+ "reqwest",
  "rfd",
  "serde",
  "serde_json",

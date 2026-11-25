@@ -98,7 +98,7 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
       return
     }
     setValidation('')
-    if (ws.settings.radarSound) armRadar()
+    if (ws.settings.radarSound || ws.settings.scanSound) void armRadar()
     await ws.start(name, ws.hosted ? 'full' : mode)
   }
   return (

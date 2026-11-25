@@ -2,7 +2,7 @@ use super::Engine;
 use serde::Serialize;
 use std::{sync::Mutex, time::Duration};
 use tauri::{AppHandle, Emitter, State};
-use tauri_plugin_updater::{Update, UpdaterExt};
+use tauri_plugin_updater::{Error as UpdateError, Update, UpdaterExt};
 
 #[derive(Default)]
 pub struct Pending(Mutex<Option<Update>>);
@@ -30,6 +30,7 @@ pub async fn check_update(
     pending: State<'_, Pending>,
     prerelease: bool,
 ) -> Result<Option<Offer>, String> {
+    *pending.0.lock().unwrap() = None;
     let key = EMBEDDED_KEY.filter(|k| !k.trim().is_empty()).ok_or(
         "This build has no release verification key. Use the checksummed manual downloads.",
     )?;
@@ -39,24 +40,48 @@ pub async fn check_update(
         );
     }
     let channel = if prerelease { "preview" } else { "stable" };
-    let endpoint = format!("{RELEASES}updates-{channel}/latest.json")
+    let endpoint: url::Url = format!("{RELEASES}updates-{channel}/latest.json")
         .parse()
         .map_err(|_| "Invalid feed.")?;
     let updater = app
         .updater_builder()
         .pubkey(key)
         .timeout(Duration::from_secs(20))
-        .endpoints(vec![endpoint])
+        .endpoints(vec![endpoint.clone()])
         .map_err(|_| "Invalid release feed.")?
         .version_comparator(move |current, remote| {
             remote.version > current && (prerelease || remote.version.pre.is_empty())
         })
         .build()
         .map_err(|_| "Updater is unavailable on this installation.")?;
-    let update = updater
-        .check()
-        .await
-        .map_err(|_| "The signed update feed could not be checked. Retry or open Releases.")?;
+    let update = match updater.check().await {
+        Ok(offer) => offer,
+        Err(UpdateError::ReleaseNotFound) => {
+            // The plugin discards non-success HTTP statuses. Only a confirmed 404
+            // from this fixed release endpoint establishes an unpublished feed.
+            let client = reqwest::Client::builder()
+                .timeout(Duration::from_secs(8))
+                .build()
+                .map_err(|_| "The update service is unavailable.")?;
+            let missing = client
+                .head(endpoint)
+                .send()
+                .await
+                .is_ok_and(|r| r.status().as_u16() == 404);
+            return Err(if missing {
+                "No feed has been published on this channel."
+            } else {
+                "The update service is unavailable. Try again later."
+            }
+            .into());
+        }
+        Err(UpdateError::Reqwest(e)) if !e.is_decode() => {
+            return Err("Could not reach the update service. Check your connection.".into())
+        }
+        Err(_) => {
+            return Err("The release metadata is invalid or does not support this platform.".into())
+        }
+    };
     if update
         .as_ref()
         .is_some_and(|u| !approved_url(u.download_url.as_str()) || u.signature.is_empty())
@@ -108,7 +133,19 @@ pub async fn install_update(
         app.restart();
     }
     engine.runtime.lock().unwrap().updating = false;
-    Err("Update verification or installation failed. Check again to retry.".into())
+    match result {
+        Err(
+            UpdateError::Minisign(_)
+            | UpdateError::Base64(_)
+            | UpdateError::SignatureUtf8(_)
+            | UpdateError::SignedVersionMismatch { .. }
+            | UpdateError::MissingSignedVersion,
+        ) => Err("Update signature verification failed. The update was rejected.".into()),
+        Err(UpdateError::Reqwest(_) | UpdateError::Network(_)) => {
+            Err("The update download failed. Check your connection and retry.".into())
+        }
+        _ => Err("Installation failed. Check again or use the manual installer.".into()),
+    }
 }
 
 #[cfg(test)]

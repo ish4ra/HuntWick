@@ -103,8 +103,6 @@ def acceptance(tmp):
         # The source bundle already locks reqwest through the updater. Restrict this
         # disposable client's trust store to the fixture CA for manifests and downloads.
         manifest_path=checkout/'src-tauri/Cargo.toml'
-        manifest_path.write_text(manifest_path.read_text().replace('[dependencies]', '[dependencies]\n'
-            'reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider"] }'))
         shutil.copyfile(ca,checkout/'src-tauri/src/fixture-ca.pem')
         run('cargo','metadata','--offline','--format-version','1','--filter-platform',TARGET,
             '--manifest-path',manifest_path,stdout=subprocess.DEVNULL)

@@ -10,6 +10,7 @@ publish = false
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider"] }
 command-group = "5"
 open = "5"
 serde = { version = "1", features = ["derive"] }

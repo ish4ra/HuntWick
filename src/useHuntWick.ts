@@ -3,6 +3,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import { invoke, isTauri } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { HuntWickSession } from './session'
+import { playCue, stopRadar } from './ui/radarAudio'
 import { createHostedBridge } from './webBridge'
 import type { Bridge, LocalStore } from './session'
 
@@ -50,6 +51,12 @@ export function useHuntWick() {
       session.disconnect()
     }
   }, [session])
+  const scanning = state.run?.phase === 'running' && state.settings.scanSound
+  useEffect(() => {
+    if (!scanning) return
+    const timer = window.setInterval(()=>playCue('scan',state.settings.radarVolume), 2200)
+    return () => {window.clearInterval(timer);stopRadar()}
+  },[scanning,state.settings.radarVolume])
   useEffect(() => {
     if (!state.desktop || !state.ready || !state.catalog || !('__HUNTWICK_VERIFY_INSTALL__' in window)) return
     const siteCount = state.catalog.sites.length

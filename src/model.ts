@@ -44,6 +44,7 @@ export interface Run {
 export interface Settings {
   providerMode: 'sherlock' | 'enhanced'
   retryTransient: boolean
+  scanSound: boolean
   radarSound: boolean
   radarVolume: number
   autoUpdates: boolean
@@ -210,6 +211,7 @@ export function parseSettings(input: unknown): Settings {
     providerMode: value.providerMode === 'enhanced' ? 'enhanced' : 'sherlock', retryTransient: value.retryTransient === true,
     autoUpdates: value.autoUpdates !== false,
     includeNsfw: value.includeNsfw === true, includeExcluded: value.includeExcluded === true,
+    scanSound: value.scanSound === true,
     radarSound: value.radarSound === true,
     radarVolume: typeof value.radarVolume === 'number' && Number.isFinite(value.radarVolume) ? Math.max(0,Math.min(100,value.radarVolume)) : 40,
     rememberPreferences: value.rememberPreferences === true,

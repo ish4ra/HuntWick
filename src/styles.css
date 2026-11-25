@@ -406,9 +406,19 @@ tr:last-child td { border-bottom: 0; }
 .exclusion-reason { display: block; margin-top: 3px; font-size: 11px; color: var(--muted); }
 
 .brand-mark { display:inline-block; width:19px; height:19px; margin:0 4px; flex:none; vertical-align:middle; background:currentColor; mask-size:contain;mask-position:center;mask-repeat:no-repeat; }
-.discovery-dot {position:absolute; z-index:2; width:14px;height:14px; margin:-7px;border:3px solid #193b33;border-radius:50%;background:#83f7b6;box-shadow:0 0 5px #83f7b6;cursor:pointer;animation:blip .45s ease-out;}
-.discovery-dot.possible {background:#edb666;border-radius:3px;box-shadow:0 0 5px #edb666;}
+button.discovery-dot { position:absolute; z-index:2; display:grid; place-items:center; width:24px; height:24px; min-height:0; min-width:0; padding:0; margin:-12px; box-sizing:border-box; border:0; border-radius:50%; background:transparent; color:#edb666; cursor:pointer; }
+.discovery-dot.found { color:#ffe2a3; }
+.discovery-dot.conflict { color:#d39f78; }
+.radar-blip { display:block; width:4px; height:4px; border-radius:50%; background:currentColor; box-shadow:0 0 4px currentColor; }
+.discovery-dot.possible .radar-blip,.discovery-dot.conflict .radar-blip { width:3px; height:3px; background:transparent; border:1px solid currentColor; box-sizing:border-box; }
+.radar-blip::after { content:''; position:absolute; inset:8px; border-radius:50%; border:1px solid currentColor; animation:blip .7s ease-out forwards; pointer-events:none; }
+.engine-select {display:flex;align-items:center;gap:12px;margin:10px 0;color:var(--muted);font-size:12px}
+.update-actions {display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.update-body {padding:16px 20px}
+.update-body [role=status] {margin:10px 0;color:var(--muted)}
+.update-body progress {width:100%}
+.status-provider_match,.status-conflict {color:var(--warn)}
 .radar-detail {position:absolute;bottom:0;left:0;right:0;z-index:3;background:#101b1b;color:#edf6f3;padding:3px;font-size:11px;}
 .radar-detail button {color:inherit;background:transparent;border:0;}
-@keyframes blip {from {outline:5px solid currentColor;} to {outline:0 solid transparent;}}
-@media(prefers-reduced-motion:reduce){.scanning .sweep,.discovery-dot{animation:none;}}
+@keyframes blip {from {transform:scale(.5);opacity:.7} to {transform:scale(2.7);opacity:0}}
+@media(prefers-reduced-motion:reduce){.scanning .sweep,.radar-blip::after{animation:none;}.radar-blip::after{display:none;}}

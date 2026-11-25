@@ -1,3 +1,4 @@
+import { Intro } from './ui/LibraryPages'
 import { Updates } from "./ui/Updates"
 import { useCallback, useEffect, useState } from 'react'
 import {
@@ -212,6 +213,20 @@ export default function App() {
             {page === 'Search' && <SearchPage ws={ws} focusToken={focusToken} />}
             {page === 'History' && <HistoryPage ws={ws} navigate={navigate} />}
             {page === 'Platforms' && <PlatformsPage ws={ws} />}
+            {page === 'Settings' && <Intro
+        label="PREFERENCES"
+        title="Settings"
+        description="Manage your workspace appearance, search defaults and local history."
+      />}
+            {page === 'About' && <Intro
+        label="APPLICATION"
+        title="About HuntWick"
+        description={
+          ws.hosted
+            ? 'An open-source web workspace for authorized public profile checks.'
+            : 'An open-source desktop workspace for public profile discovery.'
+        }
+      />}
             {ws.desktop && <Updates ws={ws} visible={page === 'Settings' || page === 'About'}/ >}
             {page === 'Settings' && <SettingsPage ws={ws} />}
             {page === 'About' && <AboutPage ws={ws} />}

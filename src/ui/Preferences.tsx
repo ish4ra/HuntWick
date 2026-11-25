@@ -12,7 +12,7 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 import type { Mode, Settings } from '../model'
-import { Intro } from './LibraryPages'
+import { armRadar, playCue, type Cue } from './radarAudio'
 import { NumberSetting } from './SearchPage'
 import {
   desktopDownloadsUrl,
@@ -48,22 +48,31 @@ function Preference({ title, hint, children }: { title: string; hint: string; ch
 }
 export function SettingsPage({ ws }: { ws: Workspace }) {
   const s = ws.settings
+  const [audioMessage,setAudioMessage]=useState('')
+  async function enableAudio(cue?:Cue) {
+    const available=await armRadar()
+    setAudioMessage(available?'':'Audio playback is unavailable in this window.')
+    if (available && cue) playCue(cue,s.radarVolume,true)
+  }
   const [confirmAdult, setConfirmAdult] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
   return (
     <>
-      <Intro
-        label="PREFERENCES"
-        title="Settings"
-        description="Manage your workspace appearance, search defaults and local history."
-      />
+
       <Panel title="Discovery radar" icon={<Monitor size={17}/>}>
+        <Preference title="Scanning sound" hint="A quiet tick every two seconds while checking platforms.">
+          <Toggle label="Scanning sound" checked={s.scanSound} onChange={()=>{if (!s.scanSound) void enableAudio();ws.updateSettings({scanSound:!s.scanSound})}}/>
+        </Preference>
         <Preference title="Detection sound" hint="One short ping for new matches. Closely spaced detections share a ping.">
-          <Toggle label="Detection sound" checked={s.radarSound} onChange={()=>ws.updateSettings({radarSound:!s.radarSound})}/>
-        </Preference><Preference title="Volume" hint="Applies to detection sounds.">
+          <Toggle label="Detection sound" checked={s.radarSound} onChange={()=>{if(!s.radarSound) void enableAudio();ws.updateSettings({radarSound:!s.radarSound})}}/>
+        </Preference><Preference title="Volume" hint="Applies to scanning, detections and previews.">
           <input type="range" aria-label="Radar volume" min="0" max="100" value={s.radarVolume} onChange={e=>ws.updateSettings({radarVolume:Number(e.target.value)})}/>
         </Preference>
       </Panel>
+      <div className="preference update-actions" aria-label="Sound previews">
+        {(['scan','verified','provider','possible','conflict'] as const).map(cue=><button className="quiet small" key={cue} onClick={()=>void enableAudio(cue)}>Preview {cue}</button>)}
+        {audioMessage && <span role="status">{audioMessage}</span>}
+      </div>
       <Panel title="Appearance" icon={<Palette size={17} />}>
         <Preference title="Color theme" hint="Use your device theme or choose a workspace theme.">
           <select
@@ -93,7 +102,7 @@ export function SettingsPage({ ws }: { ws: Workspace }) {
           {confirmAdult && <div role="group" aria-label="Confirm adult platforms">Include adult-labeled sites in the directory and Full Search?
           <button onClick={() => {ws.updateSettings({includeNsfw:true});setConfirmAdult(false)}}>Confirm inclusion</button>
           <button onClick={() => setConfirmAdult(false)}>Cancel</button></div>}
-        </Preference><Preference title="Include upstream-excluded sites" hint="Experimental checks can return false positives. Their strongest result is Possible Match.">
+        </Preference><Preference title="Include upstream-excluded sites" hint="Experimental checks can return false positives. Provider claims from these rules need independent review.">
           <Toggle checked={s.includeExcluded} label="Include upstream-excluded sites" onChange={() => ws.updateSettings({includeExcluded:!s.includeExcluded})}/>
         </Preference></fieldset>
       </Panel>}
@@ -199,15 +208,7 @@ export function SettingsPage({ ws }: { ws: Workspace }) {
 export function AboutPage({ ws }: { ws: Workspace }) {
   return (
     <>
-      <Intro
-        label="APPLICATION"
-        title="About HuntWick"
-        description={
-          ws.hosted
-            ? 'An open-source web workspace for authorized public profile checks.'
-            : 'An open-source desktop workspace for public profile discovery.'
-        }
-      />
+
       <section className="about-brand">
         <img src="/huntwick.svg" alt="" />
         <div>

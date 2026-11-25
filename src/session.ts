@@ -1,4 +1,4 @@
-import { pingRadar } from './ui/radarAudio'
+import { playCue, stopRadar } from './ui/radarAudio'
 import {
   activeRun, applyEvent, cancelRun, createRun, diagnosticReport, formatExport, historyLimit, parseCatalog, parseHistory,
   parseSettings, safeUrl, selectSites, validUsername,
@@ -84,6 +84,7 @@ export class HuntWickSession {
   }
 
   disconnect = () => {
+    stopRadar()
     this.generation++
     this.unlisten?.()
     this.unlisten = null
@@ -109,8 +110,9 @@ export class HuntWickSession {
           const after = applyEvent(before, event, catalog, now())
           const latest = after.results.at(-1)
           if (after.results.length > before.results.length && this.state.settings.radarSound &&
-              (latest?.status === 'found' || latest?.status === 'possible')) {
-            pingRadar(latest.status === 'possible', this.state.settings.radarVolume)
+              latest && ['found','possible','provider_match','conflict'].includes(latest.status)) {
+            const cue = latest.status === 'found' ? 'verified' : latest.status === 'possible' ? 'possible' : latest.status === 'conflict' ? 'conflict' : 'provider'
+            playCue(cue, this.state.settings.radarVolume)
           }
           this.acceptRun(after)
         })
