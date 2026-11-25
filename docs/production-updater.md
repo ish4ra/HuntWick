@@ -2,6 +2,12 @@
 
 Use RC.3 as the first installation that trusts the owner's permanent key. RC.2 was tested with disposable signing material. Plan one manual installation on the Mac, followed by an in-app move from RC.3 to RC.4. Production upgrades on macOS and Windows still require device evidence.
 
+## Current signing evidence
+
+The owner configured the permanent key locally. On November 25, GitHub Actions signed a fixed text fixture with the repository private key and password. An independent verifier checked its Ed25519 signature and the signed version `0.0.0` against the repository public key. Both steps passed. The job had read-only repository permissions and produced zero downloadable artifacts. This verifies the configured credentials. Installer signing and production device upgrades will be exercised with the approved RC.3 and RC.4. [Signing job](https://github.com/ish4ra/HuntWick/actions/runs/45549365080/job/138986565862)
+
+The production candidate job requires an owner push on the designated build ref. The release job requires an owner dispatch on main or the desktop development ref. Both also check the initiating account on a rerun. Repository writers who can edit Actions workflows are part of the signing trust boundary. Restrict write access and protect signing workflow changes accordingly.
+
 ## 1. Generate the key once on the owner's Apple Silicon Mac
 
 If you already created the permanent key pair, keep it and go to step 2. Otherwise open **Terminal** on the Mac and paste the block below. The downloaded tool is the official standalone Tauri CLI 2.12.6. Its archive digest is pinned to the value on the upstream release. macOS supplies the other commands. You can do this without a repository checkout, Node, Homebrew or Rust. [Official CLI download and digest](https://github.com/tauri-apps/tauri/releases/tag/tauri-cli-v2.12.6)
