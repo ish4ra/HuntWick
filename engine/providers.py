@@ -2,7 +2,7 @@
 import re
 from time import monotonic
 from types import FunctionType, SimpleNamespace
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 
 import requests
 from http_workers import PublicSession
@@ -38,6 +38,8 @@ def http_warning(response):
         return 'timed_out'
     if code >= 500:
         return 'error'
+    if 300 <= code < 400 and GATE_PATH.search(urlsplit(urljoin(response.url,response.headers.get('Location',''))).path):
+        return 'blocked'
     if 300 <= code < 400:
         return 'inconclusive'
     head = ProfileHead()
@@ -51,7 +53,7 @@ def http_warning(response):
     return None
 
 
-def original(name, definition, username, timeout, network=None):
+def sherlock_site(name, definition, username, timeout, network=None):
     started = monotonic()
     rule = dict(definition)
     profile = rule['url'].format(username)
@@ -83,7 +85,32 @@ def original(name, definition, username, timeout, network=None):
             event['message'] = 'Username does not fit this platform rule.'
     except requests.Timeout:
         event.update(status='timed_out',message='Request timed out.')
+    except requests.ConnectionError as exc:
+        retryable = not isinstance(exc,requests.exceptions.SSLError)
+        event.update(status='error',message='Connection failure' if retryable else 'TLS failure')
     except requests.RequestException:
         event.update(status='error',message='The public request could not be completed.')
     event['elapsedMs'] = round((monotonic()-started)*1000)
     return event
+
+def original(name, definition, username, timeout, network=None):
+    deadline = monotonic()+timeout
+    row = sherlock_site(name,definition,username,timeout,network)
+    aliases = definition.get('aliases',{})
+    if not aliases:
+        return row
+    reports = [row]
+    fields = ('url','urlProbe','request_method','regexCheck','errorType','errorMsg','errorCode','headers')
+    for alias, rule in aliases.items():
+        if all(definition.get(key) == rule.get(key) for key in fields):
+            reports.append({**row,'platform':alias})
+        else:
+            remaining = deadline-monotonic()
+            reports.append(sherlock_site(alias,rule,username,remaining,network) if remaining>0 else
+                           {'platform':alias,'status':'timed_out'})
+    claimed = [r for r in reports if r.get('verdict')=='Claimed']
+    merged = dict(claimed[0] if claimed else row,platform=name)
+    if claimed and any(r.get('verdict') != 'Claimed' or r['status']=='conflict' for r in reports):
+        merged['status'] = 'conflict'
+    merged['message'] = 'Sherlock rules: '+', '.join(r['platform']+' '+r.get('verdict',r['status']) for r in reports)+'. '+merged.get('message','')
+    return merged

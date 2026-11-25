@@ -166,6 +166,8 @@ pub struct Profile {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub message: Option<String>,
     pub provider: Option<String>,
+    #[serde(rename = "catalogVersion")]
+    pub catalog_version: Option<String>,
     pub verdict: Option<String>,
     pub http: Option<u16>,
     #[serde(rename = "elapsedMs")]

@@ -92,7 +92,7 @@ export function CopyLink({ url, action }: { url: string; action?: string }) {
     </span>
   )
 }
-const platformIcons: Record<string,string> = {'GitHub':'github','GitLab':'gitlab','Docker Hub':'docker','Codeberg':'codeberg','Twitch':'twitch','Instagram':'instagram','Reddit':'reddit','X (Twitter)':'x','YouTube':'youtube','TikTok':'tiktok','Hugging Face':'huggingface','Lichess':'lichess','Bluesky':'bluesky','Trello':'trello','Codewars':'codewars'}
+const platformIcons: Record<string,string> = {'Chess.com':'chessdotcom','osu!':'osu','GitHub':'github','GitLab':'gitlab','Docker Hub':'docker','Codeberg':'codeberg','Twitch':'twitch','Instagram':'instagram','Reddit':'reddit','X (Twitter)':'x','YouTube':'youtube','TikTok':'tiktok','Hugging Face':'huggingface','Lichess':'lichess','Bluesky':'bluesky','Trello':'trello','Codewars':'codewars'}
 export function PlatformMark({ name }: { name: string }) {
   const icon = platformIcons[name]
   if (icon) return <span className="brand-mark" aria-hidden="true" style={{maskImage:`url(/platforms/${icon}.svg)`}}/>

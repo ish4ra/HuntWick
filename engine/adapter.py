@@ -21,7 +21,7 @@ from sherlock_project.notify import QueryNotify
 from urllib3.util import Timeout
 from urllib3.exceptions import ReadTimeoutError
 
-from catalog import describe, load_sites
+from catalog import DATABASE_VERSION, describe, load_sites
 from evidence import classify, equivalent
 from http_workers import NetworkPool
 from native_profiles import EXTRA, desktop_check
@@ -182,7 +182,10 @@ def events(request, sites):
             else:
                 jobs = [pool.submit(desktop_check,mode,name,sites[name],username,timeout,network,retry) for name in selected]
             for job in as_completed(jobs):
-                yield job.result()
+                row = job.result()
+                if mode != 'hosted':
+                    row['catalogVersion'] = DATABASE_VERSION
+                yield row
     else:
         raise ValueError('Unknown operation.')
     yield {'type': 'done'}
@@ -211,8 +214,11 @@ def main():
             raise ValueError('Invalid JSON request.') from None
         # Initialize the search runtime on the main thread before the parent-pipe
         # watcher blocks in a Windows CRT read. Catalog requests stay lightweight.
-        if isinstance(request, dict) and request.get('op') == 'search' and request.get('providerMode') == 'hosted':
-            search_engine()
+        if isinstance(request, dict) and request.get('op') == 'search':
+            if request.get('providerMode') == 'hosted':
+                search_engine()
+            else:
+                from sherlock_project import sherlock  # initialize before the parent watcher
         if os.getenv('HUNTWICK_PARENT_PIPE') == '1':
             threading.Thread(target=watch_parent, daemon=True).start()
         for event in events(request, load_sites(request.get('includeNsfw', False), request.get('includeExcluded', False)) if isinstance(request, dict) else {}):

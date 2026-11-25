@@ -4,31 +4,24 @@ from urllib.parse import urljoin, urlsplit
 
 import requests
 
+from catalog import native_rules
 from providers import HOST_LABEL, http_warning, original
 
 PROVIDER = 'HuntWick public lookup'
-NATIVE = {'Bluesky', 'Lichess', 'osu!', 'crates.io'}
-EXTRA = {'crates.io': {'url':'https://crates.io/users/{}','urlMain':'https://crates.io',
-                       'nativeOnly':True,'category':'Development'}}
+NATIVE = native_rules()
+EXTRA = {name:rule for name,rule in NATIVE.items() if rule['nativeOnly']}
 
 
 def native(name, rule, username, timeout, network):
     handle = username.lower()
-    profile = rule['url'].format(username)
-    row = {'type':'result','platform':name,'url':profile,'provider':PROVIDER,'status':'inconclusive'}
+    spec = NATIVE[name]
     if name == 'Bluesky':
         handle = handle if '.' in handle else handle+'.bsky.social'
-        if not all(HOST_LABEL.fullmatch(part) for part in handle.split('.')) or not handle.split('.')[-1][0].isalpha():
-            return {**row,'verdict':'Invalid handle'}
-        profile = 'https://bsky.app/profile/'+handle
-        row['url'] = profile
-        probe = 'https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor='+handle
-    elif name == 'Lichess':
-        probe = 'https://lichess.org/api/user/'+handle+'?trophies=false'
-    elif name == 'crates.io':
-        probe = 'https://crates.io/api/v1/users/'+handle
-    else:
-        probe = profile
+    profile = spec['url'].format(handle)
+    row = {'type':'result','platform':name,'url':profile,'provider':PROVIDER,'status':'inconclusive'}
+    if name == 'Bluesky' and (not all(HOST_LABEL.fullmatch(part) for part in handle.split('.')) or not handle.split('.')[-1][0].isalpha()):
+        return {**row,'verdict':'Invalid handle'}
+    probe = spec['urlProbe'].format(handle)
     headers = {'User-Agent':'HuntWick public profile lookup (+https://github.com/ish4ra/HuntWick)',
                'Accept':'text/html' if name=='osu!' else 'application/json'}
     try:
@@ -52,6 +45,10 @@ def native(name, rule, username, timeout, network):
         data = res.json() if 'json' in res.headers.get('Content-Type','').lower() else {}
     except (ValueError,RecursionError):
         data = {}
+    if name == 'GitLab' and isinstance(data,list):
+        if res.status_code==200 and not data:
+            return {**row,'status':'not_found','verdict':'Empty user lookup'}
+        data = data[0] if len(data)==1 else {}
     if not isinstance(data,dict):
         data = {}
     if name=='Bluesky' and res.status_code==400 and data.get('error')=='ProfileNotFound':
@@ -63,6 +60,10 @@ def native(name, rule, username, timeout, network):
                     re.fullmatch(r'did:(?:plc|web):[a-zA-Z0-9.:%_-]+',str(data.get('did',''))))
     elif name=='Lichess':
         verified = data.get('id')==handle and str(data.get('username','')).lower()==handle
+    elif name in {'Chess.com','GitHub','GitLab'}:
+        key = {'Chess.com':'username','GitHub':'login','GitLab':'username'}[name]
+        identifier = data.get('player_id' if name=='Chess.com' else 'id')
+        verified = str(data.get(key,'')).lower()==handle and type(identifier) is int and identifier>0
     elif name=='crates.io':
         user = data.get('user')
         verified = isinstance(user,dict) and type(user.get('id')) is int and user['id']>0 and str(user.get('login','')).lower()==handle
@@ -77,7 +78,7 @@ def desktop_check(mode, name, rule, username, timeout, network, retry):
     started = monotonic()
     provider = native if mode=='enhanced' and name in NATIVE else original
     row = provider(name, rule, username, timeout, network)
-    if retry and (row['status']=='timed_out' and row.get('http') is None or row.get('verdict')=='Connection failure'):
+    if retry and (row['status']=='timed_out' and row.get('http') is None or row.get('verdict')=='Connection failure' or row.get('message')=='Connection failure'):
         row = provider(name, rule, username, timeout, network)
         row['message'] = 'Retried once. '+row.get('message',row.get('verdict',''))
     row['elapsedMs'] = round((monotonic()-started)*1000)

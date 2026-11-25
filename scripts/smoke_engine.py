@@ -15,6 +15,8 @@ def run_request(executable, request, directory):
     # The installed engine must run with its own interpreter and site data.
     env.update(PATH=directory, HTTP_PROXY="http://127.0.0.1:9",
                HTTPS_PROXY="http://127.0.0.1:9", NO_PROXY="")
+    for key in ("http_proxy","https_proxy","all_proxy","no_proxy"):
+        env.pop(key,None)
     process = subprocess.run(
         [str(executable)], input=json.dumps(request) + "\n", capture_output=True,
         encoding="utf-8", cwd=directory, env=env, timeout=60,
@@ -51,6 +53,11 @@ def main():
         if ([event["type"] for event in events] != ["result", "done"]
                 or events[0]["platform"] != "GitHub" or events[0]["status"] != "inconclusive"):
             raise RuntimeError(f"Unexpected fixture result: {events}")
+        # A closed local proxy exercises the packaged HTTP worker without reaching a site.
+        failure = run_request(executable, {"op":"search","providerMode":"enhanced",
+            "username":"fixture","sites":["Lichess"],"timeout":3,"concurrency":1},directory)
+        if failure[0].get("provider") != "HuntWick public lookup" or failure[0].get("status") not in {"error","timed_out"}:
+            raise RuntimeError("Packaged native public lookup did not report the offline connection failure.")
         print(f"{executable} loaded {len(sites)} sites and completed the offline search fixture.")
 
 

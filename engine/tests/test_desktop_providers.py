@@ -41,7 +41,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.check('Bluesky','blue',{'error':'ProfileNotFound'},400)[0]['status'],'not_found')
 
     def test_lichess_and_crates_positive_negative_and_denials(self):
-        for name,data in [('Lichess',{'username':'Blue','id':'blue'}),('crates.io',{'user':{'login':'Blue','id':31}})]:
+        for name,data in [('Lichess',{'username':'Blue','id':'blue'}),('crates.io',{'user':{'login':'Blue','id':31}}),('Chess.com',{'username':'Blue','player_id':17}),('GitHub',{'login':'Blue','id':3}),('GitLab',[{'username':'Blue','id':4}])]:
             self.assertEqual(self.check(name,'blue',data)[0]['status'],'found')
             self.assertEqual(self.check(name,'blue',{},404)[0]['status'],'not_found')
             self.assertEqual(self.check(name,'other',data)[0]['status'],'inconclusive')

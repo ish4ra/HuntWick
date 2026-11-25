@@ -22,6 +22,7 @@ export interface Result {
   url: string
   category: string
   status: Status
+  catalogVersion?: string
   provider?: string
   verdict?: string
   http?: number
@@ -87,8 +88,9 @@ export const historyLimit = 20
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
-function provenance(row: Record<string, unknown>) {
+function provenance(row: {provider?:unknown; verdict?:unknown; catalogVersion?:unknown; http?:unknown; elapsedMs?:unknown}) {
   return {
+    ...(shortString(row.catalogVersion) ? {catalogVersion:row.catalogVersion} : {}),
     ...(shortString(row.provider) ? {provider:row.provider} : {}),
     ...(shortString(row.verdict) ? {verdict:row.verdict} : {}),
     ...(typeof row.http === 'number' && Number.isInteger(row.http) && row.http >= 100 && row.http <= 599 ? {http:row.http} : {}),
@@ -294,7 +296,9 @@ export function diagnosticReport(run: Run) {
   return JSON.stringify({mode:run.mode, counts:countStatuses(run.results), checks:run.results.map(row=>{
     const http=/^Sherlock: (Claimed|Available|Unknown|Illegal|WAF)\. HTTP (\d{3})\. Headers: (\d+\.\d+) s\. Total: (\d+\.\d+) s\.$/.exec(row.message)
     const failure=/^(Connect timeout|Response timeout|Body timeout|Connection failure|TLS failure) after (\d+\.\d+) s\.$/.exec(row.message)
-    return {platform:row.platform,status:row.status,...provenance(row as unknown as Record<string, unknown>),...(http?{upstream:http[1],http:Number(http[2]),headersSeconds:Number(http[3]),totalSeconds:Number(http[4])}:{}),
+    return {platform:row.platform,status:row.status,...(row.provider && ['Sherlock Original','HuntWick public lookup'].includes(row.provider) ? {provider:row.provider} : {}),
+      ...(row.verdict && /^(Claimed|Available|Illegal|Unknown|WAF|API identity matched|Identity unavailable|Invalid handle|Numeric profile redirect|Empty user lookup|ProfileNotFound|Request failed|Connection failure|TLS failure|Timeout|HTTP [1-5][0-9]{2})$/.test(row.verdict) ? {verdict:row.verdict} : {}),
+      ...(row.http ? {http:row.http} : {}),...(row.elapsedMs !== undefined ? {elapsedMs:row.elapsedMs} : {}),...(http?{upstream:http[1],http:Number(http[2]),headersSeconds:Number(http[3]),totalSeconds:Number(http[4])}:{}),
       ...(failure?{failure:failure[1],totalSeconds:Number(failure[2])}:{})}
   })},null,2)
 }

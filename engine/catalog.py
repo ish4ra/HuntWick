@@ -7,11 +7,11 @@ from urllib.parse import urlsplit
 from sherlock_project.sites import SitesInformation
 
 DATA = Path(__file__).parent / 'data'
-DATABASE_VERSION = '4e2a4f6 + exclusions 7ce4f61'
-UPDATED_AT = '2026-05-04'  # Last upstream change to sites.json; see notices/Provenance.md.
+DATABASE_VERSION = '4e2a4f6 + exclusions 1096274 + native 2026-11-25.1'
+UPDATED_AT = '2026-11-25'
 DIGESTS = {
     'sites.json': '3fdfc6694c5cd99798881215554b09e617c6d5284a6219fae309882566a9fb30',
-    'exclusions.txt': '532677e9de8c4c495e9b89062fc6fc44f4f96846919b5dac03efcab808616daa',
+    'exclusions.txt': '8e21fd7ae998c4aa41a09c9627ab2af7e14f2634942c78db820b6348619f653f',
 }
 
 QUICK = {'GitHub', 'GitLab', 'Docker Hub', 'Codeberg', 'Hugging Face', 'DEV Community', 'Lichess', 'Bluesky', 'Trello', 'Codewars', 'Wattpad', 'ArtStation'}
@@ -36,6 +36,24 @@ def valid_https(url):
     return (parsed.scheme == 'https' and parsed.hostname and '.' in parsed.hostname
             and not parsed.username and not parsed.password and parsed.port is None
             and not parsed.fragment and not any(c.isspace() for c in url))
+
+
+def native_rules():
+    import json
+    raw = (DATA / 'native-v1.json').read_bytes()
+    if sha256(raw).hexdigest() != 'abdf74ba54ef7c047e8c6dc494ffbb66b73f6f9fbc2c3fff1735a4a16a09df04':
+        raise ValueError('Bundled native catalog integrity check failed.')
+    manifest = json.loads(raw)
+    if manifest['schema'] != 1 or manifest['license'] != 'MIT':
+        raise ValueError('Invalid native catalog metadata.')
+    for rule in manifest['sites'].values():
+        for key in ('url','urlProbe'):
+            template = rule[key]
+            if template.count('{}') != 1 or '{}' in urlsplit(template).netloc or not valid_https(template):
+                raise ValueError('Invalid native profile rule.')
+        if not valid_https(rule['source'].split('#')[0]) or not valid_https(rule['urlMain']) or type(rule['nativeOnly']) is not bool:
+            raise ValueError('Invalid native catalog provenance.')
+    return manifest['sites']
 
 
 def load_sites(include_nsfw=False, include_excluded=False):
@@ -64,6 +82,11 @@ def load_sites(include_nsfw=False, include_excluded=False):
         if 'regexCheck' in rule:
             re.compile(rule['regexCheck'])
         sites[site.name] = {**rule, 'experimental': site.name in excluded}
+    # These pinned upstream aliases resolve to the same public profile. Preserve both
+    # definitions so distinct detection methods can still report disagreement.
+    for primary, alias in [('Chaos','chaos.social'),('Eintracht Frankfurt Forum','eintracht'),('Google Play','PlayStore')]:
+        if primary in sites and alias in sites and sites[primary]['url'] == sites[alias]['url']:
+            sites[primary]['aliases'] = {alias:sites.pop(alias)}
     return sites
 
 

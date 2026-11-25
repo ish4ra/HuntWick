@@ -1,8 +1,8 @@
 {
   "type": "catalog",
   "version": "0.16.2",
-  "updatedAt": "2026-05-04",
-  "databaseVersion": "4e2a4f6 + exclusions 7ce4f61",
+  "updatedAt": "2026-11-25",
+  "databaseVersion": "4e2a4f6 + exclusions 1096274 + native 2026-11-25.1",
   "sites": [
     {
       "name": "1337x",
@@ -323,10 +323,11 @@
       "quick": false
     },
     {
-      "name": "chaos.social",
-      "url": "https://chaos.social/",
-      "category": "Other",
-      "quick": false
+      "name": "Chess.com",
+      "url": "https://www.chess.com",
+      "category": "Gaming",
+      "quick": false,
+      "nativeOnly": true
     },
     {
       "name": "Choice Community",
@@ -477,6 +478,13 @@
       "url": "https://cracked.ax/",
       "category": "Forums",
       "quick": false
+    },
+    {
+      "name": "crates.io",
+      "url": "https://crates.io",
+      "category": "Development",
+      "quick": false,
+      "nativeOnly": true
     },
     {
       "name": "Credly",
@@ -631,12 +639,6 @@
     {
       "name": "eGPU",
       "url": "https://egpu.io/",
-      "category": "Other",
-      "quick": false
-    },
-    {
-      "name": "eintracht",
-      "url": "https://eintracht.de",
       "category": "Other",
       "quick": false
     },
@@ -1637,12 +1639,6 @@
       "quick": false
     },
     {
-      "name": "PlayStore",
-      "url": "https://play.google.com/store",
-      "category": "Other",
-      "quick": false
-    },
-    {
       "name": "Playstrategy",
       "url": "https://playstrategy.org",
       "category": "Other",
@@ -2117,6 +2113,12 @@
       "quick": false
     },
     {
+      "name": "Trakt",
+      "url": "https://www.trakt.tv/",
+      "category": "Other",
+      "quick": false
+    },
+    {
       "name": "TRAKTRAIN",
       "url": "https://traktrain.com/",
       "category": "Other",
@@ -2379,6 +2381,28 @@
       "url": "https://znanylekarz.pl",
       "category": "Other",
       "quick": false
+    }
+  ],
+  "unavailable": [
+    {
+      "name": "Instagram",
+      "reason": "The bundled lookup uses a third-party mirror."
+    },
+    {
+      "name": "X (Twitter)",
+      "reason": "The bundled lookup uses a third-party Nitter instance."
+    },
+    {
+      "name": "Reddit",
+      "reason": "Disabled by the pinned upstream exclusions."
+    },
+    {
+      "name": "HLTV",
+      "reason": "Community accounts have numeric IDs. No supported public username lookup has been verified."
+    },
+    {
+      "name": "Facebook",
+      "reason": "No public profile rule in the pinned database."
     }
   ]
 }

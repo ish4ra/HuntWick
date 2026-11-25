@@ -18,6 +18,19 @@ import providers
 
 
 class OriginalTests(unittest.TestCase):
+    def test_aliases_share_one_request_and_preserve_conflicting_rules(self):
+        rule={'url':'https://fixture.invalid/{}','errorType':'status_code'}
+        claim={'platform':'one','verdict':'Claimed','status':'provider_match'}
+        negative={'platform':'two','verdict':'Available','status':'not_found'}
+        with patch.object(providers,'sherlock_site',return_value=claim) as check:
+            row=providers.original('one',rule|{'aliases':{'two':rule}},'fixture',2)
+            self.assertEqual(check.call_count,1)
+            self.assertIn('two Claimed',row['message'])
+        with patch.object(providers,'sherlock_site',side_effect=[negative,claim]):
+            row=providers.original('two',rule|{'aliases':{'one':rule|{'request_method':'GET'}}},'fixture',2)
+            self.assertEqual(row['status'],'conflict')
+            self.assertIn('two Available',row['message'])
+
     def test_unmodified_cli_and_original_over_real_local_http(self):
         class Site(BaseHTTPRequestHandler):
             def respond(self):

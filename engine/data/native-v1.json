@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "revision": "2026-11-25.1",
+  "license": "MIT",
+  "validation": "synthetic fixtures",
+  "sites": {
+    "Bluesky": {
+      "url": "https://bsky.app/profile/{}",
+      "urlProbe": "https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor={}",
+      "urlMain": "https://bsky.app",
+      "category": "Social Media",
+      "source": "https://github.com/bluesky-social/bsky/blob/d92c6fe74100d33b5250f076b767e6bb8cea9026/lexicons/app/bsky/actor/getProfile.json",
+      "nativeOnly": false
+    },
+    "Lichess": {
+      "url": "https://lichess.org/@/{}",
+      "urlProbe": "https://lichess.org/api/user/{}?trophies=false&profile=false&rank=false",
+      "urlMain": "https://lichess.org",
+      "category": "Gaming",
+      "source": "https://github.com/lichess-org/api/blob/fd0c43efd7ca228e489a7259290cd7dabbc7c5bf/doc/specs/tags/users/api-user-username.yaml",
+      "nativeOnly": false
+    },
+    "osu!": {
+      "url": "https://osu.ppy.sh/users/{}",
+      "urlProbe": "https://osu.ppy.sh/users/{}",
+      "urlMain": "https://osu.ppy.sh",
+      "category": "Gaming",
+      "source": "https://osu.ppy.sh/docs/index.html#get-user",
+      "nativeOnly": false
+    },
+    "crates.io": {
+      "url": "https://crates.io/users/{}",
+      "urlProbe": "https://crates.io/api/v1/users/{}",
+      "urlMain": "https://crates.io",
+      "category": "Development",
+      "source": "https://github.com/rust-lang/crates.io/blob/d217167affabb2bcc090acb48ea14d84ae03e9b9/src/controllers/user/other.rs",
+      "nativeOnly": true
+    },
+    "Chess.com": {
+      "url": "https://www.chess.com/member/{}",
+      "urlProbe": "https://api.chess.com/pub/player/{}",
+      "urlMain": "https://www.chess.com",
+      "category": "Gaming",
+      "source": "https://www.chess.com/news/view/published-data-api",
+      "nativeOnly": true
+    },
+    "GitHub": {
+      "url": "https://github.com/{}",
+      "urlProbe": "https://api.github.com/users/{}",
+      "urlMain": "https://github.com",
+      "category": "Development",
+      "source": "https://docs.github.com/en/rest/users/users#get-a-user",
+      "nativeOnly": false
+    },
+    "GitLab": {
+      "url": "https://gitlab.com/{}",
+      "urlProbe": "https://gitlab.com/api/v4/users?username={}",
+      "urlMain": "https://gitlab.com",
+      "category": "Development",
+      "source": "https://docs.gitlab.com/api/users/#list-all-users",
+      "nativeOnly": false
+    }
+  }
+}
