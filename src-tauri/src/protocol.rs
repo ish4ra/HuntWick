@@ -28,6 +28,8 @@ pub struct Site {
     pub url: String,
     pub category: String,
     pub quick: bool,
+    #[serde(default, rename = "nativeOnly")]
+    pub native_only: bool,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -38,6 +40,10 @@ pub struct SearchRequest {
     pub sites: Vec<String>,
     pub timeout: u8,
     pub concurrency: u8,
+    #[serde(default, rename = "providerMode")]
+    pub provider_mode: Option<String>,
+    #[serde(default, rename = "retryTransient")]
+    pub retry_transient: bool,
 }
 
 const BAD_FRAME: &str = "The local engine returned an invalid response.";
@@ -87,6 +93,12 @@ impl SearchRequest {
         }
         if !(1..=60).contains(&self.timeout) || !(1..=20).contains(&self.concurrency) {
             return Err("Timeout must be 1–60 seconds and concurrency must be 1–20.".into());
+        }
+        if !matches!(
+            self.provider_mode.as_deref(),
+            None | Some("sherlock" | "enhanced")
+        ) {
+            return Err("Unknown search provider.".into());
         }
         let available: HashSet<&str> = catalog.sites.iter().map(|s| s.name.as_str()).collect();
         let mut selected = HashSet::new();

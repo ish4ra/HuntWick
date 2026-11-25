@@ -1,65 +1,23 @@
 """Desktop providers. Sherlock owns its rules, request methods and verdicts."""
-import os
 import re
 from time import monotonic
 from types import FunctionType, SimpleNamespace
 from urllib.parse import urlsplit
 
 import requests
-from requests.adapters import HTTPAdapter
+from http_workers import PublicSession
 from sherlock_project.notify import QueryNotify
 from sherlock_project.result import QueryStatus
 
 from evidence import GATE_PATH, GATE_TITLE, ProfileHead
 
-MAX_BYTES = 512 * 1024
 HOST_LABEL = re.compile(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', re.I)
 
 
-class PublicAdapter(HTTPAdapter):
-    """Apply the byte limit at each HTTP hop, before Requests buffers content."""
-    def send(self, request, **kwargs):
-        response = super().send(request, **kwargs)
-        try:
-            media = response.headers.get('Content-Type', '').lower()
-            if media.startswith(('audio/', 'video/', 'image/', 'application/octet-stream')):
-                raise requests.RequestException('Unsupported media')
-            body = bytearray()
-            for chunk in response.iter_content(16384):
-                if len(body) + len(chunk) > MAX_BYTES:
-                    raise requests.RequestException('Profile document exceeds the size limit')
-                body.extend(chunk)
-            response._content = bytes(body)
-            response._content_consumed = True
-            return response
-        finally:
-            response.close()
-
-
-class PublicSession(requests.Session):
-    def __init__(self, urls):
-        super().__init__()
-        self.trust_env = False
-        self.max_redirects = 4
-        self.hosts = {urlsplit(url).hostname.lower().removeprefix('www.') for url in urls}
-        self.mount('https://', PublicAdapter())
-
-    def send(self, request, **kwargs):
-        dest = urlsplit(request.url)
-        if (dest.scheme != 'https' or dest.username or dest.password or dest.port
-                or dest.hostname.lower().removeprefix('www.') not in self.hosts):
-            raise requests.RequestException('Redirect outside the platform')
-        for header in ('Cookie','Authorization','Proxy-Authorization'):
-            request.headers.pop(header, None)
-        kwargs['verify'] = os.getenv('REQUESTS_CA_BUNDLE') or os.getenv('CURL_CA_BUNDLE') or True
-        kwargs['proxies'] = requests.utils.get_environ_proxies(request.url)
-        return super().send(request, **kwargs)
-
-
-def sherlock_report(name, rule, username, timeout):
+def sherlock_report(name, rule, username, timeout, network):
     from sherlock_project import sherlock as core
     urls = [rule.get('urlProbe', rule['url']).format(username), rule['url'].format(username)]
-    with PublicSession(urls) as session:
+    with (network.session(urls) if network else PublicSession(urls)) as session:
         # Sherlock 0.16.2 has no session parameter. Bind only its session factory
         # per invocation. Its futures, request construction and verdict code are upstream.
         context = SimpleNamespace(session=lambda: session)
@@ -93,7 +51,7 @@ def http_warning(response):
     return None
 
 
-def original(name, definition, username, timeout):
+def original(name, definition, username, timeout, network=None):
     started = monotonic()
     rule = dict(definition)
     profile = rule['url'].format(username)
@@ -101,7 +59,7 @@ def original(name, definition, username, timeout):
     if any('{}' in urlsplit(url).netloc and not HOST_LABEL.fullmatch(username)
            for url in (rule['url'],rule.get('urlProbe',rule['url']))):
         return {**event,'message':'Handle cannot be used as a public host label.'}
-    report = sherlock_report(name, rule, username, timeout)
+    report = sherlock_report(name, rule, username, timeout, network)
     verdict = report['status'].status
     event['verdict'] = verdict.value
     future = rule.get('request_future')

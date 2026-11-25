@@ -1,4 +1,10 @@
 """HuntWick's one-request NDJSON adapter for the official Sherlock library."""
+# Frozen workers enter before importing Sherlock and its data-analysis dependencies.
+import sys
+if __name__ == '__main__' and sys.argv[1:] == ['--http-worker']:
+    from http_workers import worker_main
+    worker_main()
+
 from functools import cache
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 import json
@@ -17,7 +23,9 @@ from urllib3.exceptions import ReadTimeoutError
 
 from catalog import describe, load_sites
 from evidence import classify, equivalent
-from providers import original
+from http_workers import NetworkPool
+from native_profiles import EXTRA, desktop_check
+from contextlib import nullcontext
 
 MAX_BODY = 512 * 1024
 HANDLE = re.compile(r'[a-zA-Z0-9_.-]{1,64}')
@@ -149,11 +157,17 @@ def events(request, sites):
     if not isinstance(request, dict):
         raise ValueError('Expected a JSON object.')
     if request.get('op') == 'catalog':
-        yield describe(sites, __version__)
+        yield describe({**sites, **EXTRA}, __version__)
     elif request.get('op') == 'search':
         username = request.get('username')
         if not isinstance(username, str) or not HANDLE.fullmatch(username) or username in {'.', '..'}:
             raise ValueError('Invalid username.')
+        mode = request.get('providerMode','sherlock')
+        retry = request.get('retryTransient',False)
+        if mode not in ('sherlock','enhanced','hosted') or type(retry) is not bool:
+            raise ValueError('Invalid search provider or retry preference.')
+        if mode == 'enhanced':
+            sites = {**sites, **EXTRA}
         selected = request.get('sites')
         if (not isinstance(selected, list) or not 1 <= len(selected) <= len(sites)
                 or any(not isinstance(name, str) or name not in sites for name in selected)
@@ -161,9 +175,12 @@ def events(request, sites):
             raise ValueError('Select unique platforms from the bundled catalog.')
         timeout = bounded_integer(request, 'timeout', 10, 60)
         concurrency = bounded_integer(request, 'concurrency', 8, 20)
-        with ThreadPoolExecutor(max_workers=concurrency) as pool:
-            provider = check_site if request.get("providerMode") == "hosted" else original
-            jobs = [pool.submit(provider, name, sites[name], username, timeout) for name in selected]
+        size = min(len(selected),concurrency)
+        with (NetworkPool(size) if mode != 'hosted' else nullcontext()) as network, ThreadPoolExecutor(max_workers=size) as pool:
+            if mode == 'hosted':
+                jobs = [pool.submit(check_site,name,sites[name],username,timeout) for name in selected]
+            else:
+                jobs = [pool.submit(desktop_check,mode,name,sites[name],username,timeout,network,retry) for name in selected]
             for job in as_completed(jobs):
                 yield job.result()
     else:

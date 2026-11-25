@@ -76,11 +76,13 @@ def describe(sites, version):
             category = 'Adult (NSFW)'
         elif sites[name].get('experimental'):
             category = 'Experimental'
-        entries.append({'name': name, 'url': sites[name]['urlMain'], 'category': category, 'quick': name in QUICK})
+        entries.append({'name': name, 'url': sites[name]['urlMain'], 'category': sites[name].get('category',category), 'quick': name in QUICK,
+                        **({'nativeOnly':True} if sites[name].get('nativeOnly') else {})})
     return {'type': 'catalog', 'version': version, 'updatedAt': UPDATED_AT,
             'databaseVersion': DATABASE_VERSION, 'sites': entries, 'unavailable': [row for row in [
                 {'name': 'Instagram', 'reason': 'The bundled lookup uses a third-party mirror.'},
                 {'name': 'X (Twitter)', 'reason': 'The bundled lookup uses a third-party Nitter instance.'},
                 {'name': 'Reddit', 'reason': 'Disabled by the pinned upstream exclusions.'},
+                {'name':'HLTV','reason':'Community accounts have numeric IDs. No supported public username lookup has been verified.'},
                 {'name': 'Facebook', 'reason': 'No public profile rule in the pinned database.'},
             ] if row['name'] not in sites]}

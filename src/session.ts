@@ -190,12 +190,13 @@ export class HuntWickSession {
     const { catalog, settings, ready, desktop } = this.state
     if (!desktop && !this.state.hosted) { this.update({ error: 'Open HuntWick on your desktop to run a search.' }); return }
     if (!catalog || !ready) { this.update({ error: 'Wait for the platform catalog to load.' }); return }
-    const sites = selectSites(catalog, mode, settings.disabledSites, selected)
+    const sites = selectSites(catalog, mode, settings.disabledSites, selected).filter(s=>!s.nativeOnly || settings.providerMode === "enhanced")
     if (!sites.length) { this.update({ error: 'Enable at least one platform for this search.' }); return }
     const run = createRun(crypto.randomUUID(), username, mode, sites, now())
     this.eligibleHistoryId = settings.saveHistory ? run.id : null
     this.update({ run, error: null })
-    const request = { id: run.id, username, sites: run.sites, timeout: settings.timeout, concurrency: settings.concurrency }
+    const request = { ...(!this.bridge.hosted && settings.providerMode === "enhanced" ? {providerMode:settings.providerMode} : {}),
+      ...(!this.bridge.hosted && settings.retryTransient ? {retryTransient:true} : {}), id: run.id, username, sites: run.sites, timeout: settings.timeout, concurrency: settings.concurrency }
     const launch = this.bridge.start(request)
     this.launching = launch
     try {

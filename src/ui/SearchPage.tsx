@@ -75,8 +75,8 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
   const input = useRef<HTMLInputElement>(null)
   const active = isActive(ws.run)
   const quick =
-    ws.catalog?.sites.filter((s) => s.quick && !ws.settings.disabledSites.includes(s.name)).length ?? 0
-  const full = ws.catalog?.sites.filter((s) => !ws.settings.disabledSites.includes(s.name)).length ?? 0
+    ws.catalog?.sites.filter((s) => (!s.nativeOnly || ws.settings.providerMode === "enhanced") && s.quick && !ws.settings.disabledSites.includes(s.name)).length ?? 0
+  const full = ws.catalog?.sites.filter((s) => (!s.nativeOnly || ws.settings.providerMode === "enhanced") && !ws.settings.disabledSites.includes(s.name)).length ?? 0
   const count = ws.hosted || mode === 'full' ? full : quick
   function togglePlatform(platform: string) {
     const disabled = ws.settings.disabledSites
@@ -191,6 +191,10 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
               ) : (
                 <>
                   {' '}
+                  <label className="engine-select">Engine <select value={ws.settings.providerMode} disabled={active}
+                    onChange={e=>ws.updateSettings({providerMode:e.target.value==='enhanced'?'enhanced':'sherlock'})}>
+                    <option value="sherlock">Sherlock Original</option><option value="enhanced">Enhanced Search</option>
+                  </select></label>
                   <div className="mode-heading" id="mode-label">
                     Search mode
                   </div>
@@ -259,6 +263,8 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
           {advanced && (
             <fieldset disabled={active} className="advanced-panel">
               <legend className="sr-only">Search limits</legend>
+              {!ws.hosted && <label><input type="checkbox" checked={ws.settings.retryTransient}
+                onChange={e=>ws.updateSettings({retryTransient:e.target.checked})}/> Retry a transient network failure once</label>}
               <NumberSetting
                 label="Timeout (seconds)"
                 value={ws.settings.timeout}

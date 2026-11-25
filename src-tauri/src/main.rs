@@ -173,6 +173,7 @@ async fn start_search(
         let reader_process = process.clone();
         let result = run_worker(process.clone(), deadline, move || {
             let operation = json!({ "op":"search", "username":request.username, "sites":request.sites,
+                                    "providerMode":request.provider_mode.as_deref().unwrap_or("sherlock"),"retryTransient":request.retry_transient,
                                     "includeNsfw":policy.0, "includeExcluded":policy.1, "timeout":request.timeout, "concurrency":request.concurrency });
             communicate(&reader_process, input, output, &operation, |reader| {
                 stream_search(reader, &request.sites, |profile| {
