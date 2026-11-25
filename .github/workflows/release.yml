@@ -17,6 +17,10 @@ permissions:
 
 jobs:
   package:
+    if: >-
+      github.repository == 'ish4ra/HuntWick' && github.actor == github.repository_owner &&
+      github.triggering_actor == github.repository_owner &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/phase-1-desktop-mvp')
     permissions:
       contents: read
       actions: read

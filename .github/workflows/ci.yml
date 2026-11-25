@@ -15,7 +15,10 @@ concurrency:
 
 jobs:
   verify:
-    if: github.ref != 'refs/heads/build/production-candidate'
+    if: >-
+      github.ref != 'refs/heads/build/production-candidate' &&
+      !(github.event_name == 'push' && github.ref == 'refs/heads/feat/phase-1-desktop-mvp' &&
+        startsWith(github.event.head_commit.message, '[verify updater key] '))
     permissions:
       contents: read
       actions: read
@@ -23,7 +26,10 @@ jobs:
 
   signed-candidate:
     name: Production-key candidate (artifacts only)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/build/production-candidate'
+    if: >-
+      github.repository == 'ish4ra/HuntWick' && github.actor == github.repository_owner &&
+      github.triggering_actor == github.repository_owner &&
+      github.event_name == 'push' && github.ref == 'refs/heads/build/production-candidate'
     permissions:
       contents: read
       actions: read
@@ -33,3 +39,51 @@ jobs:
     secrets:
       UPDATER_PRIVATE_KEY: ${{ secrets.UPDATER_PRIVATE_KEY }}
       UPDATER_KEY_PASSWORD: ${{ secrets.UPDATER_KEY_PASSWORD }}
+
+  verify-updater-key:
+    name: Verify permanent updater key
+    if: >-
+      github.repository == 'ish4ra/HuntWick' && github.actor == github.repository_owner &&
+      github.triggering_actor == github.repository_owner &&
+      github.event_name == 'push' && github.ref == 'refs/heads/feat/phase-1-desktop-mvp' &&
+      startsWith(github.event.head_commit.message, '[verify updater key] ')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: 5a8a5750cf47a0ce1a51539b67f921eee98d562b
+          persist-credentials: false
+          sparse-checkout: scripts/verify-update.mjs
+          sparse-checkout-cone-mode: false
+      - name: Verify official signer download
+        working-directory: ${{ runner.temp }}
+        run: |
+          curl --fail --location --retry 2 --proto '=https' \
+            'https://github.com/tauri-apps/tauri/releases/download/tauri-cli-v2.12.6/cargo-tauri-x86_64-unknown-linux-gnu.tgz' -o signer.tgz
+          echo '057983293b14d88b29331f96b2e57ce9780f887e7a0b76e255844924f83118dc  signer.tgz' | sha256sum -c -
+          tar -xzf signer.tgz cargo-tauri
+      - name: Sign a fixed non-executable fixture
+        working-directory: ${{ runner.temp }}
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.UPDATER_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.UPDATER_KEY_PASSWORD }}
+        run: |
+          set -eu
+          umask 077
+          : "${TAURI_SIGNING_PRIVATE_KEY:?Missing UPDATER_PRIVATE_KEY}"
+          : "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:?Missing UPDATER_KEY_PASSWORD}"
+          printf '%s\n' 'HuntWick updater credential check' > probe.txt
+          ./cargo-tauri signer sign --app-version 0.0.0 probe.txt >/dev/null 2>&1 || {
+            echo '::error::The production signer could not sign the fixture with the configured credentials.'
+            exit 1
+          }
+      - name: Check signature and signed version against repository public key
+        env:
+          HUNTWICK_ARTIFACT_PUBLIC_KEY: ${{ vars.UPDATER_PUBLIC_KEY }}
+        run: |
+          set -eu
+          : "${HUNTWICK_ARTIFACT_PUBLIC_KEY:?Missing UPDATER_PUBLIC_KEY}"
+          node scripts/verify-update.mjs "$RUNNER_TEMP/probe.txt" 0.0.0
