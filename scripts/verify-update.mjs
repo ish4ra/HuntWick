@@ -19,5 +19,5 @@ export function verifyUpdate(data, encodedKey, encodedSignature, version) {
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [, , path, version] = process.argv
-  verifyUpdate(readFileSync(path),process.env.HUNTWICK_SIGNING_TEST_PUBLIC_KEY,readFileSync(path+'.sig','utf8'),version)
+  verifyUpdate(readFileSync(path),process.env.HUNTWICK_ARTIFACT_PUBLIC_KEY,readFileSync(path+'.sig','utf8'),version)
 }

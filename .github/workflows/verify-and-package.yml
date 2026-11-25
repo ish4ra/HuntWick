@@ -104,22 +104,28 @@ jobs:
         env:
           APPIMAGE_EXTRACT_AND_RUN: "1"
           RELEASE_SIGNING: ${{ inputs.release-signing }}
-          HUNTWICK_UPDATER_PUBLIC_KEY: ${{ vars.UPDATER_PUBLIC_KEY }}
+          HUNTWICK_UPDATER_PUBLIC_KEY: ${{ inputs.release-signing && vars.UPDATER_PUBLIC_KEY || '' }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.UPDATER_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.UPDATER_KEY_PASSWORD }}
         run: |
-          if [[ "$RELEASE_SIGNING" == true ]]; then
-            : "${TAURI_SIGNING_PRIVATE_KEY:?Configure the release signing secret}"
-            : "${HUNTWICK_UPDATER_PUBLIC_KEY:?Configure the verification key}"
-          else
-            key="$RUNNER_TEMP/huntwick-ci.key"
-            node_modules/.bin/tauri signer generate --ci -p "" -w "$key" > /dev/null
-            export TAURI_SIGNING_PRIVATE_KEY="$(cat "$key")"
-            export HUNTWICK_SIGNING_TEST_PUBLIC_KEY="$(cat "$key.pub")"
-            export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=""
-          fi
-          export HUNTWICK_SIGNING_TEST_PUBLIC_KEY="${HUNTWICK_SIGNING_TEST_PUBLIC_KEY:-$HUNTWICK_UPDATER_PUBLIC_KEY}"
-          config=$(node -p 'JSON.stringify({bundle:{createUpdaterArtifacts:true},plugins:{updater:{pubkey:process.env.HUNTWICK_SIGNING_TEST_PUBLIC_KEY}}})')
+          case "$RELEASE_SIGNING" in
+            true)
+              : "${TAURI_SIGNING_PRIVATE_KEY:?Configure UPDATER_PRIVATE_KEY}"
+              : "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:?Configure UPDATER_KEY_PASSWORD}"
+              : "${HUNTWICK_UPDATER_PUBLIC_KEY:?Configure UPDATER_PUBLIC_KEY}"
+              export HUNTWICK_ARTIFACT_PUBLIC_KEY="$HUNTWICK_UPDATER_PUBLIC_KEY"
+              node -e 'const key = process.env.HUNTWICK_ARTIFACT_PUBLIC_KEY.trim(); console.log("Production public key SHA256:", require("node:crypto").createHash("sha256").update(key).digest("hex"))' >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            false)
+              key="$RUNNER_TEMP/huntwick-ci.key"
+              node_modules/.bin/tauri signer generate --ci -p "" -w "$key" > /dev/null
+              export TAURI_SIGNING_PRIVATE_KEY="$(cat "$key")"
+              export HUNTWICK_ARTIFACT_PUBLIC_KEY="$(cat "$key.pub")"
+              export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=""
+              ;;
+            *) echo "Unknown signing mode" >&2; exit 1 ;;
+          esac
+          config=$(node -p 'JSON.stringify({bundle:{createUpdaterArtifacts:true},plugins:{updater:{pubkey:process.env.HUNTWICK_ARTIFACT_PUBLIC_KEY}}})')
           npm run tauri -- build --config "$config" --ci --target "$TARGET" --bundles "$BUNDLES" -- --locked
           uv run --project engine --frozen python scripts/stage_installers.py "$TARGET"
           python scripts/updater_assets.py "$TARGET"

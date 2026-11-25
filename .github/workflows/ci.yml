@@ -15,7 +15,21 @@ concurrency:
 
 jobs:
   verify:
+    if: github.ref != 'refs/heads/build/production-candidate'
     permissions:
       contents: read
       actions: read
     uses: ./.github/workflows/verify-and-package.yml
+
+  signed-candidate:
+    name: Production-key candidate (artifacts only)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/build/production-candidate'
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/verify-and-package.yml
+    with:
+      release-signing: true
+    secrets:
+      UPDATER_PRIVATE_KEY: ${{ secrets.UPDATER_PRIVATE_KEY }}
+      UPDATER_KEY_PASSWORD: ${{ secrets.UPDATER_KEY_PASSWORD }}

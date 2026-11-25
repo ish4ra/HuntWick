@@ -24,7 +24,7 @@ On Linux, run `sha256sum <installer>`. Install the Debian package through your d
 The release workflow requires manual dispatch. Review all platform checks and artifact hashes before publishing a tagged release. CI test builds can be evaluated independently of release publication.
 ## Update signing and recovery
 
-Create a production key on an owner-controlled computer with `npm run tauri -- signer generate -w /secure/path/huntwick.key`. Use a strong password and encrypted offline backups. Store the private file contents in Actions secret UPDATER_PRIVATE_KEY, the password in secret UPDATER_KEY_PASSWORD and the public file contents in repository variable UPDATER_PUBLIC_KEY. The compiled desktop stores only the public key. Losing the private key requires a manually distributed trust transition.
+Use the standalone Apple Silicon signer and GitHub repository settings to prepare the permanent key. The handover includes the artifact-only build path and the RC.3 to RC.4 device test. [Owner signing and update guide](production-updater.md)
 
 The manual release workflow requires signing material. It uploads the platform artifacts and version-specific manifest to a versioned release and updates the selected GitHub Releases feed. Preview is opt-in. Normal matrix builds sign disposable test artifacts. A build without a configured verification key directs the user to manual downloads. Linux DEB uses manual package installation. Compare the installer SHA256 with the versioned release manifest. macOS Gatekeeper and Developer ID notarization are separate from Tauri signatures. Follow the unsigned-build instructions above.
 
