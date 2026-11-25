@@ -14,7 +14,7 @@ HuntWick Desktop is a local application for discovering public profiles that use
 
 ## Using the release candidate
 
-**v0.1.0-rc.4** is the desktop candidate for the permanent-key upgrade from RC.3. GitHub Actions builds Windows x64 NSIS, Apple Silicon and Intel DMGs, and Linux x64 Debian and AppImage packages. Sign in to download Actions artifacts and verify their digests before installing. [RC.4 acceptance and downloads](docs/rc4-acceptance.md) · [RC.3 manual installation](docs/rc3-acceptance.md) · [Unsigned installation guidance](docs/packaging.md)
+**v0.1.0-rc.4** is the desktop candidate for the permanent-key upgrade from RC.3. GitHub Actions builds Windows x64 NSIS, Apple Silicon and Intel DMGs, and Linux x64 Debian and AppImage packages. Sign in to download Actions artifacts and verify their digests before installing. [Five RC.4 installers, checksums and owner checks](docs/rc4-acceptance.md) · [RC.3 manual installation](docs/rc3-acceptance.md) · [Unsigned installation guidance](docs/packaging.md)
 
 The installers bundle the Python runtime and Sherlock. Launch HuntWick from your applications menu. The platform directory and settings work offline. A live search needs a network connection to the selected sites.
 

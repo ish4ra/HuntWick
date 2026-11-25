@@ -1,6 +1,10 @@
 # HuntWick v0.1.0 development status
 
-## Current RC.3 candidate
+## Current RC.4 candidate
+
+Verify the production ZIP for the installed architecture, then follow the RC.3 → RC.4 preview update and owner search checks. [RC.4 downloads, hashes and acceptance](rc4-acceptance.md)
+
+## Historical RC.3 candidate
 
 The candidate uses the combined desktop and web source with the approved Cut wordmark and Counter icon. The acceptance record tracks the production-signed downloads and remaining device tests. [RC.3 evidence](rc3-acceptance.md)
 
