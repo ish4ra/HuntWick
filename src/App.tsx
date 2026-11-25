@@ -97,11 +97,9 @@ export default function App() {
       )}
       <aside className="sidebar" aria-label="Main navigation">
         <div className="brand">
-          <img src="/huntwick.svg" alt="HuntWick" />
+          <img src="/huntwick.svg" alt="" />
           <div>
-            <span className="wordmark">
-              Hunt<span>Wick</span>
-            </span>
+            <span className="wordmark" role="img" aria-label="HuntWick" />
             <small>OSINT, simplified.</small>
           </div>
           <button

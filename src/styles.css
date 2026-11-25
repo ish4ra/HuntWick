@@ -34,8 +34,9 @@ svg { flex-shrink: 0; stroke-width: 1.75; }
 .brand { height: 100px; display: flex; align-items: center; gap: 11px; padding: 0 23px; }
 .brand > img { height: 42px; width: 42px; }
 .brand > div { display: flex; flex-direction: column; gap: 3px; }
-.wordmark { font-family: Inter, "Segoe UI", sans-serif; font-weight: 740; letter-spacing: -.95px; font-size: 23px; line-height: 1.15; }
-.wordmark > span { color: var(--accent); }
+.wordmark { display: inline-block; width: 4.8em; height: .87em; font-size: 23px; background: url('/huntwick-wordmark.svg') left center / contain no-repeat; vertical-align: baseline; }
+:root[data-theme="light"] .wordmark { background-image: url('/huntwick-wordmark-light.svg'); }
+.about-brand .wordmark { font-size: inherit; }
 .brand small { font-size: 10.5px; color: var(--muted); letter-spacing: .2px; }
 .sidebar nav { padding: 19px 12px; }
 .nav-group + .nav-group { margin-top: 36px; }

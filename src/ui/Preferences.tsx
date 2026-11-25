@@ -211,7 +211,7 @@ export function AboutPage({ ws }: { ws: Workspace }) {
       <section className="about-brand">
         <img src="/huntwick.svg" alt="" />
         <div>
-          <h2>{ws.hosted ? 'HuntWick Web' : 'HuntWick'}</h2>
+          <h2><span className="wordmark" role="img" aria-label="HuntWick" />{ws.hosted && ' Web'}</h2>
           <p>OSINT, simplified.</p>
           <span className="version-tag">v{version}</span>
         </div>

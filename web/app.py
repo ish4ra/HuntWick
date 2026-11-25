@@ -350,7 +350,7 @@ def create_app(*, password=None, public_origin=None, limits=None, command=DEFAUL
 
     @app.get('/{asset}')
     async def icon(asset: str):
-        if asset not in {'huntwick.svg','huntwick-wordmark.svg'}:
+        if asset not in {'huntwick.svg','huntwick-wordmark.svg','huntwick-wordmark-light.svg','huntwick-preview.png'}:
             raise HTTPException(404, 'Not found.')
         return FileResponse(static / asset)
 
