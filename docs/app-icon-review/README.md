@@ -9,3 +9,7 @@ Choose an icon independently of the [Air, Tangent and Cut wordmarks](../letterfo
 | Duplex · a shared baseline and narrow gap unite the two initials | [PNG](duplex/icon.png) | [SVG](duplex/icon.svg) | [Dock, taskbar and favicon](duplex/preview.png) |
 
 After approval, use the selected source to export Windows ICO, macOS ICNS, Linux PNGs and the web favicon. Apply the selected wordmark separately to the shared sidebar, desktop and web identity, README radar hero and static fallback. Keep the tagline **OSINT, simplified.** and retain the prior review directories as a design archive.
+
+## Earlier studies
+
+The owner has closed the previous rounds. Their original PNGs, SVGs and design notes are archived in place so earlier review links continue to work. [First identity board](../brand-review/README.md) · [RC.2 optical studies](../identity-rc2) · [Full magnifier studies](../magnifier-review/README.md)
