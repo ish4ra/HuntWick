@@ -89,3 +89,33 @@ jobs:
           set -eu
           : "${HUNTWICK_ARTIFACT_PUBLIC_KEY:?Missing UPDATER_PUBLIC_KEY}"
           node scripts/verify-update.mjs "$RUNNER_TEMP/probe.txt" 0.0.0
+
+  promotion-files:
+    name: Verify exact bytes and prepare the offline preview manifest
+    needs: signed-candidate
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          pattern: huntwick-*
+          merge-multiple: true
+          path: installers
+      - name: Verify all four platform entries against the signed payloads
+        env:
+          HUNTWICK_ARTIFACT_PUBLIC_KEY: ${{ vars.UPDATER_PUBLIC_KEY }}
+        run: python scripts/prepare_candidate.py
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: promotion-files
+          path: |
+            installers/latest.json
+            installers/SHA256SUMS
+            installers/candidate.json
+          if-no-files-found: error
+          retention-days: 90

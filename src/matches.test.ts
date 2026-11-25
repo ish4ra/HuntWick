@@ -19,6 +19,19 @@ describe('evidence in results and reports', () => {
     expect(matchLinks(rows, 'found')).toBe('https://platform.example/p0')
     expect(matchLinks(rows, 'possible')).toBe('https://platform.example/p1')
   })
+  it('keeps original claims and denials visible, attributed and distinct from verified results', () => {
+    const run=createRun('case','fixture','quick',[site],now)
+    for (const status of ['provider_match','conflict'] as const) {
+      const next=applyEvent(run,{id:'case',type:'result',platform:'Forum',url:site.url,status,
+        provider:'Sherlock Original',verdict:'Claimed',http:403,elapsedMs:120,catalogVersion:'fixture'},catalog,now)
+      expect(visibleIn(status,'balanced')).toBe(true)
+      expect(visibleIn(status,'strict')).toBe(false)
+      expect(countStatuses(next.results).found).toBe(0)
+      const done=applyEvent(next,{id:'case',type:'done'},catalog,now)
+      expect(parseHistory([done])[0].results[0]).toMatchObject({provider:'Sherlock Original',verdict:'Claimed',http:403,elapsedMs:120})
+      for (const format of ['csv','html','json'] as const) expect(formatExport(done,format)).toContain('Claimed')
+    }
+  })
   it('preserves a possible match and its evidence in saved history and exports', () => {
     const run = createRun('fixture', 'fixture', 'quick', [site], now)
     const partial = applyEvent(run, { id: run.id, type: 'result', platform: site.name, url: site.url + 'fixture', status: 'possible', reason: 'marker_missing', message: 'Profile marker missing.' }, catalog, now)

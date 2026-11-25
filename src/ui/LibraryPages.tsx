@@ -12,6 +12,7 @@ import {
   Trash2,
   Zap,
 } from 'lucide-react'
+import { visibleIn } from '../model'
 import { PlatformMark, dateTime, Empty, isActive, phases, Toggle, type Page, type Workspace } from './common'
 
 export function Intro({ label, title, description }: { label: string; title: string; description: string }) {
@@ -119,10 +120,10 @@ export function HistoryPage({ ws, navigate }: { ws: Workspace; navigate: (page: 
                 <div className="history-name">
                   <strong>@{run.username}</strong>
                   <small>{dateTime(run.startedAt)}</small>
-                  <span>{run.results.filter(r=>r.status==='found'||r.status==='possible').slice(0,4).map(r=><span key={r.platform} title={r.platform}><PlatformMark name={r.platform}/></span>)}</span>
+                  <span>{run.results.filter(r=>visibleIn(r.status,'balanced')).slice(0,4).map(r=><span key={r.platform} title={r.platform}><PlatformMark name={r.platform}/></span>)}</span>
                 </div>
                 <span className="history-phase">{phases[run.phase]}</span>
-                <span>{run.results.filter(r => r.status === 'found').length} verified · {run.results.filter(r => r.status === 'possible').length} possible</span>
+                <span>{run.results.filter(r => r.status === 'found').length} verified · {run.results.filter(r=>r.status==='provider_match').length} provider · {run.results.filter(r=>r.status==='conflict').length} conflicting · {run.results.filter(r => r.status === 'possible').length} possible</span>
                 <button
                   className="quiet small"
                   disabled={isActive(ws.run)}

@@ -10,7 +10,7 @@ export const repositoryUrl = 'https://github.com/ish4ra/HuntWick'
 export const desktopDownloadsUrl = repositoryUrl + '/blob/integration/desktop-web/docs/rc4-acceptance.md'
 export const webPrivacy =
   'The service operator receives your IP address and the username you submit. Selected platforms receive the username and the server’s IP address.'
-export const version = '0.1.0-rc.3'
+export const version = '0.1.0-rc.4'
 export const phases: Record<Run['phase'], string> = {
   running: 'Running',
   cancelling: 'Cancelling',

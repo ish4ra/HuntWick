@@ -56,7 +56,7 @@ def main():
         # A closed local proxy exercises the packaged HTTP worker without reaching a site.
         failure = run_request(executable, {"op":"search","providerMode":"enhanced",
             "username":"fixture","sites":["Lichess"],"timeout":3,"concurrency":1},directory)
-        if failure[0].get("provider") != "HuntWick public lookup" or failure[0].get("status") not in {"error","timed_out"}:
+        if failure[0].get("provider") != "HuntWick public lookup" or failure[0].get("verdict") not in {"Connection failure","Timeout"}:
             raise RuntimeError("Packaged native public lookup did not report the offline connection failure.")
         print(f"{executable} loaded {len(sites)} sites and completed the offline search fixture.")
 

@@ -68,11 +68,11 @@ export function SettingsPage({ ws }: { ws: Workspace }) {
         </Preference><Preference title="Volume" hint="Applies to scanning, detections and previews.">
           <input type="range" aria-label="Radar volume" min="0" max="100" value={s.radarVolume} onChange={e=>ws.updateSettings({radarVolume:Number(e.target.value)})}/>
         </Preference>
-      </Panel>
       <div className="preference update-actions" aria-label="Sound previews">
         {(['scan','verified','provider','possible','conflict'] as const).map(cue=><button className="quiet small" key={cue} onClick={()=>void enableAudio(cue)}>Preview {cue}</button>)}
         {audioMessage && <span role="status">{audioMessage}</span>}
       </div>
+      </Panel>
       <Panel title="Appearance" icon={<Palette size={17} />}>
         <Preference title="Color theme" hint="Use your device theme or choose a workspace theme.">
           <select

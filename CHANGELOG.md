@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-rc.4 — release candidate
+
+- Restore Sherlock methods and original verdicts on desktop. Show provider claims and conflicting evidence alongside independently verified matches.
+- Add Enhanced Search with public platform routes, bounded transport workers, an optional transient retry and versioned catalog provenance.
+- Add circular radar blips, separate scanning and detection sounds and per-cue previews. Integrate signed updates and restart confirmation into Settings.
+
 ## 0.1.0-rc.3 — release candidate
 
 - Apply the approved Cut wordmark and Counter icon to both editions, native packages and README artwork.

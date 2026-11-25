@@ -3,6 +3,7 @@
 The signed AppImage installation and restart are exercised by check_appimage_update.py.
 Run after npm run build with Python Playwright and Chromium available.
 """
+import argparse
 import functools
 import http.server
 import shutil
@@ -19,6 +20,9 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
 
 
 def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument("--screenshots", type=Path)
+    shots=parser.parse_args().screenshots
     with http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Quiet,directory=DIST)) as server, sync_playwright() as pw:
         threading.Thread(target=server.serve_forever,daemon=True).start()
         browser=pw.chromium.launch(executable_path=shutil.which('chromium'))
@@ -33,6 +37,7 @@ def main():
             if(cmd==='catalog')return (await fetch('/catalog.json')).json()
             if(cmd==='plugin:event|listen'){subscriptions[args.event]=callbacks[args.handler];return args.handler}
             if(cmd==='plugin:event|unlisten')return
+            if(cmd==='check_update' && window.fixtureError)throw window.fixtureError
             if(cmd==='check_update')return {version:args.prerelease?'0.3.0-rc.1':'0.2.0',notes:'Test fixture'}
             if(cmd==='install_update'){
               subscriptions['update-progress']({payload:[5,10]})
@@ -59,6 +64,21 @@ def main():
         expect(page.get_by_text('50% downloaded')).to_be_visible()
         page.evaluate('window.failInstall()')
         expect(page.get_by_text('Fixture verification failed')).to_be_visible()
+        for failure in ['No feed has been published on this channel.', 'Could not reach the update service.', 'The release metadata is invalid.']:
+            page.evaluate('(s)=>window.fixtureError=s',failure)
+            page.get_by_role('button',name='Check for updates',exact=True).click()
+            expect(page.get_by_text(failure,exact=True)).to_be_visible()
+        if shots:
+            page.set_viewport_size({'width':1280,'height':900})
+            page.evaluate("window.fixtureError='No feed has been published on this channel.'")
+            page.get_by_role('button',name='Check for updates',exact=True).click()
+            expect(page.get_by_text('No feed has been published on this channel.',exact=True)).to_be_visible()
+            page.screenshot(path=shots/'updates-dark.png')
+            page.get_by_label('Color theme').select_option('light')
+            page.evaluate('window.scrollTo(0,0);document.querySelector("main").scrollTop=0')
+            heading.scroll_into_view_if_needed()
+            page.screenshot(path=shots/'updates-light.png')
+        page.evaluate('window.fixtureError=null')
         expect(install).to_have_count(0)
         page.get_by_role('button',name='Manual downloads').click()
         assert page.evaluate('window.manualUrl') .endswith('/docs/rc4-acceptance.md')

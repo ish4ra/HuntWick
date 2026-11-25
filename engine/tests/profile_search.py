@@ -1,4 +1,4 @@
-"""Local source-engine latency profile. Usage: python profile_search.py ENGINE_DIR."""
+"""Historical bounded-GET transport fixture profile. Usage: python profile_search.py ENGINE_DIR."""
 import json
 import os
 from pathlib import Path
@@ -35,7 +35,7 @@ def fixture_child(engine, mode):
     adapter.fetch = fetch
     if mode == 'cancel':
         raise SystemExit(adapter.main())
-    for frame in adapter.events({'op':'search','username':'fixture123','sites':names,'timeout':3,'concurrency':8},sites):
+    for frame in adapter.events({'op':'search','providerMode':'hosted','username':'fixture123','sites':names,'timeout':3,'concurrency':8},sites):
         print(frame['type'], flush=True)
 
 
@@ -52,7 +52,7 @@ def sample(engine, mode):
         if mode == 'catalog':
             p.stdin.write('{"op":"catalog"}\n'); p.stdin.flush()
         if mode == 'cancel':
-            p.stdin.write('{"op":"search","username":"fixture123","sites":["GitHub"]}\n'); p.stdin.flush()
+            p.stdin.write('{"op":"search","providerMode":"hosted","username":"fixture123","sites":["GitHub"]}\n'); p.stdin.flush()
         first = p.stdout.readline()
         if not first:
             raise RuntimeError('Fixture engine exited early')
