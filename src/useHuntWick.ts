@@ -1,13 +1,16 @@
+/// <reference types="vite/client" />
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { invoke, isTauri } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { HuntWickSession } from './session'
+import { createHostedBridge } from './webBridge'
 import type { Bridge, LocalStore } from './session'
 
 function createSession() {
   let store: LocalStore | null = null
   try { store = window.localStorage } catch { /* Storage may be disabled in the host. */ }
   const desktop = isTauri()
+  if (!desktop && import.meta.env.VITE_HUNTWICK_WEB === '1') return new HuntWickSession(createHostedBridge(), store)
   const bridge: Bridge = {
     desktop,
     catalog: async (policy) => {
@@ -36,10 +39,19 @@ export function useHuntWick() {
   const state = useSyncExternalStore(session.subscribe, session.snapshot)
   useEffect(() => {
     void session.connect()
-    return session.disconnect
+    const restore = (event: PageTransitionEvent) => { if (event.persisted) void session.connect() }
+    if (session.snapshot().hosted) {
+      window.addEventListener('pagehide', session.disconnect)
+      window.addEventListener('pageshow', restore)
+    }
+    return () => {
+      window.removeEventListener('pagehide', session.disconnect)
+      window.removeEventListener('pageshow', restore)
+      session.disconnect()
+    }
   }, [session])
   useEffect(() => {
-    if (!state.ready || !state.catalog || !('__HUNTWICK_VERIFY_INSTALL__' in window)) return
+    if (!state.desktop || !state.ready || !state.catalog || !('__HUNTWICK_VERIFY_INSTALL__' in window)) return
     const siteCount = state.catalog.sites.length
     const frame = requestAnimationFrame(() => {
       const input = document.querySelector<HTMLInputElement>('main form input#username')

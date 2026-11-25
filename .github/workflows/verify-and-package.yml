@@ -3,6 +3,9 @@ name: Verify and package
 on:
   workflow_call:
     inputs:
+      checks-only:
+        type: boolean
+        default: false
       release-signing:
         type: boolean
         default: false
@@ -101,6 +104,7 @@ jobs:
           cargo clippy --manifest-path src-tauri/Cargo.toml --locked --target "$TARGET" --all-targets -- -D warnings
           cargo test --manifest-path src-tauri/Cargo.toml --locked --target "$TARGET"
       - name: Build desktop installers and checksums
+        if: inputs.checks-only == false
         env:
           APPIMAGE_EXTRACT_AND_RUN: "1"
           RELEASE_SIGNING: ${{ inputs.release-signing }}
@@ -130,7 +134,7 @@ jobs:
           uv run --project engine --frozen python scripts/stage_installers.py "$TARGET"
           python scripts/updater_assets.py "$TARGET"
       - name: Test installed Windows engine and desktop
-        if: runner.os == 'Windows'
+        if: inputs.checks-only == false && runner.os == 'Windows'
         shell: pwsh
         run: |
           $installer = (Get-Item "installers/$env:TARGET/*.exe").FullName
@@ -141,7 +145,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           uv run --project engine --frozen python scripts/smoke_desktop.py "$installDir/huntwick.exe"
       - name: Test engine and desktop from the mounted DMG
-        if: runner.os == 'macOS'
+        if: inputs.checks-only == false && runner.os == 'macOS'
         run: |
           mountpoint="$RUNNER_TEMP/huntwick-dmg"
           mkdir "$mountpoint"
@@ -151,7 +155,7 @@ jobs:
           apps=("$mountpoint/"*.app)
           uv run --project engine --frozen python scripts/smoke_desktop.py "${apps[0]}/Contents/MacOS/huntwick"
       - name: Test installed Debian desktop and both Linux engines
-        if: runner.os == 'Linux'
+        if: inputs.checks-only == false && runner.os == 'Linux'
         run: |
           sudo dpkg -i "installers/$TARGET/"*.deb
           uv run --project engine --frozen python scripts/smoke_engine.py /usr/lib/HuntWick
@@ -161,14 +165,16 @@ jobs:
           (cd "$RUNNER_TEMP" && "${appimage[0]}" --appimage-extract >/dev/null)
           uv run --project engine --frozen python scripts/smoke_engine.py "$RUNNER_TEMP/squashfs-root"
       - name: Exercise a signed AppImage upgrade on a private local feed
-        if: runner.os == 'Linux' && !inputs.release-signing
+        if: inputs.checks-only == false && runner.os == 'Linux' && !inputs.release-signing
         env:
           APPIMAGE_EXTRACT_AND_RUN: '1'
         run: |
           dbus-run-session -- xvfb-run -a uv run --project engine --frozen python scripts/check_appimage_update.py
       - name: Verify staged installers and report SHA-256
+        if: inputs.checks-only == false
         run: uv run --project engine --frozen python scripts/stage_installers.py "$TARGET" --verify
       - name: Upload verified installers
+        if: inputs.checks-only == false
         id: upload
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
@@ -177,6 +183,7 @@ jobs:
           if-no-files-found: error
           compression-level: 0
       - name: Verify the uploaded archive digest
+        if: inputs.checks-only == false
         env:
           GH_TOKEN: ${{ github.token }}
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}

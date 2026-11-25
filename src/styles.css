@@ -374,6 +374,25 @@ tr:last-child td { border-bottom: 0; }
 }
 .clear-confirm { border-top: 1px solid var(--sub-line); padding: 14px 20px; font-size: 12px; color: var(--warn); line-height: 1.5; }
 .clear-confirm .actions { margin-top: 9px; }
+.web-header-links { display: flex; align-items: center; gap: 14px; }
+.web-header-links a { display: inline-flex; gap: 6px; align-items: center; font-size: 11px; text-decoration: none; color: var(--secondary); }
+.web-header-links a:hover, .about-row a:hover { color: var(--accent); }
+.web-platforms { border: 0; margin: 17px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 7px; }
+.web-platforms legend { color: var(--secondary); padding: 0 0 8px; font-size: 12px; font-weight: 550; }
+.platform-choice { cursor: pointer; display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 5px; padding: 7px 10px; font-size: 12px; color: var(--secondary); background: var(--field); }
+.platform-choice.enabled { color: var(--accent); border-color: var(--accent-border); background: var(--tint); }
+.platform-choice input { accent-color: var(--accent); margin: 0 0 0 8px; width: 13px; height: 13px; }
+.web-notice { display: flex; align-items: flex-start; gap: 10px; margin-top: 13px; padding: 12px 15px; color: var(--muted); border: 1px solid var(--sub-line); border-radius: 7px; }
+.web-notice svg { color: var(--accent); margin-top: 1px; }
+.web-notice strong { display: block; color: var(--secondary); font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+.web-notice p { font-size: 11.5px; line-height: 1.6; }
+.about-row a { text-decoration: none; }
+@media (max-width: 580px) {
+  .web-header-links { gap: 10px; }
+  .web-header-links a span { display: none; }
+  .web-header-links a { min-width: 27px; min-height: 30px; justify-content: center; }
+  .web-header-links a svg:nth-child(3) { display: none; }
+}
 
 .result-area .section-heading, .result-area .section-heading > .actions, .result-area .filter-tabs, .results-toolbar { flex-wrap: wrap; }
 .result-area .section-heading > .actions { row-gap: 6px; }

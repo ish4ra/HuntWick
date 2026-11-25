@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches-ignore: [feat/web-edition]
   pull_request:
   workflow_dispatch:
 
@@ -23,6 +23,8 @@ jobs:
       contents: read
       actions: read
     uses: ./.github/workflows/verify-and-package.yml
+    with:
+      checks-only: ${{ github.ref == 'refs/heads/integration/desktop-web' || github.head_ref == 'integration/desktop-web' || github.head_ref == 'feat/web-edition' }}
 
   signed-candidate:
     name: Production-key candidate (artifacts only)

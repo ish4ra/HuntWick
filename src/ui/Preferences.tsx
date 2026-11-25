@@ -14,7 +14,15 @@ import {
 import type { Mode, Settings } from '../model'
 import { Intro } from './LibraryPages'
 import { NumberSetting } from './SearchPage'
-import { isActive, Toggle, version, type Workspace } from './common'
+import {
+  desktopDownloadsUrl,
+  isActive,
+  repositoryUrl,
+  Toggle,
+  version,
+  webPrivacy,
+  type Workspace,
+} from './common'
 
 function Panel({ title, icon, children }: { title: string; icon: ReactNode; children: ReactNode }) {
   return (
@@ -92,7 +100,11 @@ export function SettingsPage({ ws }: { ws: Workspace }) {
       <Panel title="Search defaults" icon={<SlidersHorizontal size={17} />}>
         <Preference
           title="Remember search preferences"
-          hint="Keep your search limits and default mode between app sessions."
+          hint={
+            ws.hosted
+              ? 'Save check timeouts and concurrency in this browser.'
+              : 'Keep your search limits and default mode between app sessions.'
+          }
         >
           <Toggle
             checked={s.rememberPreferences}
@@ -100,29 +112,31 @@ export function SettingsPage({ ws }: { ws: Workspace }) {
             onChange={() => ws.updateSettings({ rememberPreferences: !s.rememberPreferences })}
           />
         </Preference>
-        <Preference title="Default search mode" hint="Choose the mode selected when you open a new search.">
-          <select
-            aria-label="Default search mode"
-            value={s.defaultMode}
-            onChange={(e) => ws.updateSettings({ defaultMode: e.target.value as Mode })}
-          >
-            <option value="quick">Quick search</option>
-            <option value="full">Full search</option>
-          </select>
-        </Preference>
+        {!ws.hosted && (
+          <Preference title="Default search mode" hint="Choose the mode selected when you open a new search.">
+            <select
+              aria-label="Default search mode"
+              value={s.defaultMode}
+              onChange={(e) => ws.updateSettings({ defaultMode: e.target.value as Mode })}
+            >
+              <option value="quick">Quick search</option>
+              <option value="full">Full search</option>
+            </select>
+          </Preference>
+        )}
         <div className="pref-numbers">
           <NumberSetting
             label="Timeout per platform (seconds)"
             value={s.timeout}
             min={1}
-            max={60}
+            max={ws.maxTimeout}
             onChange={(timeout) => ws.updateSettings({ timeout })}
           />
           <NumberSetting
             label="Concurrent platform checks"
             value={s.concurrency}
             min={1}
-            max={20}
+            max={ws.maxConcurrency}
             onChange={(concurrency) => ws.updateSettings({ concurrency })}
           />
         </div>
@@ -130,7 +144,11 @@ export function SettingsPage({ ws }: { ws: Workspace }) {
       <Panel title="Privacy" icon={<LockKeyhole size={17} />}>
         <Preference
           title="Save search history"
-          hint="Store completed searches on this device for later review."
+          hint={
+            ws.hosted
+              ? 'Store completed searches in this browser for later review.'
+              : 'Store completed searches on this device for later review.'
+          }
         >
           <Toggle
             checked={s.saveHistory}
@@ -139,12 +157,17 @@ export function SettingsPage({ ws }: { ws: Workspace }) {
           />
         </Preference>
         <p className="settings-note">
-          Search requests go directly to the selected platforms, which can see your IP address and the
-          username you check.
+          {ws.hosted
+            ? webPrivacy
+            : 'Search requests go directly to the selected platforms, which can see your IP address and the username you check.'}
         </p>
         <Preference
           title="Clear local application data"
-          hint="Remove saved searches and preferences from this device."
+          hint={
+            ws.hosted
+              ? 'Remove saved searches and preferences from this browser.'
+              : 'Remove saved searches and preferences from this device.'
+          }
         >
           <button className="danger small" disabled={isActive(ws.run)} onClick={() => setConfirmClear(true)}>
             Clear local data
@@ -179,12 +202,16 @@ export function AboutPage({ ws }: { ws: Workspace }) {
       <Intro
         label="APPLICATION"
         title="About HuntWick"
-        description="An open-source desktop workspace for public profile discovery."
+        description={
+          ws.hosted
+            ? 'An open-source web workspace for authorized public profile checks.'
+            : 'An open-source desktop workspace for public profile discovery.'
+        }
       />
       <section className="about-brand">
         <img src="/huntwick.svg" alt="" />
         <div>
-          <h2>HuntWick</h2>
+          <h2>{ws.hosted ? 'HuntWick Web' : 'HuntWick'}</h2>
           <p>OSINT, simplified.</p>
           <span className="version-tag">v{version}</span>
         </div>
@@ -210,13 +237,19 @@ export function AboutPage({ ws }: { ws: Workspace }) {
           <span>License</span>
           <strong>MIT</strong>
         </div>
+        {ws.hosted && (
+          <div className="about-row">
+            <Monitor size={16} />
+            <span>Desktop installers</span>
+            <a href={desktopDownloadsUrl} target="_blank" rel="noreferrer" className="text-action">
+              View release candidate build <ExternalLink size={13} />
+            </a>
+          </div>
+        )}
         <div className="about-row">
           <Github size={16} />
           <span>Source repository</span>
-          <button
-            className="text-action"
-            onClick={() => void ws.openUrl('https://github.com/ish4ra/HuntWick')}
-          >
+          <button className="text-action" onClick={() => void ws.openUrl(repositoryUrl)}>
             ish4ra/HuntWick <ExternalLink size={13} />
           </button>
         </div>
@@ -224,8 +257,9 @@ export function AboutPage({ ws }: { ws: Workspace }) {
       <Panel title="Privacy and responsible use" icon={<ShieldCheck size={17} />}>
         <div className="about-text">
           <p>
-            HuntWick checks publicly accessible profile pages. Each selected platform can see your IP address
-            and the requested username. Search history is optional and stored on this device.
+            {ws.hosted
+              ? webPrivacy + ' Search history is optional and saved in this browser.'
+              : 'HuntWick checks publicly accessible profile pages. Each selected platform can see your IP address and the requested username. Search history is optional and stored on this device.'}
           </p>
           <p>
             A matching username can belong to a different person. Verify findings independently and respect

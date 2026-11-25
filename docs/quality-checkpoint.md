@@ -32,3 +32,13 @@ All four jobs passed for 98e2235. The installed-engine checks and desktop startu
 | [huntwick-x86_64-unknown-linux-gnu](https://github.com/ish4ra/HuntWick/actions/runs/45379312570/artifacts/14914775922) | `eea40404d5ee0db47369bc215793bd438b9aa303fa8a5c3171d3cf1f5352a700` |
 
 Extract the archive and verify the individual installer against its included manifest. Owner acceptance on representative devices and a release decision remain pending.
+
+## Web verification
+
+Web CI passed on the code at 72e0a3a. The local production image also passed authenticated HTTP and Chromium checks under a 512 MiB container limit. The smoke selected GitHub alone and used a synthetic handle that its rule rejects before network I/O. The browser rendered that result and exported the matching CSV. The same image denied anonymous access and enforced the six-search budget. Backend fixtures cover disconnect cleanup and cancellation. The next deployment step requires an authorized Render workspace and deployment approval. [Web CI run](https://github.com/ish4ra/HuntWick/actions/runs/45377424404) · [Owner deployment steps](web-deployment.md)
+
+The production web workflow passed again on 60a337f after moving the search runtime initialization ahead of the parent-pipe watcher. The workflow builds the production image and tests its authenticated HTTP stream and browser CSV download. Provider cold start, memory at peak concurrency and streaming through its HTTPS proxy still need a deployed private preview. [Updated Web CI](https://github.com/ish4ra/HuntWick/actions/runs/45379328939)
+
+## Interactive web radar
+
+Run 45430038678 passed the production container checks, offline authenticated search, CSV export, and Chromium radar regression. A synthetic two-platform event stream produced one verified and one possible marker even with a duplicate event. Keyboard focus revealed the possible match. The default scheduled zero oscillator tones, and enabling sound scheduled one for the burst. The desktop and mobile radar screenshots use these synthetic events. Provider deployment remains an owner decision. [Web CI](https://github.com/ish4ra/HuntWick/actions/runs/45430038678)

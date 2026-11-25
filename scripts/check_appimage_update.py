@@ -129,8 +129,8 @@ def acceptance(tmp):
             orig, "void driveUpgrade(siteCount).catch(e=>invoke('confirm_install',{siteCount,step:'FAILED '+String(e)}))")
             .replace('    void session.connect()', "    void invoke('confirm_install',{siteCount:0,step:'UI mounted'})\n"
                      "    void session.connect()")
-            .replace("    if (!state.ready", "    if (state.error) void invoke('confirm_install',{siteCount:0,"
-                     "step:'FAILED '+state.error})\n    if (!state.ready")
+            .replace("    if (!state.desktop || !state.ready", "    if (state.error) void invoke('confirm_install',{siteCount:0,"
+                     "step:'FAILED '+state.error})\n    if (!state.desktop || !state.ready")
             .replace('[state.ready, state.catalog]', '[state.ready, state.catalog, state.error]'))
         app=checkout/'src/App.tsx'
         # Avoid a background stable-feed check competing with the explicit preview check.

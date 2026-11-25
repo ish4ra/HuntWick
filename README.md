@@ -6,13 +6,13 @@
 
 ![Desktop CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml/badge.svg?branch=feat%2Fphase-1-desktop-mvp)
 
-HuntWick is a local desktop application for discovering public profiles that use a particular username. Enter a handle, choose **Quick search** for a curated set of platforms or **Full search** for every enabled compatible platform, then select **Search**. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
+HuntWick Desktop is a local application for discovering public profiles that use a particular username. Enter a handle, choose **Quick search** for a curated set of platforms or **Full search** for every enabled compatible platform, then select **Search**. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
 
 ![HuntWick running from the Linux RC Debian package with Quick and Full search options](docs/screenshots/desktop.png)
 
 ## Using the release candidate
 
-The development version is **v0.1.0-rc.2**. For a test installer, open a successful CI run for the implementation branch, download its artifact for your system, extract it, and compare the SHA256 checksum before installing. The packaging matrix targets Windows 10/11 x64 (NSIS installer), Apple Silicon and Intel Macs (DMG), and Linux x64 (Debian package and AppImage). Availability depends on the individual build job. Platform acceptance is tracked in [development status](docs/DEVELOPMENT_STATUS.md). See the [installation and unsigned-build instructions](docs/packaging.md) and [GitHub Actions](https://github.com/ish4ra/HuntWick/actions).
+The latest verified desktop candidate is **v0.1.0-rc.2**. [Download the five RC.2 installers and checksums](docs/rc2-acceptance.md). For a test installer, open a successful CI run for the implementation branch, download its artifact for your system, extract it, and compare the SHA256 checksum before installing. The packaging matrix targets Windows 10/11 x64 (NSIS installer), Apple Silicon and Intel Macs (DMG), and Linux x64 (Debian package and AppImage). Availability depends on the individual build job. Platform acceptance is tracked in [development status](docs/DEVELOPMENT_STATUS.md). See the [installation and unsigned-build instructions](docs/packaging.md) and [GitHub Actions](https://github.com/ish4ra/HuntWick/actions).
 
 The installers bundle the Python runtime and Sherlock. Launch HuntWick from your applications menu. The platform directory and settings work offline. A live search needs a network connection to the selected sites.
 
@@ -33,7 +33,7 @@ Settings and About provide stable and prerelease update checks. Installation req
 
 ## Privacy and responsible use
 
-History starts disabled. HuntWick has no accounts, telemetry, analytics or cloud backend. Searches contact the relevant websites, which can observe the requested username, network address and request time. Sites apply their own logging and retention policies. Preferences, opt-in history and exports live on the device. Delete saved runs in History. Files you export remain wherever you saved them.
+Desktop history starts disabled. HuntWick Desktop runs locally without accounts, telemetry, analytics or a cloud backend. Searches contact the relevant websites, which can observe the requested username, network address and request time. Sites apply their own logging and retention policies. Preferences, opt-in history and exports live on the device. Delete saved runs in History. Files you export remain wherever you saved them.
 
 Use public information for lawful research, with appropriate consent. Verify a possible match independently before drawing conclusions about a person. Respect platform rules, access restrictions, and rate limits. Do not use results for harassment, impersonation or discrimination.
 
@@ -56,13 +56,17 @@ The bundled adapter invokes the official Sherlock Python library. HuntWick appli
 
 ## Roadmap
 
-Phase 1 focuses on a single bundled engine, reproducible native packages and local privacy controls. Candidates for later phases include better site-specific evidence and regression fixtures, signed builds and updates, an optional second engine, history comparison, localization and PDF reports.
+Phase 1 focuses on a single bundled engine, reproducible native packages and local privacy controls. Candidates for later phases include better site-specific evidence and regression fixtures, production-key device acceptance, an optional second engine, history comparison, localization and PDF reports.
 
 ## Web Edition
 
-The access-restricted web branch serves the shared interface through FastAPI. Its preview catalog covers GitHub and GitLab. The service requires operator credentials and limits concurrent work. Deployment awaits owner approval. [Setup and privacy](https://github.com/ish4ra/HuntWick/blob/feat/web-edition/docs/web-deployment.md)
+The browser radar displays actual verified and possible events. Select a marker for details. Optional synthesized detection sounds start off, and the browser loads platform logos from the same authenticated service. The desktop and mobile screenshots below use synthetic demonstration events.
 
-![Private web branch running an offline synthetic search](docs/readme-assets/web-search.gif)
+The access-restricted Web Edition serves the shared interface through FastAPI. Its preview catalog covers GitHub and GitLab. The service requires operator credentials and limits concurrent work. The operator can see the submitted username and client IP. Target sites receive requests from the service. Hosted deployment awaits owner approval. [Setup and privacy](docs/web-deployment.md)
+
+![Authenticated browser search and CSV export menu using a synthetic handle](docs/readme-assets/web-search.gif)
+
+[Desktop browser screenshot](docs/screenshots/web-desktop.png) · [Mobile screenshot](docs/screenshots/web-mobile.png) · [Web CI](https://github.com/ish4ra/HuntWick/actions/runs/45430038678)
 
 ```mermaid
 flowchart LR

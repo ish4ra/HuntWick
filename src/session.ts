@@ -13,6 +13,8 @@ interface SearchRequest {
   timeout: number
 }
 export interface Bridge {
+  hosted?: boolean
+  close?(): void
   desktop: boolean
   catalog(policy: Pick<Settings, 'includeNsfw' | 'includeExcluded'>): Promise<unknown>
   listen(listener: (event: unknown) => void): Promise<() => void>
@@ -28,6 +30,9 @@ interface Snapshot {
   settings: Settings
   history: Run[]
   ready: boolean
+  hosted: boolean
+  maxConcurrency: number
+  maxTimeout: number
   desktop: boolean
   error: string | null
 }
@@ -52,9 +57,18 @@ export class HuntWickSession {
   private eligibleHistoryId: string | null = null
   private launching: Promise<void> | null = null
 
+  private settings(input: unknown): Settings {
+    const settings = parseSettings(input)
+    if (this.bridge.hosted) {
+      settings.timeout = Math.min(20, settings.timeout)
+      settings.concurrency = Math.min(2, settings.concurrency)
+    }
+    return settings
+  }
   constructor(private bridge: Bridge, private store: LocalStore | null) {
     this.state = {
-      catalog: null, run: null, history: parseHistory(read(store, historyKey)), settings: parseSettings(read(store, settingsKey)),
+      catalog: null, run: null, history: parseHistory(read(store, historyKey)), settings: this.settings(read(store, settingsKey)),
+      hosted: !!bridge.hosted, maxTimeout: bridge.hosted ? 20 : 60, maxConcurrency: bridge.hosted ? 2 : 20,
       desktop: bridge.desktop, ready: false, error: null,
     }
   }
@@ -73,6 +87,12 @@ export class HuntWickSession {
     this.generation++
     this.unlisten?.()
     this.unlisten = null
+    this.bridge.close?.()
+    if (this.bridge.hosted) {
+      const { run, catalog } = this.state
+      if (run && catalog && activeRun(run)) this.acceptRun(cancelRun(run, catalog, now()))
+      this.update({ ready: false })
+    }
   }
   connect = async () => {
     if (activeRun(this.state.run)) return
@@ -82,7 +102,7 @@ export class HuntWickSession {
     try {
       const catalog = parseCatalog(await this.bridge.catalog({ includeNsfw: this.state.settings.includeNsfw, includeExcluded: this.state.settings.includeExcluded }))
       if (this.generation !== generation) return
-      if (this.bridge.desktop) {
+      if (this.bridge.desktop || this.bridge.hosted) {
         const unlisten = await this.bridge.listen(event => {
           if (this.generation !== generation || !this.state.run) return
           const before = this.state.run
@@ -132,7 +152,7 @@ export class HuntWickSession {
     if (!activeRun(this.state.run)) this.update({ run: null, error: null })
   }
   updateSettings = (patch: Partial<Settings>) => {
-    const settings = parseSettings({ ...this.state.settings, ...patch })
+    const settings = this.settings({ ...this.state.settings, ...patch })
     if (!settings.saveHistory) this.eligibleHistoryId = null
     const reload = settings.includeNsfw !== this.state.settings.includeNsfw || settings.includeExcluded !== this.state.settings.includeExcluded
     if (reload && activeRun(this.state.run)) return
@@ -158,7 +178,7 @@ export class HuntWickSession {
     this.update({
       run: null,
       ...(historyCleared ? { history: [] } : {}),
-      ...(settingsCleared ? { settings: parseSettings(null) } : {}),
+      ...(settingsCleared ? { settings: this.settings(null) } : {}),
     })
     if (settingsCleared && resetCatalog) void this.connect()
     return historyCleared && settingsCleared
@@ -168,8 +188,8 @@ export class HuntWickSession {
     if (activeRun(this.state.run)) return
     if (!validUsername(username)) { this.update({ error: 'Enter a username of 1–64 letters, digits, dots, dashes or underscores.' }); return }
     const { catalog, settings, ready, desktop } = this.state
-    if (!desktop) { this.update({ error: 'Open HuntWick on your desktop to run a search.' }); return }
-    if (!catalog || !ready) { this.update({ error: 'Wait for the local engine catalog to load.' }); return }
+    if (!desktop && !this.state.hosted) { this.update({ error: 'Open HuntWick on your desktop to run a search.' }); return }
+    if (!catalog || !ready) { this.update({ error: 'Wait for the platform catalog to load.' }); return }
     const sites = selectSites(catalog, mode, settings.disabledSites, selected)
     if (!sites.length) { this.update({ error: 'Enable at least one platform for this search.' }); return }
     const run = createRun(crypto.randomUUID(), username, mode, sites, now())
@@ -192,7 +212,7 @@ export class HuntWickSession {
     if (!run || !catalog || run.phase !== 'running') return
     this.update({ run: { ...run, phase: 'cancelling' } })
     try {
-      await this.launching
+      if (!this.bridge.hosted) await this.launching
       if (this.state.run?.id !== run.id || !activeRun(this.state.run)) return
       await this.bridge.cancel(run.id)
       const current = this.state.run

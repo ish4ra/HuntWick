@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: huntwick-web
+    runtime: docker
+    plan: free
+    branch: feat/web-edition
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    autoDeployTrigger: "off"
+    envVars:
+      - key: HUNTWICK_WEB_PASSWORD
+        sync: false
