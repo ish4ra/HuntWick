@@ -47,6 +47,7 @@ jobs:
       RUSTUP_TOOLCHAIN: "1.95.0"
       TARGET: ${{ matrix.target }}
       BUNDLES: ${{ matrix.bundles }}
+      HUNTWICK_EXPECTED_UPDATER_KEY: ${{ inputs.release-signing && vars.UPDATER_PUBLIC_KEY || '' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -118,7 +119,9 @@ jobs:
               : "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:?Configure UPDATER_KEY_PASSWORD}"
               : "${HUNTWICK_UPDATER_PUBLIC_KEY:?Configure UPDATER_PUBLIC_KEY}"
               export HUNTWICK_ARTIFACT_PUBLIC_KEY="$HUNTWICK_UPDATER_PUBLIC_KEY"
-              node -e 'const key = process.env.HUNTWICK_ARTIFACT_PUBLIC_KEY.trim(); console.log("Production public key SHA256:", require("node:crypto").createHash("sha256").update(key).digest("hex"))' >> "$GITHUB_STEP_SUMMARY"
+              fingerprint=$(node -e 'console.log(require("node:crypto").createHash("sha256").update(process.env.HUNTWICK_ARTIFACT_PUBLIC_KEY.trim()).digest("hex"))')
+              echo "Production public key SHA256: $fingerprint" >> "$GITHUB_STEP_SUMMARY"
+              echo "::notice title=Updater public key SHA256::$TARGET $fingerprint"
               ;;
             false)
               key="$RUNNER_TEMP/huntwick-ci.key"
@@ -182,6 +185,7 @@ jobs:
           path: installers/${{ matrix.target }}/
           if-no-files-found: error
           compression-level: 0
+          retention-days: 90
       - name: Verify the uploaded archive digest
         if: inputs.checks-only == false
         env:

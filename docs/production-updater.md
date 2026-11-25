@@ -56,13 +56,13 @@ The existing **Release** workflow builds and then publishes when dispatched. The
 
 1. Obtain the owner's wordmark choice, signing-setup confirmation and approval to build. Complete the selected identity across desktop, web and README, including the platform icons and static fallback. Validate those changes in their respective branches.
 2. Set the desktop version to `0.1.0-rc.3` in package.json and its lockfile, the Tauri config, the Rust package and lockfile, and the displayed UI version. Update the changelog and candidate notes. Keep historical signed test fixtures bound to their original version.
-3. In Codex Cloud, review the exact desktop commit on `feat/phase-1-desktop-mvp`, including its workflow and packaging code. Once authorized, run the block below with the **full approved SHA** entered for `candidate`. Use a commit eligible for CI (without a skip directive). Only maintainers authorized to sign should be able to update this build ref and production workflows.
+3. In Codex Cloud, review the exact combined commit on `integration/desktop-web`, including its workflow and packaging code. Once authorized, run the block below with the **full approved SHA** entered for `candidate`. Use a commit eligible for CI (without a skip directive). Only maintainers authorized to sign should be able to update this build ref and production workflows.
 
 ```sh
 (
   set -eu
   candidate='REPLACE_WITH_APPROVED_FULL_SHA'
-  git fetch origin refs/heads/feat/phase-1-desktop-mvp
+  git fetch origin refs/heads/integration/desktop-web
   test "$(git rev-parse FETCH_HEAD)" = "$candidate"
   git push origin "$candidate:refs/heads/build/production-candidate"
 )
@@ -75,7 +75,7 @@ The existing **Release** workflow builds and then publishes when dispatched. The
 ## 4. Prove RC.3 → RC.4 on the Mac
 
 1. In RC.3, select a recognizable appearance preference, enable local history if desired, and save one synthetic or owner-authorized search. Record its summary and the platform count locally.
-2. Prepare and build a distinct `0.1.0-rc.4` from the desktop branch by the same artifact-only procedure. Require the same production public-key fingerprint on all four targets. Save the RC.4 installer and its verified checksums for recovery.
+2. Prepare and build a distinct `0.1.0-rc.4` from a reviewed integration commit by the same artifact-only procedure. Require the same production public-key fingerprint on all four targets. Save the RC.4 installer and its verified checksums for recovery.
 3. **Pause for explicit prerelease-publication approval.** Record the approved SHA, Actions run, ZIP digests and intended channel. For promotion of those exact bytes, download and verify the four ZIPs, then extract their contents together into `installers/` in a checkout at the approved RC.4 SHA. Run `python scripts/updater_assets.py manifest`. Combine the target manifests into `SHA256SUMS` and verify with `sha256sum --check --strict SHA256SUMS`. Verify the native payload signatures using the recorded production public key, and inspect the generated `latest.json` for RC.4, all four platform entries and their versioned GitHub URLs.
 4. With that approval, create the **prerelease** `v0.1.0-rc.4` at the approved SHA. Attach the verified installers, native update archives, signatures, combined checksum manifest and `latest.json`. Check each referenced asset is present. Publish the same `latest.json` on the `updates-preview` prerelease feed **last**. The release workflow builds fresh bytes when dispatched, so exact-byte promotion uses the archived candidate files. The stable feed is reserved for an independently approved stable release.
 5. In the installed RC.3, finish or cancel any active search. Open **Settings → Check stable**. RC.4 must never appear there (a missing stable feed can report an error). Select **Check prereleases**, confirm `0.1.0-rc.4`, then **Install 0.1.0-rc.4 and restart**. Record observed progress, verification or error text, automatic relaunch and the displayed version. Attempt a preview check again to confirm the same version is no longer offered.

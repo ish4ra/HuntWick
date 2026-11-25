@@ -278,6 +278,17 @@ fn confirm_install(
     site_count: usize,
 ) -> Result<(), String> {
     state.runtime.lock().unwrap().confirm_install(site_count)?;
+    let wrong_version = std::env::var("HUNTWICK_EXPECTED_INSTALL_VERSION")
+        .is_ok_and(|expected| expected != app.package_info().version.to_string());
+    let wrong_key = std::env::var("HUNTWICK_EXPECTED_UPDATER_KEY").is_ok_and(|expected| {
+        !expected.trim().is_empty() && Some(expected.trim()) != updates::EMBEDDED_KEY.map(str::trim)
+    });
+    if wrong_version || wrong_key {
+        app.exit(1);
+        return Err(
+            "Installed version or embedded updater key differs from the build input.".into(),
+        );
+    }
     println!(
         "HuntWick {} verified installed catalog and search form",
         app.package_info().version

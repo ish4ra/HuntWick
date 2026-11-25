@@ -13,6 +13,8 @@ pub struct Offer {
     notes: String,
 }
 
+pub(super) const EMBEDDED_KEY: Option<&str> = option_env!("HUNTWICK_UPDATER_PUBLIC_KEY");
+
 const RELEASES: &str = "https://github.com/ish4ra/HuntWick/releases/download/";
 fn approved_url(url: &str) -> bool {
     url.starts_with(RELEASES)
@@ -28,11 +30,9 @@ pub async fn check_update(
     pending: State<'_, Pending>,
     prerelease: bool,
 ) -> Result<Option<Offer>, String> {
-    let key = option_env!("HUNTWICK_UPDATER_PUBLIC_KEY")
-        .filter(|k| !k.trim().is_empty())
-        .ok_or(
-            "This build has no release verification key. Use the checksummed manual downloads.",
-        )?;
+    let key = EMBEDDED_KEY.filter(|k| !k.trim().is_empty()).ok_or(
+        "This build has no release verification key. Use the checksummed manual downloads.",
+    )?;
     if cfg!(target_os = "linux") && std::env::var_os("APPIMAGE").is_none() {
         return Err(
             "Use the signed release and its checksum to update your Debian package.".into(),

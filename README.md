@@ -2,9 +2,9 @@
 
 ![HuntWick — OSINT, simplified.](docs/readme-assets/hero.svg)
 
-[Static hero](docs/readme-assets/hero-static.png) · [Desktop CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml?query=branch%3Afeat%2Fphase-1-desktop-mvp) · [Private Web Edition](https://github.com/ish4ra/HuntWick/tree/feat/web-edition)
+[Static hero](docs/readme-assets/hero-static.png) · [Integration CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml?query=branch%3Aintegration%2Fdesktop-web) · [Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Fdesktop-web)
 
-![Desktop CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml/badge.svg?branch=feat%2Fphase-1-desktop-mvp)
+![Integration CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml/badge.svg?branch=integration%2Fdesktop-web)
 
 HuntWick Desktop is a local application for discovering public profiles that use a particular username. Enter a handle, choose **Quick search** for a curated set of platforms or **Full search** for every enabled compatible platform, then select **Search**. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
 
@@ -14,7 +14,7 @@ HuntWick Desktop is a local application for discovering public profiles that use
 
 ## Using the release candidate
 
-The latest verified desktop candidate is **v0.1.0-rc.2**. [Download the five RC.2 installers and checksums](docs/rc2-acceptance.md). For a test installer, open a successful CI run for the implementation branch, download its artifact for your system, extract it, and compare the SHA256 checksum before installing. The packaging matrix targets Windows 10/11 x64 (NSIS installer), Apple Silicon and Intel Macs (DMG), and Linux x64 (Debian package and AppImage). Availability depends on the individual build job. Platform acceptance is tracked in [development status](docs/DEVELOPMENT_STATUS.md). See the [installation and unsigned-build instructions](docs/packaging.md) and [GitHub Actions](https://github.com/ish4ra/HuntWick/actions).
+**v0.1.0-rc.3** is the candidate for the first manual installation with the permanent updater key. [RC.3 downloads and verification](docs/rc3-acceptance.md). Sign in to GitHub, download the artifact for your system, verify its ZIP digest, then extract it and check the installer against the enclosed SHA256 manifest. The packaging matrix targets Windows 10/11 x64 (NSIS installer), Apple Silicon and Intel Macs (DMG), and Linux x64 (Debian package and AppImage). Availability depends on the individual build job. Platform acceptance is tracked in [development status](docs/DEVELOPMENT_STATUS.md). See the [installation and unsigned-build instructions](docs/packaging.md) and [GitHub Actions](https://github.com/ish4ra/HuntWick/actions).
 
 The installers bundle the Python runtime and Sherlock. Launch HuntWick from your applications menu. The platform directory and settings work offline. A live search needs a network connection to the selected sites.
 
@@ -68,7 +68,7 @@ The access-restricted Web Edition serves the shared interface through FastAPI. I
 
 ![Authenticated browser search and CSV export menu using a synthetic handle](docs/readme-assets/web-search.gif)
 
-[Desktop browser screenshot](docs/screenshots/web-desktop.png) · [Mobile screenshot](docs/screenshots/web-mobile.png) · [Web CI](https://github.com/ish4ra/HuntWick/actions/runs/45430038678)
+[Desktop browser screenshot](docs/screenshots/web-desktop.png) · [Mobile screenshot](docs/screenshots/web-mobile.png) · [Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Fdesktop-web)
 
 ```mermaid
 flowchart LR

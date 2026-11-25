@@ -1,6 +1,7 @@
 """Launch an installed HuntWick desktop and wait for its native/webview check."""
 
 import argparse
+import json
 import ntpath
 import os
 import subprocess
@@ -25,6 +26,8 @@ def main():
     parser.add_argument("executable", type=Path)
     executable = parser.parse_args().executable.resolve(strict=True)
     env = desktop_environment(os.environ, os.name == "nt")
+    metadata = Path(__file__).resolve().parents[1] / "package.json"
+    env["HUNTWICK_EXPECTED_INSTALL_VERSION"] = json.loads(metadata.read_text())["version"]
     with tempfile.TemporaryDirectory() as directory:
         subprocess.run(
             [str(executable), "--verify-install"], env=env, cwd=directory,

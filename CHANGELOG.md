@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-rc.3 — release candidate
+
+- Apply the approved Cut wordmark and Counter icon to both editions, native packages and README artwork.
+- Build artifact-only desktop candidates from the combined desktop and web source. Installed startup checks validate the candidate version and the permanent updater key.
+
 ## 0.1.0-rc.2 — unreleased
 
 - Added opt-in desktop catalog policies, per-platform diagnostics and a handle-free diagnostic export.
