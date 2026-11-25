@@ -17,6 +17,7 @@ from urllib3.exceptions import ReadTimeoutError
 
 from catalog import describe, load_sites
 from evidence import classify, equivalent
+from providers import original
 
 MAX_BODY = 512 * 1024
 HANDLE = re.compile(r'[a-zA-Z0-9_.-]{1,64}')
@@ -90,8 +91,11 @@ class ProfileSession:
 @cache
 def search_engine():
     from sherlock_project import sherlock as core
-    core.SherlockFuturesSession = ProfileSession
-    return core
+    from types import FunctionType, SimpleNamespace
+    fn = core.sherlock
+    hosted = FunctionType(fn.__code__, {**fn.__globals__, 'SherlockFuturesSession':ProfileSession},
+                          fn.__name__, fn.__defaults__, fn.__closure__)
+    return SimpleNamespace(sherlock=hosted)
 
 
 def check_site(name, definition, username, timeout):
@@ -158,7 +162,8 @@ def events(request, sites):
         timeout = bounded_integer(request, 'timeout', 10, 60)
         concurrency = bounded_integer(request, 'concurrency', 8, 20)
         with ThreadPoolExecutor(max_workers=concurrency) as pool:
-            jobs = [pool.submit(check_site, name, sites[name], username, timeout) for name in selected]
+            provider = check_site if request.get("providerMode") == "hosted" else original
+            jobs = [pool.submit(provider, name, sites[name], username, timeout) for name in selected]
             for job in as_completed(jobs):
                 yield job.result()
     else:
@@ -189,7 +194,7 @@ def main():
             raise ValueError('Invalid JSON request.') from None
         # Initialize the search runtime on the main thread before the parent-pipe
         # watcher blocks in a Windows CRT read. Catalog requests stay lightweight.
-        if isinstance(request, dict) and request.get('op') == 'search':
+        if isinstance(request, dict) and request.get('op') == 'search' and request.get('providerMode') == 'hosted':
             search_engine()
         if os.getenv('HUNTWICK_PARENT_PIPE') == '1':
             threading.Thread(target=watch_parent, daemon=True).start()

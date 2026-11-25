@@ -12,7 +12,7 @@ const rows: Result[] = statuses.map((status, i) => ({
 
 describe('evidence in results and reports', () => {
   it('keeps each status distinct and filters match views without moving diagnostics into either match group', () => {
-    expect(countStatuses([...rows, rows[1]])).toEqual({ found: 1, possible: 2, not_found: 1, blocked: 1, timed_out: 1, inconclusive: 1, error: 1, cancelled: 1 })
+    expect(countStatuses([...rows, rows[1]])).toEqual({ provider_match: 0, conflict: 0, found: 1, possible: 2, not_found: 1, blocked: 1, timed_out: 1, inconclusive: 1, error: 1, cancelled: 1 })
     expect(statuses.filter(s => visibleIn(s, 'balanced'))).toEqual(['found', 'possible'])
     expect(statuses.filter(s => visibleIn(s, 'strict'))).toEqual(['found'])
     expect(statuses.filter(s => visibleIn(s, 'diagnostics'))).toEqual(['not_found', 'blocked', 'timed_out', 'inconclusive', 'error', 'cancelled'])

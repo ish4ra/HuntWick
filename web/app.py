@@ -193,7 +193,7 @@ class Jobs:
 class Job:
     def __init__(self, jobs, payload, peer, owner):
         self.jobs, self.id, self.peer, self.owner = jobs, payload['id'], peer, owner
-        self.request = {k:v for k,v in payload.items() if k != 'id'} | {'op':'search'}
+        self.request = {k:v for k,v in payload.items() if k != 'id'} | {'op':'search', 'providerMode':'hosted'}
         self.pending = dict.fromkeys(payload['sites'])
         self.stop = asyncio.Event()
         self.frames = asyncio.Queue(maxsize=len(self.pending) + 1)

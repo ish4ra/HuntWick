@@ -136,6 +136,8 @@ pub fn public_https(raw: &str) -> Result<(), String> {
 pub enum Status {
     Found,
     Possible,
+    ProviderMatch,
+    Conflict,
     NotFound,
     Inconclusive,
     TimedOut,
@@ -151,6 +153,11 @@ pub struct Profile {
     pub status: Status,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub message: Option<String>,
+    pub provider: Option<String>,
+    pub verdict: Option<String>,
+    pub http: Option<u16>,
+    #[serde(rename = "elapsedMs")]
+    pub elapsed_ms: Option<u64>,
 }
 
 #[derive(Deserialize)]

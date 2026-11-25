@@ -29,7 +29,7 @@ class EngineTests(unittest.TestCase):
             return response
 
         with patch.object(adapter, 'fetch', side_effect=fetch):
-            request = {'op': 'search', 'username': username, 'sites': [name], 'timeout': 3, 'concurrency': 1}
+            request = {'op': 'search', 'providerMode':'hosted', 'username': username, 'sites': [name], 'timeout': 3, 'concurrency': 1}
             self.assertEqual(len(rows := list(adapter.events(request, self.sites))), 2)
             self.assertEqual(rows[1], {'type': 'done'})
             self.assertEqual((rows[0]['type'], rows[0]['platform']), ('result', name))
@@ -145,7 +145,7 @@ raise SystemExit(adapter.main())
                                        stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
                                        env={**os.environ, 'HUNTWICK_PARENT_PIPE':'1'})
             try:
-                process.stdin.write(b'{"op":"search","username":"blue","sites":["GitHub"]}\n')
+                process.stdin.write(b'{"op":"search","providerMode":"hosted","username":"blue","sites":["GitHub"]}\n')
                 process.stdin.flush()
                 deadline = time.monotonic() + 12
                 while not ready.exists() and process.poll() is None and time.monotonic() < deadline:

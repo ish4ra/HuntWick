@@ -1,5 +1,5 @@
 export type Mode = 'quick' | 'full'
-export type Status = 'found' | 'possible' | 'not_found' | 'inconclusive' | 'timed_out' | 'blocked' | 'cancelled' | 'error'
+export type Status = 'found' | 'possible' | 'provider_match' | 'conflict' | 'not_found' | 'inconclusive' | 'timed_out' | 'blocked' | 'cancelled' | 'error'
 export type Phase = 'running' | 'cancelling' | 'complete' | 'cancelled' | 'error'
 export type ExportFormat = 'csv' | 'json' | 'html'
 
@@ -21,6 +21,10 @@ export interface Result {
   url: string
   category: string
   status: Status
+  provider?: string
+  verdict?: string
+  http?: number
+  elapsedMs?: number
   reason?: string
   message: string
 }
@@ -53,19 +57,19 @@ export interface Settings {
 }
 
 export const statusLabels: Record<Status, string> = {
-  found: 'Verified Match', possible: 'Possible Match', not_found: 'Not found', blocked: 'Blocked',
+  provider_match: 'Provider Match', conflict: 'Conflicting Evidence', found: 'Verified Match', possible: 'Possible Match', not_found: 'Not found', blocked: 'Blocked',
   timed_out: 'Timed out', inconclusive: 'Inconclusive', error: 'Error', cancelled: 'Cancelled',
 }
 const statuses: ReadonlySet<string> = new Set(Object.keys(statusLabels))
 export type ResultView = 'balanced' | 'strict' | 'diagnostics' | 'all'
 
 export function countStatuses(rows: Result[]): Record<Status, number> {
-  const counts = { found: 0, possible: 0, not_found: 0, blocked: 0, timed_out: 0, inconclusive: 0, error: 0, cancelled: 0 }
+  const counts = { provider_match: 0, conflict: 0, found: 0, possible: 0, not_found: 0, blocked: 0, timed_out: 0, inconclusive: 0, error: 0, cancelled: 0 }
   for (const row of rows) counts[row.status]++
   return counts
 }
 export function visibleIn(status: Status, view: ResultView) {
-  const match = status === 'found' || status === 'possible'
+  const match = status === 'found' || status === 'possible' || status === 'provider_match' || status === 'conflict'
   if (view === 'balanced') return match
   if (view === 'strict') return status === 'found'
   if (view === 'diagnostics') return !match
@@ -78,6 +82,14 @@ export const historyLimit = 20
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+function provenance(row: Record<string, unknown>) {
+  return {
+    ...(shortString(row.provider) ? {provider:row.provider} : {}),
+    ...(shortString(row.verdict) ? {verdict:row.verdict} : {}),
+    ...(typeof row.http === 'number' && Number.isInteger(row.http) && row.http >= 100 && row.http <= 599 ? {http:row.http} : {}),
+    ...(typeof row.elapsedMs === 'number' && Number.isSafeInteger(row.elapsedMs) && row.elapsedMs >= 0 ? {elapsedMs:row.elapsedMs} : {}),
+  }
 }
 function shortString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0 && value.length <= 256
@@ -167,7 +179,7 @@ export function applyEvent(run: Run, event: unknown, catalog: Catalog, now: stri
       run.results.some(r => r.platform === platform)) return run
     const site = catalog.sites.find(s => s.name === platform)
     if (!site) return run
-    const result: Result = { platform, url: safeUrl(event.url), status: event.status, category: site.category,
+    const result: Result = { ...provenance(event), platform, url: safeUrl(event.url), status: event.status, category: site.category,
       ...(shortString(event.reason) ? { reason: event.reason } : {}),
       message: typeof event.message === 'string' ? event.message.slice(0, 2048) : ({
         possible: 'Account-specific evidence was incomplete. Review the public page.',
@@ -221,7 +233,7 @@ function parseSavedRun(value: unknown): Run | null {
   for (const row of value.results) {
     if (!record(row) || !shortString(row.platform) || !remaining.delete(row.platform) ||
       !shortString(row.category) || !validStatus(row.status) || (row.message !== undefined && typeof row.message !== 'string')) return null
-    results.push({ platform: row.platform, category: row.category, status: row.status,
+    results.push({ ...provenance(row), platform: row.platform, category: row.category, status: row.status,
       ...(shortString(row.reason) ? { reason: row.reason } : {}),
       url: safeUrl(row.url), message: typeof row.message === 'string' ? row.message.slice(0, 2048) : '' })
   }
@@ -256,13 +268,13 @@ export function formatExport(run: Run, format: ExportFormat): string {
   if (format === 'json') return JSON.stringify({ ...run, statusLabels, counts: countStatuses(run.results) }, null, 2) + '\n'
   const columns = ['Username', 'Platform', 'Category', 'Status', 'Profile URL', 'Message']
   if (format === 'csv') {
-    const records = [[...columns, 'Search started (UTC)', 'Result label', 'Reason'],
+    const records = [[...columns, 'Search started (UTC)', 'Result label', 'Reason', 'Provider', 'Provider verdict'],
       ...run.results.map(r => [run.username, r.platform, r.category, r.status, safeUrl(r.url), r.message,
-        run.startedAt, statusLabels[r.status], r.reason ?? ''])]
+        run.startedAt, statusLabels[r.status], r.reason ?? '',r.provider ?? '',r.verdict ?? ''])]
     return records.map(row => row.map(csvCell).join(',')).join('\r\n') + '\r\n'
   }
-  const header = [...columns, 'Reason'].map(s => '<th scope="col">' + s + '</th>').join('')
-  const body = run.results.map(r => [run.username, r.platform, r.category, statusLabels[r.status], safeUrl(r.url), r.message, r.reason ?? ''])
+  const header = [...columns, 'Reason','Provider','Provider verdict'].map(s => '<th scope="col">' + s + '</th>').join('')
+  const body = run.results.map(r => [run.username, r.platform, r.category, statusLabels[r.status], safeUrl(r.url), r.message, r.reason ?? '',r.provider ?? '',r.verdict ?? ''])
     .map(row => '<tr>' + row.map(s => '<td>' + htmlText(s) + '</td>').join('') + '</tr>').join('\n')
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<title>HuntWick search report</title><style>body{font:1rem system-ui;margin:2rem;color:#18212b}table{border-collapse:collapse}td,th{padding:.5rem;border:1px solid #ccd1d5;text-align:left;overflow-wrap:anywhere}</style></head><body>' +
@@ -276,7 +288,7 @@ export function diagnosticReport(run: Run) {
   return JSON.stringify({mode:run.mode, counts:countStatuses(run.results), checks:run.results.map(row=>{
     const http=/^Sherlock: (Claimed|Available|Unknown|Illegal|WAF)\. HTTP (\d{3})\. Headers: (\d+\.\d+) s\. Total: (\d+\.\d+) s\.$/.exec(row.message)
     const failure=/^(Connect timeout|Response timeout|Body timeout|Connection failure|TLS failure) after (\d+\.\d+) s\.$/.exec(row.message)
-    return {platform:row.platform,status:row.status,...(http?{upstream:http[1],http:Number(http[2]),headersSeconds:Number(http[3]),totalSeconds:Number(http[4])}:{}),
+    return {platform:row.platform,status:row.status,...provenance(row as unknown as Record<string, unknown>),...(http?{upstream:http[1],http:Number(http[2]),headersSeconds:Number(http[3]),totalSeconds:Number(http[4])}:{}),
       ...(failure?{failure:failure[1],totalSeconds:Number(failure[2])}:{})}
   })},null,2)
 }

@@ -39,6 +39,7 @@ function ProfileLink({ row, ws }: { row: Result; ws: Workspace }) {
 }
 function Evidence({ row }: { row: Result }) {
   return <>
+    {row.provider && <small className="row-detail">{row.provider}{row.verdict && " · "+row.verdict}</small>}
     {row.message && <small className="row-detail">{row.message}</small>}
     {row.reason && row.reason !== row.message && <small className="row-detail">{row.reason}</small>}
   </>
@@ -57,6 +58,7 @@ export default function Results({ ws }: { ws: Workspace }) {
   const [view, setView] = useState<ResultView>('balanced')
   const [filter, setFilter] = useState<Status | 'all'>('all')
   const [category, setCategory] = useState('')
+  const [provider, setProvider] = useState('')
   const [query, setQuery] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [ascending, setAscending] = useState(true)
@@ -65,9 +67,9 @@ export default function Results({ ws }: { ws: Workspace }) {
   const active = isActive(run)
   const rows = run?.results ?? []
   const counts = countStatuses(rows)
-  const matches = counts.found + counts.possible
+  const matches = counts.found + counts.possible + counts.provider_match + counts.conflict
   const views: { key: ResultView; label: string; count: number; hint: string }[] = [
-    { key: 'balanced', label: 'Balanced', count: matches, hint: 'Verified and possible matches' },
+    { key: 'balanced', label: 'Balanced', count: matches, hint: 'Provider claims, including conflicts, and independently assessed matches' },
     { key: 'strict', label: 'Strict', count: counts.found, hint: 'Verified matches only' },
     { key: 'diagnostics', label: 'Diagnostics', count: rows.length - matches, hint: 'Non-match statuses and check failures' },
     { key: 'all', label: 'All results', count: rows.length, hint: 'Every platform result' },
@@ -79,11 +81,11 @@ export default function Results({ ws }: { ws: Workspace }) {
         .filter(
           (r) =>
             visibleIn(r.status, view) && (filter === 'all' || r.status === filter) &&
-            (!category || r.category === category) &&
+            (!category || r.category === category) && (!provider || r.provider === provider) &&
             (r.platform + ' ' + r.url).toLowerCase().includes(query.trim().toLowerCase()),
         )
         .sort((a, b) => a.platform.localeCompare(b.platform) * (ascending ? 1 : -1)),
-    [run?.results, view, filter, category, query, ascending],
+    [run?.results, view, filter, category, provider, query, ascending],
   )
   const categories = [...new Set(rows.map((row) => row.category))].sort()
   return (
@@ -244,6 +246,9 @@ export default function Results({ ws }: { ws: Workspace }) {
                 ))}
               </select>
             </label>
+            {!ws.hosted && <label>Provider<select value={provider} onChange={e=>setProvider(e.target.value)}>
+              <option value="">All providers</option>{[...new Set(rows.map(r=>r.provider).filter(Boolean))].map(p=><option key={p}>{p}</option>)}
+            </select></label>}
             <button className="quiet small" onClick={() => setAscending(!ascending)}>
               <ArrowDownAZ size={14} />
               {ascending ? 'A–Z' : 'Z–A'}
