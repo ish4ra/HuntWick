@@ -1,3 +1,4 @@
+import { AdultCategory } from './AdultCategory'
 import { DiscoveryRadar } from './DiscoveryRadar'
 import { armRadar } from './radarAudio'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
@@ -20,7 +21,7 @@ import {
   X,
   Zap,
 } from 'lucide-react'
-import { eligible, engines, type Engine, validUsername, type Mode } from '../model'
+import { eligible, engines, validUsername, type Mode } from '../model'
 import { Busy, isActive, webPrivacy, type Workspace } from './common'
 import Results from './Results'
 
@@ -191,10 +192,17 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
               ) : (
                 <>
                   {' '}
-                  <label className="engine-select">Engine <select value={ws.settings.providerMode} disabled={active}
-                    onChange={e=>ws.updateSettings({providerMode:e.target.value as Engine})}>
-                    {engines.map((key,i)=><option key={key} value={key}>{['Sherlock Original','Enhanced Search','Maigret','Deep Search'][i]}</option>)}
-                  </select></label>
+                  <fieldset className="engine-options" disabled={active}><legend>Discovery engine</legend>
+                    {engines.map((key,i) => {
+                      const Icon = [Search, Zap, Globe2, Layers3][i]
+                      return <label key={key} className={ws.settings.providerMode===key?'selected':''}>
+                        <input type="radio" name="engine" value={key} checked={ws.settings.providerMode===key} onChange={()=>ws.updateSettings({providerMode:key})}/>
+                        <Icon size={16}/><span><strong>{['Sherlock Original','Enhanced Search','Maigret','Deep Search'][i]}</strong>
+                        <small>{['Stock Sherlock rules','Native public APIs + Sherlock','Expanded profile catalog','All providers combined'][i]}</small></span>
+                      </label>
+                    })}
+                  </fieldset>
+                  <fieldset className="category-options" disabled={active}><AdultCategory ws={ws}/></fieldset>
                   <div className="mode-heading" id="mode-label">
                     Search mode
                   </div>

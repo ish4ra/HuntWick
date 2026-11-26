@@ -3,7 +3,7 @@ import {
   eligible, activeRun, applyEvent, cancelRun, createRun, diagnosticReport, formatExport, historyLimit, parseCatalog, parseHistory,
   parseSettings, safeUrl, selectSites, validUsername,
 } from './model'
-import type { Catalog, ExportFormat, Mode, Run, Settings } from './model'
+import type { Catalog, Engine, ExportFormat, Mode, Run, Settings } from './model'
 
 interface SearchRequest {
   id: string
@@ -60,6 +60,8 @@ export class HuntWickSession {
   private settings(input: unknown): Settings {
     const settings = parseSettings(input)
     if (this.bridge.hosted) {
+      settings.providerMode = "sherlock"
+      if (!input) settings.radarSound = false
       settings.timeout = Math.min(20, settings.timeout)
       settings.concurrency = Math.min(2, settings.concurrency)
     }
@@ -186,18 +188,20 @@ export class HuntWickSession {
     return historyCleared && settingsCleared
   }
 
-  start = async (username: string, mode: Mode, selected?: string[]) => {
+  start = async (username: string, mode: Mode, selected?: string[], retryEngine?: Engine) => {
     if (activeRun(this.state.run)) return
     if (!validUsername(username)) { this.update({ error: 'Enter a username of 1–64 letters, digits, dots, dashes or underscores.' }); return }
     const { catalog, settings, ready, desktop } = this.state
     if (!desktop && !this.state.hosted) { this.update({ error: 'Open HuntWick on your desktop to run a search.' }); return }
     if (!catalog || !ready) { this.update({ error: 'Wait for the platform catalog to load.' }); return }
-    const sites = selectSites(catalog, mode, settings.disabledSites, selected).filter(s=>eligible(s, settings.providerMode))
+    const engine = retryEngine ?? settings.providerMode
+    const sites = selectSites(catalog, mode, settings.disabledSites, selected).filter(s=>eligible(s, engine))
     if (!sites.length) { this.update({ error: 'Enable at least one platform for this search.' }); return }
     const run = createRun(crypto.randomUUID(), username, mode, sites, now())
+    if (!this.bridge.hosted) run.engine = engine
     this.eligibleHistoryId = settings.saveHistory ? run.id : null
     this.update({ run, error: null })
-    const request = { ...(!this.bridge.hosted && settings.providerMode !== "sherlock" ? {providerMode:settings.providerMode} : {}),
+    const request = { ...(!this.bridge.hosted && engine !== "sherlock" ? {providerMode:engine} : {}),
       ...(!this.bridge.hosted && settings.retryTransient ? {retryTransient:true} : {}), id: run.id, username, sites: run.sites, timeout: settings.timeout, concurrency: settings.concurrency }
     const launch = this.bridge.start(request)
     this.launching = launch

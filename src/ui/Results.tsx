@@ -54,6 +54,7 @@ function StatusPill({ status }: { status: Status }) {
 }
 export default function Results({ ws }: { ws: Workspace }) {
   const { run } = ws
+  const [page,setPage] = useState(0)
   const [layout, setLayout] = useState<'table' | 'cards'>('table')
   const [view, setView] = useState<ResultView>('balanced')
   const [filter, setFilter] = useState<Status | 'all'>('all')
@@ -81,12 +82,16 @@ export default function Results({ ws }: { ws: Workspace }) {
         .filter(
           (r) =>
             visibleIn(r.status, view) && (filter === 'all' || r.status === filter) &&
-            (!category || r.category === category) && (!provider || r.provider === provider) &&
+            (!category || r.category === category) && (!provider || r.provider === provider || r.sources?.some(s=>s.provider===provider)) &&
             (r.platform + ' ' + r.url).toLowerCase().includes(query.trim().toLowerCase()),
         )
         .sort((a, b) => a.platform.localeCompare(b.platform) * (ascending ? 1 : -1)),
     [run?.results, view, filter, category, provider, query, ascending],
   )
+  const lastPage = Math.max(0,Math.ceil(filtered.length/80)-1)
+  const currentPage = Math.min(page,lastPage)
+  const visible = filtered.slice(currentPage*80,(currentPage+1)*80)
+  const retry = rows.filter(r=>r.status==='timed_out' || (r.status==='error' && [r.verdict,r.message].includes('Connection failure'))).map(r=>r.platform)
   const categories = [...new Set(rows.map((row) => row.category))].sort()
   return (
     <section className="result-area" aria-label="Search results">
@@ -102,6 +107,7 @@ export default function Results({ ws }: { ws: Workspace }) {
               {active ? <Busy /> : <CircleCheck size={14} />} {phases[run.phase]}
             </span>
           )}
+          {run && !ws.hosted && !active && retry.length>0 && <button className="quiet small" onClick={()=>void ws.start(run.username,run.mode,retry,run.engine)}>Retry failed checks ({retry.length})</button>}
           {run && <>
             <CopyLink url={matchLinks(rows, 'found')} action="Copy verified links" />
             <CopyLink url={matchLinks(rows, 'possible')} action="Copy possible links" />
@@ -247,7 +253,7 @@ export default function Results({ ws }: { ws: Workspace }) {
               </select>
             </label>
             {!ws.hosted && <label>Provider<select value={provider} onChange={e=>setProvider(e.target.value)}>
-              <option value="">All providers</option>{[...new Set(rows.map(r=>r.provider).filter(Boolean))].map(p=><option key={p}>{p}</option>)}
+              <option value="">All providers</option>{[...new Set(rows.flatMap(r=>r.sources?.map(s=>s.provider) ?? [r.provider]).filter(Boolean))].map(p=><option key={p}>{p}</option>)}
             </select></label>}
             <button className="quiet small" onClick={() => setAscending(!ascending)}>
               <ArrowDownAZ size={14} />
@@ -270,7 +276,7 @@ export default function Results({ ws }: { ws: Workspace }) {
           </Empty>
         ) : layout === 'cards' ? (
           <div className="profile-cards">
-            {filtered.map((row) => (
+            {visible.map((row) => (
               <article key={row.platform} className="profile-card">
                 <div className="card-title">
                   <PlatformMark name={row.platform} />
@@ -304,7 +310,7 @@ export default function Results({ ws }: { ws: Workspace }) {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((row) => (
+                {visible.map((row) => (
                   <tr key={row.platform}>
                     <td>
                       <div className="platform-cell">
@@ -329,6 +335,7 @@ export default function Results({ ws }: { ws: Workspace }) {
             </table>
           </div>
         )}
+        {lastPage>0 && <nav aria-label="Result pages"><button disabled={!currentPage} onClick={()=>setPage(currentPage-1)}>Previous</button> {currentPage+1} / {lastPage+1} <button disabled={currentPage===lastPage} onClick={()=>setPage(currentPage+1)}>Next</button></nav>}
       </div>
     </section>
   )

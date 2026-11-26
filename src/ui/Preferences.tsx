@@ -1,3 +1,4 @@
+import { AdultCategory } from './AdultCategory'
 import { useState, type ReactNode } from 'react'
 import {
   BookOpen,
@@ -54,7 +55,7 @@ export function SettingsPage({ ws }: { ws: Workspace }) {
     setAudioMessage(available?'':'Audio playback is unavailable in this window.')
     if (available && cue) playCue(cue,s.radarVolume,true)
   }
-  const [confirmAdult, setConfirmAdult] = useState(false)
+
   const [confirmClear, setConfirmClear] = useState(false)
   return (
     <>
@@ -98,10 +99,7 @@ export function SettingsPage({ ws }: { ws: Workspace }) {
       </Panel>
       {ws.desktop && <Panel title="Desktop catalog" icon={<Database size={17} />}>
         <fieldset disabled={isActive(ws.run)}><Preference title="Include adult platforms" hint="Public profile checks only. A matching name does not establish identity or interests.">
-          <button onClick={() => s.includeNsfw ? ws.updateSettings({includeNsfw:false}) : setConfirmAdult(true)}>{s.includeNsfw ? 'Disable adult platforms' : 'Include NSFW platforms…'}</button>
-          {confirmAdult && <div role="group" aria-label="Confirm adult platforms">Include adult-labeled sites in the directory and Full Search?
-          <button onClick={() => {ws.updateSettings({includeNsfw:true});setConfirmAdult(false)}}>Confirm inclusion</button>
-          <button onClick={() => setConfirmAdult(false)}>Cancel</button></div>}
+          <AdultCategory ws={ws}/>
         </Preference><Preference title="Include upstream-excluded sites" hint="Experimental checks can return false positives. Provider claims from these rules need independent review.">
           <Toggle checked={s.includeExcluded} label="Include upstream-excluded sites" onChange={() => ws.updateSettings({includeExcluded:!s.includeExcluded})}/>
         </Preference></fieldset>

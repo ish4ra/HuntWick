@@ -30,7 +30,7 @@ describe('desktop session', () => {
     const { session, requests, data, finish } = fixture()
     await session.connect()
     await Promise.all([session.start('alpha', 'quick'), session.start('beta', 'full')])
-    expect(requests).toEqual([{ id: expect.any(String), username: 'alpha', sites: ['Forum'], timeout: 10, concurrency: 8 }])
+    expect(requests).toEqual([{ id: expect.any(String), providerMode:'deep', username: 'alpha', sites: ['Forum'], timeout: 10, concurrency: 8 }])
     finish()
     expect(session.snapshot().run?.phase).toBe('complete')
     expect(session.snapshot().history).toEqual([])
@@ -55,11 +55,11 @@ describe('desktop session', () => {
     const reopen = () => new HuntWickSession(bridge, storage).snapshot().settings
     session.updateSettings({ timeout: 33, concurrency: 19, defaultMode: 'full', density: 'compact', disabledSites: ['Archive'] })
     expect(session.snapshot().settings.timeout).toBe(33)
-    expect(reopen()).toMatchObject({ timeout: 10, concurrency: 8, defaultMode: 'quick', density: 'compact', disabledSites: ['Archive'] })
+    expect(reopen()).toMatchObject({ timeout: 10, concurrency: 8, defaultMode: 'full', density: 'compact', disabledSites: ['Archive'] })
     session.updateSettings({ rememberPreferences: true })
     expect(reopen()).toMatchObject({ timeout: 33, concurrency: 19, defaultMode: 'full' })
     session.updateSettings({ rememberPreferences: false })
-    expect(reopen()).toMatchObject({ timeout: 10, concurrency: 8, defaultMode: 'quick' })
+    expect(reopen()).toMatchObject({ timeout: 10, concurrency: 8, defaultMode: 'full' })
     expect(session.snapshot().settings.timeout).toBe(33)
   })
   it('resets HuntWick data and in-memory results without clearing unrelated storage', async () => {

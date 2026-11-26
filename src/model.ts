@@ -38,6 +38,7 @@ export interface Result {
   message: string
 }
 export interface Run {
+  engine?: Engine
   id: string
   username: string
   startedAt: string
@@ -56,6 +57,7 @@ export interface Settings {
   radarSound: boolean
   radarVolume: number
   autoUpdates: boolean
+  adultConsent: boolean
   includeNsfw: boolean
   includeExcluded: boolean
   rememberPreferences: boolean
@@ -218,15 +220,16 @@ function boundedInt(value: unknown, max: number, fallback: number): number {
 export function parseSettings(input: unknown): Settings {
   const value = record(input) ? input : {}
   return {
-    providerMode: engines.includes(value.providerMode as Engine) ? value.providerMode as Engine : 'sherlock', retryTransient: value.retryTransient === true,
+    providerMode: engines.includes(value.providerMode as Engine) ? value.providerMode as Engine : 'deep', retryTransient: value.retryTransient === true,
     autoUpdates: value.autoUpdates !== false,
+    adultConsent: value.adultConsent === true || value.includeNsfw === true,
     includeNsfw: value.includeNsfw === true, includeExcluded: value.includeExcluded === true,
     scanSound: value.scanSound === true,
-    radarSound: value.radarSound === true,
-    radarVolume: typeof value.radarVolume === 'number' && Number.isFinite(value.radarVolume) ? Math.max(0,Math.min(100,value.radarVolume)) : 40,
+    radarSound: value.radarSound !== false,
+    radarVolume: typeof value.radarVolume === 'number' && Number.isFinite(value.radarVolume) ? Math.max(0,Math.min(100,value.radarVolume)) : 20,
     rememberPreferences: value.rememberPreferences === true,
     timeout: boundedInt(value.timeout, 60, 10), concurrency: boundedInt(value.concurrency, 20, 8),
-    saveHistory: value.saveHistory === true, defaultMode: value.defaultMode === 'full' ? 'full' : 'quick',
+    saveHistory: value.saveHistory === true, defaultMode: value.defaultMode === 'quick' ? 'quick' : 'full',
     theme: value.theme === 'light' || value.theme === 'system' ? value.theme : 'dark',
     density: value.density === 'compact' ? 'compact' : 'comfortable',
     disabledSites: Array.isArray(value.disabledSites) ? [...new Set(value.disabledSites.filter(shortString))] : [],
@@ -257,7 +260,7 @@ function parseSavedRun(value: unknown): Run | null {
   const checked = typeof value.checked === 'number' && Number.isInteger(value.checked) &&
     value.checked >= 0 && value.checked <= results.length ? value.checked :
     results.filter(r => r.status !== 'cancelled' && (r.status !== 'error' || !!r.url)).length
-  return { id: value.id, username: value.username, startedAt: value.startedAt, finishedAt: value.finishedAt, checked,
+  return { ...(engines.includes(value.engine as Engine) ? {engine:value.engine as Engine} : {}), id: value.id, username: value.username, startedAt: value.startedAt, finishedAt: value.finishedAt, checked,
     mode: value.mode, phase: value.phase, sites: [...value.sites], results, error: value.error }
 }
 
