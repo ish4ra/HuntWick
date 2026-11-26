@@ -30,12 +30,16 @@ Production source is `90124af0358f9868fb7be05fbec3b6a3ed0ec560`. The trusted upd
 
 The pinned promotion workflow runs a read-only rehearsal on `verify/rc5`. Only the owner-approved push to `promote/rc5` enables publication. It rechecks artifact archive digests, unpacks in a fresh directory, verifies the updater signatures and version bindings, and compares regenerated files byte-for-byte. The preview step stages the new manifest and retains the previous RC.4 bytes as a rollback asset.
 
-## Release gates
+## Published preview
 
-1. Verify the four production CI jobs, five installers, signed updater archives, public-key fingerprint, exact archive digests and offline preview manifest.
-2. Obtain owner approval before running the pinned promotion workflow. Verify the public bytes and preview feed from GitHub Actions.
-3. On the installed RC.4 Mac, update through Software updates, relaunch and verify version, preferences, history, four engine choices, consent, Full Search workload and cancellation.
-4. Review the integration PR and approve merging the combined Desktop/Web source to main. A stable release requires separate owner acceptance and approval.
+The [owner-approved promotion](https://github.com/ish4ra/HuntWick/actions/runs/45821142435) published [v0.1.0-rc.5](https://github.com/ish4ra/HuntWick/releases/tag/v0.1.0-rc.5) at production commit `90124af0358f9868fb7be05fbec3b6a3ed0ec560`. GitHub Actions verified the 13 public assets against the original bytes and checked the four updater signatures and signed version bindings before activating preview.
+
+The [preview feed](https://github.com/ish4ra/HuntWick/releases/download/updates-preview/latest.json) returned HTTP 200 with version `0.1.0-rc.5` and SHA-256 `26a150727f70e68ec5d6510e4f68a4e2362f43d103e7ef1bd1e5f8d33c26577a`. The RC.4 manifest is retained as `latest-0.1.0-rc.4.json`. Stable remains inactive.
+
+## Remaining owner acceptance
+
+1. On the installed RC.4 Mac, update through Software updates, relaunch and verify version, preferences, history, four engine choices, consent, Full Search workload and cancellation.
+2. Review the integration PR and approve merging the combined Desktop/Web source to main. A stable release requires separate owner acceptance and approval.
 
 ## Verified Actions archives
 

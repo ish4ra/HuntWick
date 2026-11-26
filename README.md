@@ -16,9 +16,9 @@ HuntWick Desktop is a local application for discovering public profiles that use
 
 ## Using the release candidate
 
-RC.4 is the published preview. RC.5 is awaiting owner acceptance. On an installed copy, open **Settings → Software updates** to check the signed preview feed. [RC.5 acceptance evidence](docs/rc5-acceptance.md) · [RC.4 checksums and owner checks](docs/rc4-acceptance.md)
+RC.5 is the published preview. In RC.4, open **Settings → Software updates → Check prereleases**, choose **Install 0.1.0-rc.5 and restart**, then **Confirm restart**. [RC.5 acceptance evidence](docs/rc5-acceptance.md) · [RC.5 checksums](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/SHA256SUMS)
 
-[Apple Silicon DMG](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.4/HuntWick-0.1.0-rc.4-aarch64-apple-darwin.dmg) · [Intel Mac DMG](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.4/HuntWick-0.1.0-rc.4-x86_64-apple-darwin.dmg) · [Windows x64](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.4/HuntWick-0.1.0-rc.4-x86_64-pc-windows-msvc.exe) · [Linux Debian](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.4/HuntWick-0.1.0-rc.4-x86_64-unknown-linux-gnu.deb) · [Linux AppImage](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.4/HuntWick-0.1.0-rc.4-x86_64-unknown-linux-gnu.AppImage)
+[Apple Silicon DMG](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/HuntWick-0.1.0-rc.5-aarch64-apple-darwin.dmg) · [Intel Mac DMG](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/HuntWick-0.1.0-rc.5-x86_64-apple-darwin.dmg) · [Windows x64](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/HuntWick-0.1.0-rc.5-x86_64-pc-windows-msvc.exe) · [Linux Debian](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/HuntWick-0.1.0-rc.5-x86_64-unknown-linux-gnu.deb) · [Linux AppImage](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/HuntWick-0.1.0-rc.5-x86_64-unknown-linux-gnu.AppImage)
 
 The installers bundle the Python runtime and Sherlock. Launch HuntWick from your applications menu. The platform directory and settings work offline. A live search needs a network connection to the selected sites.
 
