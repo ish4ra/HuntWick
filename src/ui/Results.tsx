@@ -100,7 +100,10 @@ export default function Results({ ws }: { ws: Workspace }) {
   const lastPage = Math.max(0,Math.ceil(filtered.length/80)-1)
   const currentPage = Math.min(page,lastPage)
   const visible = filtered.slice(currentPage*80,(currentPage+1)*80)
-  const retry = rows.filter(r=>r.status==='timed_out' || (r.status==='error' && [r.verdict,r.message].includes('Connection failure'))).map(r=>r.platform)
+  const retry = rows.filter(row => row.status === 'timed_out' || (
+    row.status === 'error' && [row.verdict, row.message].some(reason =>
+      reason === 'Connection failure' || reason === 'DNS failure' || reason === 'Proxy connection failure')
+  )).map(row => row.platform)
   const categories = [...new Set(rows.map((row) => row.category))].sort()
   return (
     <section className="result-area" aria-label="Search results">

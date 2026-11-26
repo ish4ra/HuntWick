@@ -51,7 +51,7 @@ The radar uses small circular blips with larger keyboard and pointer targets. Ea
 
 The desktop Search console can include adult-labeled platforms with one persistent switch and enable experimental upstream-excluded checks separately. The diagnostic JSON export omits handles and profile URLs. [Coverage and CLI comparison](docs/catalog-audit.md)
 
-In the RC.6 candidate, select **Include prereleases** for preview updates and use **Check for updates**. Installation requires a newer, signed release and a configured production verification key. The manual download path remains available for Debian and development builds. [Signing and installation](docs/packaging.md)
+New RC.6 installations check for stable updates. **Include prereleases** saves your choice for startup and manual checks. **Check for updates** offers the newest eligible version across the selected channels. Installation requires a newer, signed release and a configured production verification key. The manual download path remains available for Debian and development builds. [Signing and installation](docs/packaging.md)
 
 
 - See the selected scope, progress, elapsed time and outcome counts. Cancel an active search to keep the results received so far.
