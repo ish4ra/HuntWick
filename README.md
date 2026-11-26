@@ -4,17 +4,15 @@
 
 ![HuntWick — OSINT, simplified.](docs/readme-assets/hero.svg)
 
-[Static hero](docs/readme-assets/hero-static.png) · [Integration CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml?query=branch%3Aintegration%2Frc5) · [Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Frc5)
+[Static hero](docs/readme-assets/hero-static.png) · [RC.6 desktop candidate checks](https://github.com/ish4ra/HuntWick/actions/runs/45869171776) · [RC.5 Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Frc5)
 
-![Integration CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml/badge.svg?branch=integration%2Frc5)
-
-HuntWick Desktop is a local application for discovering public profiles that use a particular username. Enter a handle, choose **Quick search** for a curated set of platforms or **Full search** for every enabled compatible platform, then select **Search**. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
+HuntWick Desktop is a local application for discovering public profiles that use a particular username. Enter a handle, keep the default **Full search** for every enabled compatible platform, or choose **Quick search** for a curated set. Select **Search** to start. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
 
 ![RC.6 candidate desktop search console](docs/rc6-media/normal.png)
 
 [Desktop in light mode](docs/rc5-media/light.png) · [Web in light mode](docs/screenshots/web-light.png)
 
-## Using the release candidate
+## Download the published preview
 
 RC.5 is the published preview. In RC.4, open **Settings → Software updates → Check prereleases**, choose **Install 0.1.0-rc.5 and restart**, then **Confirm restart**. [RC.5 acceptance evidence](docs/rc5-acceptance.md) · [RC.5 checksums](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/SHA256SUMS)
 
@@ -32,6 +30,8 @@ The installers bundle the Python runtime and Sherlock. Launch HuntWick from your
 | Enhanced Search | 396 | Native API verification, including Scratch, and remaining Sherlock rules |
 | Maigret | 4,186 | Maigret 0.6.7 provider verdict |
 | Deep Search | 4,552 | Combined coverage, prioritized checks, and expandable source verdicts |
+
+In Deep Search the count is the number of distinct eligible profiles. When multiple engines cover the same profile, expand its result to see their verdicts. A larger search can return the same number of matches. During a run the console shows checks completed, speed and an estimate of the time remaining.
 
 The pinned Maigret database contains 11,071 definitions. Upstream enables 10,335. HuntWick accepts 4,188 reviewed-route definitions before category preferences and records exclusion reasons for 6,883. Eligibility describes a supported rule. Sites can still time out, deny access or change their profiles. A provider claim and independent API evidence appear separately.
 

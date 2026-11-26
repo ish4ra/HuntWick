@@ -1,6 +1,6 @@
 # RC.6 desktop quality candidate
 
-Development starts at the published RC.5 documentation commit `78322d5`. Installers linked from the README and the production preview feed still deliver RC.5. [Candidate CI](https://github.com/ish4ra/HuntWick/actions/runs/45859587461)
+Development starts at the published RC.5 documentation commit `78322d5`. Installers linked from the README and the production preview feed still deliver RC.5. The app, installer and README use the RC.5 artwork. [Four identity options for owner review](branding/README.md)
 
 ## What the four modes contribute
 
@@ -26,6 +26,17 @@ The built React console used fixture desktop IPC to invoke the actual Python ada
 
 Deep checked four more platforms than Sherlock and two more than Enhanced. Each mode returned one visible candidate per handle. These runs establish routing and differences in evidence, but yielded **zero additional live matches** for Deep. The synthetic regression separately exercises a complementary provider recovering a match after a connection failure. No owner Full Search benchmark was performed.
 
+## Full Search routing check
+
+The built desktop interface submitted its default Full selection through fixture IPC to the Python adapter. A local transport returned fixture responses for the pinned rules, with outbound connections disabled. Codementor supplied a positive page on a Maigret-only route. The adult-enabled run also supplied a positive Meendo response.
+
+| Deep Search selection | Requested profiles | Distinct result rows | Source verdicts | Fixture matches visible in Balanced |
+| --- | ---: | ---: | ---: | --- |
+| Adult sites off | 4,552 | 4,552 | 4,588 | Codementor |
+| Adult sites on | 4,569 | 4,569 | 4,605 | Codementor and Meendo |
+
+Both runs reached Complete. The returned platform names matched the submitted selection exactly, and every row carried at least one source verdict. The extra verdicts belong to overlapping provider rules. This check covers scheduling, aggregation and rendering across the whole pool. The live comparison above measures what external sites actually returned.
+
 ## Adult-profile coverage
 
 Desktop starts with adult sites excluded and preserves existing choices on upgrade. Turning on the labeled switch explicitly enables the category and saves the setting. Both Search and Settings read the same state. Full includes all eligible enabled sites. Quick remains curated. Balanced shows match candidates. All results includes negatives, denials and errors.
@@ -38,4 +49,21 @@ SpankBang has no rule in either pinned engine database or the reviewed WhatsMyNa
 
 The Chromium checks exercised the actual sidecar from the built UI, checked the switch across reload and opt-out, and checked horizontal overflow at 1280×820 and 760×540. The compact results image uses synthetic events to show pacing, logos and layout. Rate and estimated remaining time use completed platform checks and elapsed time, including startup. Estimates become visible after three checks and three seconds.
 
+The radar’s single-result caption was removed. In the results list, Ko-fi (catalog name `kofi`), MyAnimeList, Patreon and VirusTotal use bundled icons. All 26 icon aliases resolved to local SVGs. Platforms without a mapped icon use the globe fallback.
+
 [Normal window](rc6-media/normal.png) · [Minimum window](rc6-media/compact.png) · [Compact search console](rc6-media/compact-console.png) · [Compact results and pace](rc6-media/compact-results.png)
+
+## Candidate verification
+
+The first four-target build passed on Windows and both Mac architectures. On Linux, the upgrade harness inserted a TypeScript import ahead of the disposable older client's Vite type directive. Commit `81d0961` preserved the directive at the top of that file. The Linux-only rerun passed the private-feed signed AppImage upgrade, compared the installed bytes, relaunched RC.6 and checked the saved theme and history. [Initial matrix](https://github.com/ish4ra/HuntWick/actions/runs/45859587461) · [Linux rerun](https://github.com/ish4ra/HuntWick/actions/runs/45861322662)
+
+On the restored-artwork build, nine web service tests passed locally. Authenticated Chromium checks exercised the shared search UI, CSV export, accessible radar blips, local icons and sound controls against a loopback web service.
+
+All four targets passed for `f97a6dfcd9b8cf7556c10347001446cd0a103b18`. CI launched the desktop and checked the bundled engine on Windows, on both mounted Mac DMGs and on Linux. Linux also repeated the private signed AppImage upgrade. Each job verified its staged installers and uploaded archive digest. These archives use disposable CI updater keys and are available for manual owner testing. Published preview installs continue to receive RC.5. [Final desktop CI](https://github.com/ish4ra/HuntWick/actions/runs/45869171776)
+
+| Manual test archive | Archive SHA-256 |
+| --- | --- |
+| [Apple Silicon Mac](https://github.com/ish4ra/HuntWick/actions/runs/45869171776/artifacts/15142881954) | `190ca03ccf67ee66309430050b9ec9d5fc97f25ac2cb5d376040138b0082175d` |
+| [Intel Mac](https://github.com/ish4ra/HuntWick/actions/runs/45869171776/artifacts/15143332722) | `82aa6c7b0e95a052a983e29f1b354949452913aaab1ec78331ade818370de8a1` |
+| [Windows x64](https://github.com/ish4ra/HuntWick/actions/runs/45869171776/artifacts/15143011871) | `d4746502d149790687b63f0bbdb42b8bf639c1509ed538fe2851ccef9652ca9f` |
+| [Linux x64](https://github.com/ish4ra/HuntWick/actions/runs/45869171776/artifacts/15141953364) | `949a5c4e91eb4517b2b5f7221250db499abc665a33caa349c77e25c87bcd5bb7` |
