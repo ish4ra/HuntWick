@@ -157,20 +157,20 @@ def events(request, sites):
     if not isinstance(request, dict):
         raise ValueError('Expected a JSON object.')
     if request.get('op') == 'catalog':
-        yield describe({**sites, **EXTRA}, __version__)
+        from discovery import catalog, directory
+        yield catalog(directory(sites,request.get('includeNsfw',False),request.get('includeExcluded',False)), __version__)
     elif request.get('op') == 'search':
         username = request.get('username')
         if not isinstance(username, str) or not HANDLE.fullmatch(username) or username in {'.', '..'}:
             raise ValueError('Invalid username.')
         mode = request.get('providerMode','sherlock')
         retry = request.get('retryTransient',False)
-        if mode not in ('sherlock','enhanced','hosted','maigret') or type(retry) is not bool:
+        if mode not in ('sherlock','enhanced','hosted','maigret','deep') or type(retry) is not bool:
             raise ValueError('Invalid search provider or retry preference.')
-        if mode == 'enhanced':
-            sites = {**sites, **EXTRA}
-        if mode == 'maigret':
-            from maigret_provider import check, eligible
-            sites = eligible(request.get('includeNsfw', False), request.get('includeExcluded', False))
+        if mode != 'hosted':
+            from discovery import directory, modes, run_profile, stream
+            items = directory(sites,request.get('includeNsfw',False),request.get('includeExcluded',False))
+            sites = {name:item for name,item in items.items() if mode in modes(item)}
         selected = request.get('sites')
         if (not isinstance(selected, list) or not 1 <= len(selected) <= len(sites)
                 or any(not isinstance(name, str) or name not in sites for name in selected)
@@ -182,14 +182,15 @@ def events(request, sites):
         with (NetworkPool(size) if mode != 'hosted' else nullcontext()) as network, ThreadPoolExecutor(max_workers=size) as pool:
             if mode == 'hosted':
                 jobs = [pool.submit(check_site,name,sites[name],username,timeout) for name in selected]
-            elif mode == 'maigret':
-                jobs = [pool.submit(check,name,sites[name],username,timeout,network) for name in selected]
+                rows = (job.result() for job in as_completed(jobs))
             else:
-                jobs = [pool.submit(desktop_check,mode,name,sites[name],username,timeout,network,retry) for name in selected]
-            for job in as_completed(jobs):
-                row = job.result()
+                def submit(executor,name):
+                    return executor.submit(run_profile,mode,name,sites[name],username,timeout,network,retry)
+                rows = stream(pool, selected, size, submit)
+            for row in rows:
                 if mode != 'hosted':
-                    row['catalogVersion'] = 'Maigret 0.6.7' if mode == 'maigret' else DATABASE_VERSION
+                    row['catalogVersion'] = (DATABASE_VERSION+' + Maigret 0.6.7' if mode=='deep' else
+                                             'Maigret 0.6.7' if mode=='maigret' else DATABASE_VERSION)
                 yield row
     else:
         raise ValueError('Unknown operation.')
@@ -210,8 +211,8 @@ def watch_parent():
 
 def main():
     try:
-        line = sys.stdin.buffer.readline(65537)
-        if len(line) > 65536:
+        line = sys.stdin.buffer.readline(524289)
+        if len(line) > 524288:
             raise ValueError('Request exceeds size limit.')
         try:
             request = json.loads(line)

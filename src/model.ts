@@ -3,7 +3,13 @@ export type Status = 'found' | 'possible' | 'provider_match' | 'conflict' | 'not
 export type Phase = 'running' | 'cancelling' | 'complete' | 'cancelled' | 'error'
 export type ExportFormat = 'csv' | 'json' | 'html'
 
+export const engines = ['sherlock','enhanced','maigret','deep'] as const
+export type Engine = typeof engines[number]
+export function eligible(site: Site, engine: Engine) {
+  return site.engines?.includes(engine) ?? (!site.nativeOnly || engine !== 'sherlock')
+}
 export interface Site {
+  engines?: Engine[]
   name: string
   url: string
   category: string
@@ -23,6 +29,7 @@ export interface Result {
   category: string
   status: Status
   catalogVersion?: string
+  sources?: {provider:string; status:Status; verdict?:string; http?:number}[]
   provider?: string
   verdict?: string
   http?: number
@@ -43,7 +50,7 @@ export interface Run {
   error: string | null
 }
 export interface Settings {
-  providerMode: 'sherlock' | 'enhanced'
+  providerMode: Engine
   retryTransient: boolean
   scanSound: boolean
   radarSound: boolean
@@ -88,8 +95,9 @@ export const historyLimit = 20
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
-function provenance(row: {provider?:unknown; verdict?:unknown; catalogVersion?:unknown; http?:unknown; elapsedMs?:unknown}) {
+function provenance(row: {sources?:unknown; provider?:unknown; verdict?:unknown; catalogVersion?:unknown; http?:unknown; elapsedMs?:unknown}) {
   return {
+    ...(Array.isArray(row.sources) ? {sources:row.sources.filter(s=>record(s) && shortString(s.provider) && validStatus(s.status)).map(s=>({provider:s.provider,status:s.status,...(shortString(s.verdict)?{verdict:s.verdict}:{}),...(Number.isInteger(s.http)?{http:s.http}:{})}))} : {}),
     ...(shortString(row.catalogVersion) ? {catalogVersion:row.catalogVersion} : {}),
     ...(shortString(row.provider) ? {provider:row.provider} : {}),
     ...(shortString(row.verdict) ? {verdict:row.verdict} : {}),
@@ -133,7 +141,7 @@ export function parseCatalog(value: unknown): Catalog {
     if (!record(s) || !shortString(s.name) || !shortString(s.category) || typeof s.quick !== 'boolean' ||
       !safeUrl(s.url) || seen.has(s.name)) throw new Error('The engine returned an invalid platform entry.')
     seen.add(s.name)
-    return { ...(s.nativeOnly === true ? {nativeOnly:true} : {}), name: s.name, category: s.category, quick: s.quick, url: safeUrl(s.url) }
+    return { ...(Array.isArray(s.engines) && s.engines.length ? {engines:s.engines.filter(e=>engines.includes(e))} : {}), ...(s.nativeOnly === true ? {nativeOnly:true} : {}), name: s.name, category: s.category, quick: s.quick, url: safeUrl(s.url) }
   })
   const catalog: Catalog = { version: value.version, databaseVersion: value.databaseVersion, updatedAt: value.updatedAt, sites }
   if (value.unavailable === undefined) return catalog
@@ -210,7 +218,7 @@ function boundedInt(value: unknown, max: number, fallback: number): number {
 export function parseSettings(input: unknown): Settings {
   const value = record(input) ? input : {}
   return {
-    providerMode: value.providerMode === 'enhanced' ? 'enhanced' : 'sherlock', retryTransient: value.retryTransient === true,
+    providerMode: engines.includes(value.providerMode as Engine) ? value.providerMode as Engine : 'sherlock', retryTransient: value.retryTransient === true,
     autoUpdates: value.autoUpdates !== false,
     includeNsfw: value.includeNsfw === true, includeExcluded: value.includeExcluded === true,
     scanSound: value.scanSound === true,
@@ -296,7 +304,7 @@ export function diagnosticReport(run: Run) {
   return JSON.stringify({mode:run.mode, counts:countStatuses(run.results), checks:run.results.map(row=>{
     const http=/^Sherlock: (Claimed|Available|Unknown|Illegal|WAF)\. HTTP (\d{3})\. Headers: (\d+\.\d+) s\. Total: (\d+\.\d+) s\.$/.exec(row.message)
     const failure=/^(Connect timeout|Response timeout|Body timeout|Connection failure|TLS failure) after (\d+\.\d+) s\.$/.exec(row.message)
-    return {platform:row.platform,status:row.status,...(row.provider && ['Sherlock Original','HuntWick public lookup'].includes(row.provider) ? {provider:row.provider} : {}),
+    return {platform:row.platform,status:row.status,...(row.provider && ['Sherlock Original','HuntWick public lookup','Maigret'].includes(row.provider) ? {provider:row.provider} : {}),
       ...(row.verdict && /^(Claimed|Available|Illegal|Unknown|WAF|API identity matched|Identity unavailable|Invalid handle|Numeric profile redirect|Empty user lookup|ProfileNotFound|Request failed|Connection failure|TLS failure|Timeout|HTTP [1-5][0-9]{2})$/.test(row.verdict) ? {verdict:row.verdict} : {}),
       ...(row.http ? {http:row.http} : {}),...(row.elapsedMs !== undefined ? {elapsedMs:row.elapsedMs} : {}),...(http?{upstream:http[1],http:Number(http[2]),headersSeconds:Number(http[3]),totalSeconds:Number(http[4])}:{}),
       ...(failure?{failure:failure[1],totalSeconds:Number(failure[2])}:{})}

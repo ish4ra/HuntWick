@@ -55,7 +55,7 @@ jobs:
         run: |
           uv sync --project web --locked --python 3.12.14
           uv run --project web --frozen python -m unittest discover -s web/tests -v
-          uv run --project web --frozen python -m unittest discover -s engine/tests -v
+          uv run --project engine --frozen python -m unittest discover -s engine/tests -v
       - name: Build and verify the restricted container
         run: |
           docker build --tag huntwick-web:ci .

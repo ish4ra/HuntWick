@@ -30,6 +30,8 @@ pub struct Site {
     pub quick: bool,
     #[serde(default, rename = "nativeOnly")]
     pub native_only: bool,
+    #[serde(default)]
+    pub engines: Vec<String>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -47,14 +49,14 @@ pub struct SearchRequest {
 }
 
 const BAD_FRAME: &str = "The local engine returned an invalid response.";
-const CATALOG_LIMIT: u64 = 1024 * 1024;
+const CATALOG_LIMIT: u64 = 4 * 1024 * 1024;
 const RESULT_LIMIT: u64 = 16 * 1024;
 
 impl Catalog {
     fn validate(&self) -> Result<(), String> {
         let mut names = HashSet::new();
         if self.sites.is_empty()
-            || self.sites.len() > 1024
+            || self.sites.len() > 16000
             || self.sites.iter().any(|s| {
                 s.name.is_empty()
                     || s.name.len() > 160
@@ -96,11 +98,11 @@ impl SearchRequest {
         }
         if !matches!(
             self.provider_mode.as_deref(),
-            None | Some("sherlock" | "enhanced")
+            None | Some("sherlock" | "enhanced" | "deep" | "maigret")
         ) {
             return Err("Unknown search provider.".into());
         }
-        let available: HashSet<&str> = catalog.sites.iter().map(|s| s.name.as_str()).collect();
+        let available: HashSet<&str> = catalog.sites.iter().filter(|s| s.engines.is_empty() || s.engines.iter().any(|m| m == self.provider_mode.as_deref().unwrap_or("sherlock"))).map(|s| s.name.as_str()).collect();
         let mut selected = HashSet::new();
         if self.sites.is_empty()
             || self.sites.len() > available.len()
@@ -159,7 +161,17 @@ pub enum Status {
 }
 
 #[derive(Clone, Deserialize, Serialize)]
+pub struct Source {
+    pub provider: String,
+    pub status: Status,
+    pub verdict: Option<String>,
+    pub http: Option<u16>,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Profile {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sources: Vec<Source>,
     pub platform: String,
     pub url: String,
     pub status: Status,

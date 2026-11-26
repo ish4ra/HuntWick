@@ -20,7 +20,7 @@ import {
   X,
   Zap,
 } from 'lucide-react'
-import { validUsername, type Mode } from '../model'
+import { eligible, engines, type Engine, validUsername, type Mode } from '../model'
 import { Busy, isActive, webPrivacy, type Workspace } from './common'
 import Results from './Results'
 
@@ -75,8 +75,8 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
   const input = useRef<HTMLInputElement>(null)
   const active = isActive(ws.run)
   const quick =
-    ws.catalog?.sites.filter((s) => (!s.nativeOnly || ws.settings.providerMode === "enhanced") && s.quick && !ws.settings.disabledSites.includes(s.name)).length ?? 0
-  const full = ws.catalog?.sites.filter((s) => (!s.nativeOnly || ws.settings.providerMode === "enhanced") && !ws.settings.disabledSites.includes(s.name)).length ?? 0
+    ws.catalog?.sites.filter((s) => eligible(s, ws.settings.providerMode) && s.quick && !ws.settings.disabledSites.includes(s.name)).length ?? 0
+  const full = ws.catalog?.sites.filter((s) => eligible(s, ws.settings.providerMode) && !ws.settings.disabledSites.includes(s.name)).length ?? 0
   const count = ws.hosted || mode === 'full' ? full : quick
   function togglePlatform(platform: string) {
     const disabled = ws.settings.disabledSites
@@ -192,8 +192,8 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
                 <>
                   {' '}
                   <label className="engine-select">Engine <select value={ws.settings.providerMode} disabled={active}
-                    onChange={e=>ws.updateSettings({providerMode:e.target.value==='enhanced'?'enhanced':'sherlock'})}>
-                    <option value="sherlock">Sherlock Original</option><option value="enhanced">Enhanced Search</option>
+                    onChange={e=>ws.updateSettings({providerMode:e.target.value as Engine})}>
+                    {engines.map((key,i)=><option key={key} value={key}>{['Sherlock Original','Enhanced Search','Maigret','Deep Search'][i]}</option>)}
                   </select></label>
                   <div className="mode-heading" id="mode-label">
                     Search mode
