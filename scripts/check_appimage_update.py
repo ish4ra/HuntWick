@@ -123,7 +123,8 @@ def acceptance(tmp):
         orig="void invoke('confirm_install', { siteCount })"
         assert orig in driver.read_text()
         shutil.copyfile(ROOT/'scripts/fixtures/drive_upgrade.ts',checkout/'src/driveUpgrade.ts')
-        driver.write_text("import {driveUpgrade} from './driveUpgrade'\n"+driver.read_text().replace(
+        # Keep the leading Vite triple-slash directive before all imports.
+        driver.write_text(driver.read_text().replace('import { useEffect', "import {driveUpgrade} from './driveUpgrade'\nimport { useEffect", 1).replace(
             orig, "void driveUpgrade(siteCount).catch(e=>invoke('confirm_install',{siteCount,step:'FAILED '+String(e)}))")
             .replace('    void session.connect()', "    void invoke('confirm_install',{siteCount:0,step:'UI mounted'})\n"
                      "    void session.connect()")
