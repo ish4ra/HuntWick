@@ -102,7 +102,17 @@ impl SearchRequest {
         ) {
             return Err("Unknown search provider.".into());
         }
-        let available: HashSet<&str> = catalog.sites.iter().filter(|s| s.engines.is_empty() || s.engines.iter().any(|m| m == self.provider_mode.as_deref().unwrap_or("sherlock"))).map(|s| s.name.as_str()).collect();
+        let available: HashSet<&str> = catalog
+            .sites
+            .iter()
+            .filter(|s| {
+                s.engines.is_empty()
+                    || s.engines
+                        .iter()
+                        .any(|m| m == self.provider_mode.as_deref().unwrap_or("sherlock"))
+            })
+            .map(|s| s.name.as_str())
+            .collect();
         let mut selected = HashSet::new();
         if self.sites.is_empty()
             || self.sites.len() > available.len()

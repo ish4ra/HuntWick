@@ -1,16 +1,18 @@
 # HuntWick
 
+**One username. Multiple engines.** Powered by Sherlock & Maigret.
+
 ![HuntWick — OSINT, simplified.](docs/readme-assets/hero.svg)
 
-[Static hero](docs/readme-assets/hero-static.png) · [Integration CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml?query=branch%3Aintegration%2Fdesktop-web) · [Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Fdesktop-web)
+[Static hero](docs/readme-assets/hero-static.png) · [Integration CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml?query=branch%3Aintegration%2Frc5) · [Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Frc5)
 
-![Integration CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml/badge.svg?branch=integration%2Fdesktop-web)
+![Integration CI](https://github.com/ish4ra/HuntWick/actions/workflows/ci.yml/badge.svg?branch=integration%2Frc5)
 
 HuntWick Desktop is a local application for discovering public profiles that use a particular username. Enter a handle, choose **Quick search** for a curated set of platforms or **Full search** for every enabled compatible platform, then select **Search**. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
 
-![HuntWick RC.4 running on Linux with the Sherlock Original provider](docs/rc4-media/desktop.png)
+![RC.5 desktop search console, rendered with fixture IPC](docs/rc5-media/dark.png)
 
-[Desktop in light mode](docs/screenshots/desktop-rc3-light.png) · [Web in light mode](docs/screenshots/web-light.png)
+[Desktop in light mode](docs/rc5-media/light.png) · [Web in light mode](docs/screenshots/web-light.png)
 
 ## Using the release candidate
 
@@ -20,11 +22,30 @@ The installers bundle the Python runtime and Sherlock. Launch HuntWick from your
 
 ## Search workspace
 
-**Sherlock Original** uses the pinned upstream request methods and verdicts. Provider Match means Sherlock reported Claimed. Conflicting Evidence keeps a claim visible when a denial, redirect or other response contradicts it. **Enhanced Search** uses seven reviewed public lookups and Sherlock on the remaining eligible platforms. A matching identifier in an official API can give an independently verified result. The default catalog has 394 distinct Sherlock profiles and 396 with Enhanced Search. Counts change with desktop catalog settings. [Source and coverage review](docs/provider-research.md)
+| Desktop engine | Default eligible platforms | Evidence |
+| --- | ---: | --- |
+| Sherlock Original | 394 | Original Sherlock verdict |
+| Enhanced Search | 396 | Native public lookups and Sherlock rules |
+| Maigret | 4,179 | Maigret 0.6.7 provider verdict |
+| Deep Search | 4,550 | One result per normalized profile, with individual source verdicts |
 
-The radar uses small circular blips with larger keyboard and pointer targets. Focus a blip for its platform and result state. Scanning and detection sounds are separately opt-in, with volume and previews in Settings. [Radar](docs/rc4-media/web-desktop.png) · [Update settings](docs/rc4-media/updates-dark.png) · [Original detection sound](docs/rc4-media/verified.wav)
+The pinned Maigret database contains 11,071 definitions. Upstream enables 10,335. HuntWick accepts 4,180 reviewed-route definitions before category preferences and records exclusion reasons for 6,891. Eligibility describes a supported rule. Sites can still time out, deny access or change their profiles. A provider claim and independent API evidence appear separately.
 
-Desktop Settings can include adult-labeled platforms after confirmation and enable experimental upstream-excluded checks separately. The diagnostic JSON export omits handles and profile URLs. [Coverage and CLI comparison](docs/catalog-audit.md)
+```mermaid
+flowchart LR
+ Console --> Plan[Selected engine and eligible profiles]
+ Plan --> Sherlock
+ Plan --> Maigret
+ Plan --> Native[HuntWick public APIs]
+ Sherlock & Maigret & Native --> Workers[Supervised HTTPS workers]
+ Workers --> Results[Progressive results with source verdicts]
+```
+
+![Switching engines in the desktop console](docs/rc5-media/engine-selector.gif)
+
+The radar uses small circular blips with larger keyboard and pointer targets. Focus a blip for its platform and result state. New desktop installs enable restrained detection sounds. Scanning sounds are optional, with volume and previews in Settings. [Radar](docs/rc4-media/web-desktop.png) · [Update settings](docs/rc4-media/updates-dark.png) · [Original detection sound](docs/rc4-media/verified.wav)
+
+The desktop Search console can include adult-labeled platforms after confirmation and enable experimental upstream-excluded checks separately. The diagnostic JSON export omits handles and profile URLs. [Coverage and CLI comparison](docs/catalog-audit.md)
 
 Settings and About provide stable and prerelease update checks. Installation requires a newer, signed release and a configured production verification key. The manual download path remains available for Debian and development builds. [Signing and installation](docs/packaging.md)
 
@@ -70,7 +91,7 @@ The access-restricted Web Edition serves the shared interface through FastAPI. I
 
 ![Authenticated browser search and CSV export menu using a synthetic handle](docs/readme-assets/web-search.gif)
 
-[Desktop browser screenshot](docs/rc4-media/web-desktop.png) · [Mobile screenshot](docs/rc4-media/web-mobile.png) · [Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Fdesktop-web)
+[Desktop browser screenshot](docs/rc4-media/web-desktop.png) · [Mobile screenshot](docs/rc4-media/web-mobile.png) · [Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Frc5)
 
 ```mermaid
 flowchart LR

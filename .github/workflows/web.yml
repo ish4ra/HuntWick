@@ -2,7 +2,7 @@ name: Web
 
 on:
   push:
-    branches: [feat/web-edition, integration/desktop-web, main]
+    branches: [feat/web-edition, integration/desktop-web, integration/rc5, main]
   pull_request:
     paths:
       - "web/**"
