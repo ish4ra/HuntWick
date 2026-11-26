@@ -13,7 +13,7 @@ DATA = Path(__file__).parent / 'data'
 UPSTREAM = '99e70fe7167b1c884a221d41f8a1815e40ca1db7a07581b6b401fd590e5b6fa4'
 # Reviewed read-only profile template families and individually reviewed public routes.
 ENGINES = {'GitLab', 'Gitea', 'Discourse', 'DiscourseJson', 'Flarum', 'Mastodon', 'Lemmy'}
-INDIVIDUAL = {'GitHub', 'GitLab', 'Codewars', 'RubyGems', 'Codédex', 'Bluesky'}
+INDIVIDUAL = {'GitHub', 'GitLab', 'Codewars', 'RubyGems', 'Codédex', 'Bluesky', 'MyAnimeList', 'Scratch', 'Replit', 'Meendo', 'Open Game Art', 'HackingWithSwift', 'Hack MD', 'Codementor'}
 ADULT = {'erotic', 'porn', 'webcam'}
 GROUPS = [('Gaming', {'gaming', 'sport'}), ('Development', {'coding', 'tech'}),
           ('Creative', {'art', 'design', 'photo', 'music'}), ('Forums', {'discussion', 'forum'})]

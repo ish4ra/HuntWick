@@ -7,7 +7,7 @@ from urllib.parse import urlsplit
 from sherlock_project.sites import SitesInformation
 
 DATA = Path(__file__).parent / 'data'
-DATABASE_VERSION = '4e2a4f6 + exclusions 1096274 + native 2026-11-25.1'
+DATABASE_VERSION = '4e2a4f6 + exclusions 1096274 + native 2026-11-26.1'
 UPDATED_AT = '2026-11-25'
 DIGESTS = {
     'sites.json': '3fdfc6694c5cd99798881215554b09e617c6d5284a6219fae309882566a9fb30',
@@ -41,7 +41,7 @@ def valid_https(url):
 def native_rules():
     import json
     raw = (DATA / 'native-v1.json').read_bytes()
-    if sha256(raw).hexdigest() != 'abdf74ba54ef7c047e8c6dc494ffbb66b73f6f9fbc2c3fff1735a4a16a09df04':
+    if sha256(raw).hexdigest() != 'de870c8144d20b5076b099672fb8c269b7beff14ef8c0aaed8eb8ca353028497':
         raise ValueError('Bundled native catalog integrity check failed.')
     manifest = json.loads(raw)
     if manifest['schema'] != 1 or manifest['license'] != 'MIT':

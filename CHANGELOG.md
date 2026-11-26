@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-rc.6
+
+- Put adult-profile inclusion under a single persistent desktop switch.
+- Add reviewed Maigret routes, native Scratch verification, and complementary checks after connection failures.
+- Show scan pace, estimated remaining time and expandable per-provider verdicts.
+- Refine the compact console, app icon, platform marks and prerelease update controls.
+
 ## 0.1.0-rc.5
 
 - Bundle Maigret 0.6.7 alongside Sherlock, with progressive Deep Search and source verdicts.

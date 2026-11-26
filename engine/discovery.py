@@ -3,6 +3,8 @@ from concurrent.futures import wait, FIRST_COMPLETED
 from time import monotonic
 from urllib.parse import urlsplit
 
+import requests
+
 from catalog import describe
 from http_workers import NetworkPool
 from maigret_provider import check, eligible, snapshot
@@ -55,6 +57,7 @@ def catalog(items, version):
     for row in result['sites']:
         row['engines'] = modes(items[row['name']])
     unavailable = {r['name']:r['reason'] for r in result['unavailable']}
+    unavailable['SpankBang'] = 'No public username rule in the bundled Sherlock or Maigret catalogs.'
     for name, reason in snapshot()['unavailable'].items():
         if name not in items:
             unavailable.setdefault(name,reason)
@@ -70,6 +73,7 @@ class SharedNetwork:
     def __init__(self, network):
         self.network = network
         self.responses = {}
+        self.failures = {}
 
     def request(self, command):
         # Use one anonymous user agent across the Deep run. Content negotiation
@@ -79,8 +83,15 @@ class SharedNetwork:
         headers.setdefault('accept','*/*')
         headers['user-agent'] = 'HuntWick public profile lookup'
         key = (command['url'],command['method'],tuple(sorted(headers.items())),bool(command['redirect']))
+        failure_key = (command['method'], command['url'])
+        if failure_key in self.failures:
+            raise self.failures[failure_key]
         if key not in self.responses:
-            res = self.network.request({**command, 'headers':headers})
+            try:
+                res = self.network.request({**command, 'headers':headers})
+            except (requests.Timeout, requests.ConnectionError) as exc:
+                self.failures[failure_key] = exc
+                raise
             self.responses[key] = res
             if res.url == command['url'] and not 300 <= res.status_code < 400:
                 self.responses[key[:-1]+(not key[-1],)] = res
@@ -119,7 +130,13 @@ def run_profile(mode, name, item, username, timeout, network, retry):
                 break
             row = fn(provider_name,rule,username,remaining,shared)
             reports.append(row)
-            if row['status'] in {'blocked','timed_out'} or row.get('http') in {401,403,407,429,451} or row['status']=='error':
+            transient = (row.get('http') is None and
+                         (row['status'] == 'timed_out' or 'Connection failure' in
+                          (row.get('verdict'), row.get('message'))))
+            if transient:
+                continue
+            if (row['status'] in {'blocked','timed_out','error'} or row.get('http') in {401,403,407,429,451}
+                    or 'Conflicting evidence: blocked' in row.get('message','')):
                 break
         return reconcile(reports) if mode == 'deep' else reports[0]
 

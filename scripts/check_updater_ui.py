@@ -57,7 +57,8 @@ def main():
         panel=page.get_by_role('region',name='Software updates')
         assert heading.bounding_box()['y'] < panel.bounding_box()['y']
         expect(panel.get_by_role('switch',name='Automatic update checks')).to_be_visible()
-        page.get_by_role('button',name='Check prereleases').click()
+        page.get_by_label('Include prereleases').check()
+        page.get_by_role('button',name='Check for updates',exact=True).click()
         install=page.get_by_role('button',name='Install 0.3.0-rc.1 and restart')
         install.click()
         page.get_by_role("button",name="Confirm restart").click()
@@ -81,7 +82,7 @@ def main():
         page.evaluate('window.fixtureError=null')
         expect(install).to_have_count(0)
         page.get_by_role('button',name='Manual downloads').click()
-        assert page.evaluate('window.manualUrl') .endswith('/docs/rc4-acceptance.md')
+        assert page.evaluate('window.manualUrl') .endswith('/releases/tag/v0.1.0-rc.5')
         page.get_by_role('button',name='Search',exact=True).first.click()
         page.locator('#username').fill('fixture')
         page.locator('button[type=submit]').click()
@@ -90,7 +91,8 @@ def main():
         panel=page.get_by_role('region',name='Software updates')
         assert heading.bounding_box()['y'] < panel.bounding_box()['y']
         expect(panel.get_by_role('switch',name='Automatic update checks')).to_be_visible()
-        page.get_by_role('button',name='Check prereleases').click()
+        page.get_by_label('Include prereleases').check()
+        page.get_by_role('button',name='Check for updates',exact=True).click()
         expect(install).to_be_disabled()
         browser.close()
         server.shutdown()

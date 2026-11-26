@@ -112,3 +112,11 @@ describe('desktop session', () => {
     expect(session.snapshot().error).toMatch(/Missing engine/)
   })
 })
+
+it('retains adult-category consent and the current inclusion choice independently', async () => {
+  const {session, storage, bridge} = fixture()
+  session.updateSettings({adultConsent:true, includeNsfw:true})
+  expect(new HuntWickSession(bridge, storage).snapshot().settings.includeNsfw).toBe(true)
+  session.updateSettings({includeNsfw:false})
+  expect(new HuntWickSession(bridge, storage).snapshot().settings).toMatchObject({adultConsent:true,includeNsfw:false})
+})

@@ -52,3 +52,27 @@ class MaigretTests(unittest.TestCase):
         github = next(s for s in entries if s['name']=='GitHub')
         self.assertIn('maigret',github['engines'])
         self.assertTrue(any('maigret' in s['engines'] and 'sherlock' not in s['engines'] for s in entries))
+
+    def test_adult_profile_is_opt_in_and_routed_to_maigret(self):
+        from discovery import directory, modes
+        for consent in (False, True):
+            items = directory(load_sites(consent), consent, False)
+            self.assertEqual('Meendo' in items, consent)
+            if consent:
+                self.assertEqual(items['Meendo']['base']['category'], 'Adult (NSFW)')
+                self.assertEqual(set(modes(items['Meendo'])), {'deep', 'maigret'})
+
+    def test_independent_provider_can_recover_after_connection_failure(self):
+        from discovery import run_profile
+        from unittest.mock import Mock, patch
+        item = {'native': {}, 'sherlock': {}}
+        failed = dict(status='error',provider='Native',verdict='Connection failure')
+        claimed = dict(status='provider_match',provider='Sherlock Original',verdict='Claimed')
+        with patch('discovery.native',return_value=failed), patch('discovery.original',return_value=claimed) as second:
+            row = run_profile('deep','Fixture',item,'demo',2,Mock(),False)
+            self.assertEqual(row['status'],'provider_match')
+            self.assertEqual(len(row['sources']),2)
+            self.assertEqual(second.call_count,1)
+        with patch('discovery.native',return_value={**failed,'status':'blocked','http':403}), patch('discovery.original') as second:
+            self.assertEqual(run_profile('deep','Fixture',item,'demo',2,Mock(),False)['status'],'blocked')
+            second.assert_not_called()

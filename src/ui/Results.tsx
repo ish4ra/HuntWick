@@ -38,6 +38,11 @@ function ProfileLink({ row, ws }: { row: Result; ws: Workspace }) {
   )
 }
 function Evidence({ row }: { row: Result }) {
+  if (row.sources && row.sources.length > 1) {
+    return <details className="source-evidence"><summary>{row.sources.length} source verdicts</summary>
+      {row.sources.map((source,index)=><small className="row-detail" key={index}>{source.provider} · {source.verdict ?? statuses[source.status]}</small>)}
+    </details>
+  }
   return <>
     {row.provider && <small className="row-detail">{row.provider}{row.verdict && " · "+row.verdict}</small>}
     {row.message && <small className="row-detail">{row.message}</small>}
@@ -64,7 +69,7 @@ export default function Results({ ws }: { ws: Workspace }) {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [ascending, setAscending] = useState(true)
   const [exportsOpen, setExportsOpen] = useState(false)
-  const elapsed = useElapsed(run)
+  const {elapsed, seconds} = useElapsed(run)
   const active = isActive(run)
   const rows = run?.results ?? []
   const counts = countStatuses(rows)
@@ -76,6 +81,8 @@ export default function Results({ ws }: { ws: Workspace }) {
     { key: 'all', label: 'All results', count: rows.length, hint: 'Every platform result' },
   ]
   const checked = run?.checked ?? 0
+  const rate = active && checked >= 3 && seconds >= 3 ? checked / seconds : 0
+  const minutesLeft = run && rate ? Math.ceil((run.sites.length-checked)/rate/60) : 0
   const filtered = useMemo(
     () =>
       (run?.results ?? [])
@@ -155,7 +162,7 @@ export default function Results({ ws }: { ws: Workspace }) {
             </div>
             <div className="progress-caption">
               <span>{checked} checked of {run.sites.length} selected</span>
-              <span>{run.sites.length - rows.length} pending</span>
+              <span>{rate > 0 ? `${rate.toFixed(1)} checks/s · ${minutesLeft <= 1 ? "<1 min" : "~"+minutesLeft+" min"} remaining` : `${run.sites.length - rows.length} pending`}</span>
             </div>
             <progress aria-label="Selected platforms with an outcome" max={Math.max(1, run.sites.length)} value={rows.length} />
             <dl className="stats">

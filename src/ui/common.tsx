@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Check, Copy, LoaderCircle } from 'lucide-react'
+import { Check, Copy, Globe2, LoaderCircle } from 'lucide-react'
 import { useHuntWick } from '../useHuntWick'
 import { activeRun, type Run } from '../model'
 export { statusLabels as statuses } from '../model'
@@ -7,10 +7,10 @@ export { statusLabels as statuses } from '../model'
 export type Workspace = ReturnType<typeof useHuntWick>
 export type Page = 'Search' | 'History' | 'Platforms' | 'Settings' | 'About'
 export const repositoryUrl = 'https://github.com/ish4ra/HuntWick'
-export const desktopDownloadsUrl = repositoryUrl + '/blob/integration/desktop-web/docs/rc4-acceptance.md'
+export const desktopDownloadsUrl = repositoryUrl + '/releases/tag/v0.1.0-rc.5'
 export const webPrivacy =
   'The service operator receives your IP address and the username you submit. Selected platforms receive the username and the server’s IP address.'
-export const version = '0.1.0-rc.5'
+export const version = '0.1.0-rc.6'
 export const phases: Record<Run['phase'], string> = {
   running: 'Running',
   cancelling: 'Cancelling',
@@ -33,7 +33,8 @@ export function useElapsed(run: Run | null) {
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(timer)
   }, [run?.id, run?.phase])
-  return run ? duration(run.startedAt, run.finishedAt ?? now) : '00:00'
+  const end = run?.finishedAt ? Date.parse(run.finishedAt) : now
+  return {elapsed: run ? duration(run.startedAt, end) : '00:00', seconds: run ? Math.max(0,(end-Date.parse(run.startedAt))/1000) : 0}
 }
 async function copyText(text: string) {
   if (navigator.clipboard?.writeText) {
@@ -92,14 +93,14 @@ export function CopyLink({ url, action }: { url: string; action?: string }) {
     </span>
   )
 }
-const platformIcons: Record<string,string> = {'Chess.com':'chessdotcom','osu!':'osu','GitHub':'github','GitLab':'gitlab','Docker Hub':'docker','Codeberg':'codeberg','Twitch':'twitch','Instagram':'instagram','Reddit':'reddit','X (Twitter)':'x','YouTube':'youtube','TikTok':'tiktok','Hugging Face':'huggingface','Lichess':'lichess','Bluesky':'bluesky','Trello':'trello','Codewars':'codewars'}
+const platformIcons: Record<string,string> = {'kofi':'kofi','Ko-fi':'kofi','MyAnimeList':'myanimelist','Patreon':'patreon','VirusTotal':'virustotal','Scratch':'scratch','Replit.com':'replit','RubyGems':'rubygems','Letterboxd':'letterboxd','Chess.com':'chessdotcom','osu!':'osu','GitHub':'github','GitLab':'gitlab','Docker Hub':'docker','Codeberg':'codeberg','Twitch':'twitch','Instagram':'instagram','Reddit':'reddit','X (Twitter)':'x','YouTube':'youtube','TikTok':'tiktok','Hugging Face':'huggingface','Lichess':'lichess','Bluesky':'bluesky','Trello':'trello','Codewars':'codewars'}
 export function PlatformMark({ name }: { name: string }) {
   const icon = platformIcons[name]
   if (icon) return <span className="brand-mark" aria-hidden="true" style={{maskImage:`url(/platforms/${icon}.svg)`}}/>
   const hash = Array.from(name).reduce((value, c) => (value * 31 + c.charCodeAt(0)) >>> 0, 0)
   return (
     <span aria-hidden="true" className={'platform-mark hue-' + (hash % 4)}>
-      {name.slice(0, 2).toUpperCase()}
+      <Globe2 size={16}/>
     </span>
   )
 }

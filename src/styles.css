@@ -423,3 +423,19 @@ button.discovery-dot { position:absolute; z-index:2; display:grid; place-items:c
 @keyframes blip {from {transform:scale(.5);opacity:.7} to {transform:scale(2.7);opacity:0}}
 @media(prefers-reduced-motion:reduce){.scanning .sweep,.radar-blip::after{animation:none;}.radar-blip::after{display:none;}}
 .engine-options,.category-options{border:0;padding:0;margin:12px 0}.engine-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.engine-options legend{margin-bottom:6px}.engine-options label{position:relative;display:flex;align-items:center;gap:9px;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer}.engine-options label.selected{border-color:var(--accent-border);background:var(--tint);color:var(--accent)}.engine-options input{position:absolute;opacity:0}.engine-options label:focus-within{outline:2px solid var(--accent)}.engine-options small{display:block;font-size:11px;color:var(--secondary)}.adult-category{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.adult-category [role=group]{flex-basis:100%}.adult-category button{margin-left:4px}
+.adult-category {justify-content:space-between; background:var(--field); border:1px solid var(--line); border-radius:8px; padding:9px 12px; gap:12px}
+.adult-category strong,.adult-category small {display:block}.adult-category small,.engine-options small {color:var(--secondary)}
+.adult-category small {font-size:11px;margin-top:2px}.release-notes {line-height:1.5;overflow-wrap:anywhere}.release-notes p {margin:.35em 0}
+.progress-caption {flex-wrap:wrap;gap:6px 12px;font-variant-numeric:tabular-nums}
+@media(max-width:980px) {
+  .console-body {grid-template-columns:minmax(0,1fr) minmax(128px,22%)}
+  .engine-options label {min-width:0}.engine-options small {line-height:1.3}
+  .result-area .section-heading,.result-area .actions,.results-toolbar,.toolbar-actions {flex-wrap:wrap;gap:8px}
+}
+@media(max-width:800px) {
+  .console-body {grid-template-columns:minmax(0,1fr)}
+  .console-body .scope-radar {height:112px;min-height:112px;margin:0 16px 12px}
+}
+@media(max-width:420px) {
+  .engine-options label {padding:6px;gap:4px}.engine-options small {font-size:10px}
+}

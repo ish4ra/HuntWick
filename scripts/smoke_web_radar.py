@@ -41,7 +41,8 @@ def run(port, screenshots):
             assert blip['width']==blip['height'] and 3<=blip['width']<=4
         possible=page.get_by_role('button',name='GitLab · Possible Match',exact=True)
         possible.focus()
-        expect(page.locator('.radar-detail')).to_contain_text('GitLab · Possible Match')
+        expect(possible).to_be_focused()
+        expect(page.locator('.radar-detail')).to_have_count(0)
         expect(page.locator('.scope-radar.scanning')).to_have_count(0)
         for slug in ('github','gitlab'):
             assert page.request.get(origin+'/platforms/'+slug+'.svg').status==200

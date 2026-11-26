@@ -7,6 +7,7 @@ import { desktopDownloadsUrl, isActive, Toggle, version, type Workspace } from '
 type Offer = {version:string; notes:string}
 
 export function Updates({ws, visible}: {ws:Workspace;visible:boolean}) {
+  const [preview,setPreview] = useState(false)
   const [offer,setOffer] = useState<Offer|null>(null)
   const [status,setStatus] = useState('')
   const [busy,setBusy] = useState(false)
@@ -41,12 +42,12 @@ export function Updates({ws, visible}: {ws:Workspace;visible:boolean}) {
     <div className="preference"><div><strong>Automatic update checks</strong><small>Check the stable channel at startup. Installed version {version}.</small></div>
       <Toggle label="Automatic update checks" checked={ws.settings.autoUpdates} onChange={()=>ws.updateSettings({autoUpdates:!ws.settings.autoUpdates})}/></div>
     <div className="update-body"><div className="update-actions">
-      <button className="primary" disabled={busy} onClick={()=>void check(false)}>Check for updates</button>
-      <button className="quiet small" disabled={busy} onClick={()=>void check(true)}>Check prereleases</button>
+      <button className="primary" disabled={busy} onClick={()=>void check(preview)}>Check for updates</button>
+      <label><input type="checkbox" disabled={busy} checked={preview} onChange={e=>{setPreview(e.target.checked);setOffer(null);setConfirm(false);setStatus('')}}/> Include prereleases</label>
       <button className="text-action" onClick={()=>void ws.openUrl(desktopDownloadsUrl)}>Manual downloads <ExternalLink size={13}/></button>
     </div><p role="status">{status}</p>
     {progress!==null && <progress aria-label="Download progress" max={100} value={progress}/>}
-    {offer && <><h3>Release notes</h3><p>{offer.notes || 'No notes supplied.'}</p>
+    {offer && <><h3>Release notes</h3><div className="release-notes">{offer.notes ? offer.notes.split(/\r?\n/).filter(Boolean).map((line,i)=><p key={i}>{line}</p>) : <p>No notes supplied.</p>}</div>
       {confirm ? <div className="update-actions"><span>HuntWick will close, install the signed update and restart.</span>
         <button className="primary" disabled={busy || isActive(ws.run)} onClick={()=>void install()}>Confirm restart</button>
         <button className="quiet small" onClick={()=>setConfirm(false)}>Cancel</button></div> :

@@ -60,8 +60,8 @@ def native(name, rule, username, timeout, network):
                     re.fullmatch(r'did:(?:plc|web):[a-zA-Z0-9.:%_-]+',str(data.get('did',''))))
     elif name=='Lichess':
         verified = data.get('id')==handle and str(data.get('username','')).lower()==handle
-    elif name in {'Chess.com','GitHub','GitLab'}:
-        key = {'Chess.com':'username','GitHub':'login','GitLab':'username'}[name]
+    elif name in {'Chess.com','GitHub','GitLab','Scratch'}:
+        key = {'Scratch':'username','Chess.com':'username','GitHub':'login','GitLab':'username'}[name]
         identifier = data.get('player_id' if name=='Chess.com' else 'id')
         verified = str(data.get(key,'')).lower()==handle and type(identifier) is int and identifier>0
     elif name=='crates.io':

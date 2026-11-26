@@ -1,9 +1,17 @@
 {
   "schema": 1,
-  "revision": "2026-11-25.1",
+  "revision": "2026-11-26.1",
   "license": "MIT",
   "validation": "synthetic fixtures",
   "sites": {
+    "Scratch": {
+      "url": "https://scratch.mit.edu/users/{}/",
+      "urlProbe": "https://api.scratch.mit.edu/users/{}",
+      "urlMain": "https://scratch.mit.edu",
+      "category": "Development",
+      "source": "https://github.com/scratchfoundation/scratch-rest-api",
+      "nativeOnly": false
+    },
     "Bluesky": {
       "url": "https://bsky.app/profile/{}",
       "urlProbe": "https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor={}",

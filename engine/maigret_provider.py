@@ -12,7 +12,7 @@ from catalog import DATA
 from providers import http_warning
 
 VERSION = 'Maigret 0.6.7'
-DIGEST = '0ec9a03f6938291647061991ce92e8b51908fb27ddf23c014fd25aa8d83fda11'
+DIGEST = '9c16c00861a15e144b76e73205db0b698196332abcbddbcfa1185f092fb079aa'
 logger = logging.Logger('huntwick.maigret')
 logger.disabled = True
 

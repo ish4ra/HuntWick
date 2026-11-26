@@ -186,6 +186,10 @@ def events(request, sites):
             else:
                 def submit(executor,name):
                     return executor.submit(run_profile,mode,name,sites[name],username,timeout,network,retry)
+                if mode == 'deep':
+                    from catalog import QUICK
+                    selected = sorted(selected, key=lambda name: (name not in QUICK and 'native' not in sites[name],
+                                      len(modes(sites[name])) == 2 and name not in {'Scratch','Replit','MyAnimeList'}))
                 rows = stream(pool, selected, size, submit)
             for row in rows:
                 if mode != 'hosted':
