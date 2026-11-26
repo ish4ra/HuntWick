@@ -58,6 +58,11 @@ def main():
             "username":"fixture","sites":["Lichess"],"timeout":3,"concurrency":1},directory)
         if failure[0].get("provider") != "HuntWick public lookup" or failure[0].get("verdict") not in {"Connection failure","Timeout"}:
             raise RuntimeError("Packaged native public lookup did not report the offline connection failure.")
+        maigret = run_request(executable, {"op":"search","providerMode":"maigret",
+            "username":"with_underscore","sites":["GitHub"],"timeout":2,"concurrency":1}, directory)
+        if [e['type'] for e in maigret] != ['result','done'] or (
+                maigret[0].get('provider'), maigret[0].get('verdict')) != ('Maigret', 'Illegal'):
+            raise RuntimeError("Bundled Maigret failed its offline username rule.")
         print(f"{executable} loaded {len(sites)} sites and completed the offline search fixture.")
 
 

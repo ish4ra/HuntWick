@@ -45,10 +45,16 @@ def main():
     for path in metadata.distribution('tomli').files or ():
         if len(path.parts) == 1 and '__mypyc.' in path.name:
             hidden.extend(['--hidden-import', path.name.split('.')[0]])
+    # Some managed Python distributions ship additional TLS policy data next to ssl.py.
+    tls_policy = Path(sysconfig.get_path('stdlib')) / 'codex-rejected-cas.pem'
+    if tls_policy.is_file():
+        hidden.extend(['--add-data', f'{tls_policy}:.'])
     subprocess.run([
         sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean', '--onedir',
         *hidden, '--noupx', '--name', NAME, '--distpath', str(DEST), '--workpath', str(WORK),
         '--specpath', str(WORK), '--copy-metadata', 'sherlock-project',
+        '--copy-metadata', 'maigret', '--collect-data', 'maigret',
+        '--collect-data', 'socid_extractor', '--collect-data', 'pycountry',
         '--add-data', f'{ROOT / "data"}:data', str(ROOT / 'adapter.py'),
     ], check=True)
     copy_notices(DEST / NAME / 'notices')

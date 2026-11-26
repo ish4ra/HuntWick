@@ -164,10 +164,13 @@ def events(request, sites):
             raise ValueError('Invalid username.')
         mode = request.get('providerMode','sherlock')
         retry = request.get('retryTransient',False)
-        if mode not in ('sherlock','enhanced','hosted') or type(retry) is not bool:
+        if mode not in ('sherlock','enhanced','hosted','maigret') or type(retry) is not bool:
             raise ValueError('Invalid search provider or retry preference.')
         if mode == 'enhanced':
             sites = {**sites, **EXTRA}
+        if mode == 'maigret':
+            from maigret_provider import check, eligible
+            sites = eligible(request.get('includeNsfw', False), request.get('includeExcluded', False))
         selected = request.get('sites')
         if (not isinstance(selected, list) or not 1 <= len(selected) <= len(sites)
                 or any(not isinstance(name, str) or name not in sites for name in selected)
@@ -179,12 +182,14 @@ def events(request, sites):
         with (NetworkPool(size) if mode != 'hosted' else nullcontext()) as network, ThreadPoolExecutor(max_workers=size) as pool:
             if mode == 'hosted':
                 jobs = [pool.submit(check_site,name,sites[name],username,timeout) for name in selected]
+            elif mode == 'maigret':
+                jobs = [pool.submit(check,name,sites[name],username,timeout,network) for name in selected]
             else:
                 jobs = [pool.submit(desktop_check,mode,name,sites[name],username,timeout,network,retry) for name in selected]
             for job in as_completed(jobs):
                 row = job.result()
                 if mode != 'hosted':
-                    row['catalogVersion'] = DATABASE_VERSION
+                    row['catalogVersion'] = 'Maigret 0.6.7' if mode == 'maigret' else DATABASE_VERSION
                 yield row
     else:
         raise ValueError('Unknown operation.')
