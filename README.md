@@ -10,7 +10,7 @@
 
 HuntWick Desktop is a local application for discovering public profiles that use a particular username. Enter a handle, choose **Quick search** for a curated set of platforms or **Full search** for every enabled compatible platform, then select **Search**. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
 
-![RC.5 desktop search console, rendered with fixture IPC](docs/rc5-media/dark.png)
+![RC.6 candidate desktop search console](docs/rc6-media/normal.png)
 
 [Desktop in light mode](docs/rc5-media/light.png) · [Web in light mode](docs/screenshots/web-light.png)
 
@@ -22,16 +22,18 @@ RC.5 is the published preview. In RC.4, open **Settings → Software updates →
 
 The installers bundle the Python runtime and Sherlock. Launch HuntWick from your applications menu. The platform directory and settings work offline. A live search needs a network connection to the selected sites.
 
-## Search workspace
+## Search workspace in the RC.6 candidate
+
+[Compact window](docs/rc6-media/compact-console.png) · [Coverage and live comparison](docs/rc6-quality.md)
 
 | Desktop engine | Default eligible platforms | Evidence |
 | --- | ---: | --- |
 | Sherlock Original | 394 | Original Sherlock verdict |
-| Enhanced Search | 396 | Native public lookups and Sherlock rules |
-| Maigret | 4,179 | Maigret 0.6.7 provider verdict |
-| Deep Search | 4,550 | One result per normalized profile, with individual source verdicts |
+| Enhanced Search | 396 | Native API verification, including Scratch, and remaining Sherlock rules |
+| Maigret | 4,186 | Maigret 0.6.7 provider verdict |
+| Deep Search | 4,552 | Combined coverage, prioritized checks, and expandable source verdicts |
 
-The pinned Maigret database contains 11,071 definitions. Upstream enables 10,335. HuntWick accepts 4,180 reviewed-route definitions before category preferences and records exclusion reasons for 6,891. Eligibility describes a supported rule. Sites can still time out, deny access or change their profiles. A provider claim and independent API evidence appear separately.
+The pinned Maigret database contains 11,071 definitions. Upstream enables 10,335. HuntWick accepts 4,188 reviewed-route definitions before category preferences and records exclusion reasons for 6,883. Eligibility describes a supported rule. Sites can still time out, deny access or change their profiles. A provider claim and independent API evidence appear separately.
 
 ```mermaid
 flowchart LR
@@ -45,11 +47,11 @@ flowchart LR
 
 ![Switching engines in the desktop console](docs/rc5-media/engine-selector.gif)
 
-The radar uses small circular blips with larger keyboard and pointer targets. Focus a blip for its platform and result state. New desktop installs enable restrained detection sounds. Scanning sounds are optional, with volume and previews in Settings. [Radar](docs/rc4-media/web-desktop.png) · [Update settings](docs/rc4-media/updates-dark.png) · [Original detection sound](docs/rc4-media/verified.wav)
+The radar uses small circular blips with larger keyboard and pointer targets. Each blip has a platform and result label; activating it opens the result link. New desktop installs enable restrained detection sounds. Scanning sounds are optional, with volume and previews in Settings. [Radar](docs/rc4-media/web-desktop.png) · [Update settings](docs/rc4-media/updates-dark.png) · [Original detection sound](docs/rc4-media/verified.wav)
 
-The desktop Search console can include adult-labeled platforms after confirmation and enable experimental upstream-excluded checks separately. The diagnostic JSON export omits handles and profile URLs. [Coverage and CLI comparison](docs/catalog-audit.md)
+The desktop Search console can include adult-labeled platforms with one persistent switch and enable experimental upstream-excluded checks separately. The diagnostic JSON export omits handles and profile URLs. [Coverage and CLI comparison](docs/catalog-audit.md)
 
-Settings and About provide stable and prerelease update checks. Installation requires a newer, signed release and a configured production verification key. The manual download path remains available for Debian and development builds. [Signing and installation](docs/packaging.md)
+In the RC.6 candidate, select **Include prereleases** for preview updates and use **Check for updates**. Installation requires a newer, signed release and a configured production verification key. The manual download path remains available for Debian and development builds. [Signing and installation](docs/packaging.md)
 
 
 - See the selected scope, progress, elapsed time and outcome counts. Cancel an active search to keep the results received so far.
@@ -83,11 +85,11 @@ The bundled adapter invokes the pinned Sherlock and Maigret Python libraries. De
 
 ## Roadmap
 
-The next release gate is owner acceptance of the RC.4-to-RC.5 in-app update. Further work includes validating more platform definitions and comparing timeout behavior on the owner’s network.
+RC.6 is under candidate testing. RC.5 remains the published preview while owner testing continues.
 
 ## Web Edition
 
-The browser radar displays actual verified and possible events. Select a marker for details. Optional synthesized detection sounds start off, and the browser loads platform logos from the same authenticated service. The web radar screenshots use synthetic demonstration events.
+The browser radar displays actual verified and possible events. Activate a marker to open its profile. Optional synthesized detection sounds start off, and the browser loads platform logos from the same authenticated service. The web radar screenshots use synthetic demonstration events.
 
 The access-restricted Web Edition serves the shared interface through FastAPI. Its preview catalog covers GitHub and GitLab. The service requires operator credentials and limits concurrent work. The operator can see the submitted username and client IP. Target sites receive requests from the service. Hosted deployment awaits owner approval. [Setup and privacy](docs/web-deployment.md)
 
