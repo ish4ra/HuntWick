@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches-ignore: [feat/web-edition]
+    branches-ignore: [feat/web-edition, promote/rc4]
   pull_request:
   workflow_dispatch:
 
