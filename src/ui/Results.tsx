@@ -72,7 +72,7 @@ export default function Results({ ws }: { ws: Workspace }) {
   const {elapsed, seconds} = useElapsed(run)
   const active = isActive(run)
   const rows = run?.results ?? []
-  const counts = countStatuses(rows)
+  const counts = useMemo(() => countStatuses(run?.results ?? []), [run?.results])
   const matches = counts.found + counts.possible + counts.provider_match + counts.conflict
   const views: { key: ResultView; label: string; count: number; hint: string }[] = [
     { key: 'balanced', label: 'Balanced', count: matches, hint: 'Provider claims, including conflicts, and independently assessed matches' },
@@ -81,7 +81,9 @@ export default function Results({ ws }: { ws: Workspace }) {
     { key: 'all', label: 'All results', count: rows.length, hint: 'Every platform result' },
   ]
   const checked = run?.checked ?? 0
-  const rate = active && checked >= 3 && seconds >= 3 ? checked / seconds : 0
+  // Full runs schedule fast sites first. Let more checks finish before projecting hours of work.
+  const largeRun = (run?.sites.length ?? 0) >= 500
+  const rate = active && checked >= (largeRun ? 20 : 3) && seconds >= (largeRun ? 15 : 3) ? checked / seconds : 0
   const minutesLeft = run && rate ? Math.ceil((run.sites.length-checked)/rate/60) : 0
   const filtered = useMemo(
     () =>
@@ -114,7 +116,8 @@ export default function Results({ ws }: { ws: Workspace }) {
               {active ? <Busy /> : <CircleCheck size={14} />} {phases[run.phase]}
             </span>
           )}
-          {run && !ws.hosted && !active && retry.length>0 && <button className="quiet small" onClick={()=>void ws.start(run.username,run.mode,retry,run.engine)}>Retry failed checks ({retry.length})</button>}
+          {active && <button className="quiet small" disabled={run?.phase === 'cancelling'} onClick={()=>void ws.cancel()}>Cancel search</button>}
+          {run && !ws.hosted && !active && retry.length>0 && <button className="quiet small" onClick={()=>void ws.start(run.username,run.mode,retry,run.engine)}>Retry connection failures ({retry.length})</button>}
           {run && <>
             <CopyLink url={matchLinks(rows, 'found')} action="Copy verified links" />
             <CopyLink url={matchLinks(rows, 'possible')} action="Copy possible links" />
@@ -161,8 +164,8 @@ export default function Results({ ws }: { ws: Workspace }) {
               <span className="mono">{elapsed} elapsed</span>
             </div>
             <div className="progress-caption">
-              <span>{checked} checked of {run.sites.length} selected</span>
-              <span>{rate > 0 ? `${rate.toFixed(1)} checks/s · ${minutesLeft <= 1 ? "<1 min" : "~"+minutesLeft+" min"} remaining` : `${run.sites.length - rows.length} pending`}</span>
+              <span>{checked} checked of {run.sites.length} selected{active && ` · ${run.sites.length - rows.length} pending`}</span>
+              <span>{rate > 0 ? `${rate.toFixed(1)} checks/s · ${minutesLeft <= 1 ? "<1 min" : "~"+minutesLeft+" min"} remaining` : active ? 'Calculating estimate…' : ''}</span>
             </div>
             <progress aria-label="Selected platforms with an outcome" max={Math.max(1, run.sites.length)} value={rows.length} />
             <dl className="stats">

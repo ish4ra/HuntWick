@@ -47,7 +47,7 @@ SpankBang has no rule in either pinned engine database or the reviewed WhatsMyNa
 
 ## Desktop evidence
 
-The Chromium checks exercised the actual sidecar from the built UI, checked the switch across reload and opt-out, and checked horizontal overflow at 1280×820 and 760×540. The compact results image uses synthetic events to show pacing, logos and layout. Rate and estimated remaining time use completed platform checks and elapsed time, including startup. Estimates become visible after three checks and three seconds.
+The Chromium checks exercised the actual sidecar from the built UI, checked the switch across reload and opt-out, and checked horizontal overflow at 1280×820 and 760×540. The compact results image uses synthetic events to show pacing, logos and layout. Rate and estimated remaining time use completed platform checks and elapsed time, including startup. For runs under 500 platforms, estimates start after three checks and three seconds. Larger runs show checked and pending counts while collecting at least 20 checks and 15 seconds of timing data. The estimate uses the whole-run average because the first batch prioritizes quick sites.
 
 The radar’s single-result caption was removed. In the results list, Ko-fi (catalog name `kofi`), MyAnimeList, Patreon and VirusTotal use bundled icons. All 26 icon aliases resolved to local SVGs. Platforms without a mapped icon use the globe fallback.
 
@@ -67,3 +67,16 @@ All four targets passed for `f97a6dfcd9b8cf7556c10347001446cd0a103b18`. CI launc
 | [Intel Mac](https://github.com/ish4ra/HuntWick/actions/runs/45869171776/artifacts/15143332722) | `82aa6c7b0e95a052a983e29f1b354949452913aaab1ec78331ade818370de8a1` |
 | [Windows x64](https://github.com/ish4ra/HuntWick/actions/runs/45869171776/artifacts/15143011871) | `d4746502d149790687b63f0bbdb42b8bf639c1509ed538fe2851ccef9652ca9f` |
 | [Linux x64](https://github.com/ish4ra/HuntWick/actions/runs/45869171776/artifacts/15141953364) | `949a5c4e91eb4517b2b5f7221250db499abc665a33caa349c77e25c87bcd5bb7` |
+
+
+## Long-search layout
+
+Before a large run the console displays the configured batch size and per-attempt timeout. Results keep a Cancel search action alongside progress. The retry action starts a new search scoped to connection failures and timeouts.
+
+The built desktop UI with synthetic IPC events was checked at 1280×820, 900×640 and 760×540. The engine controls and category switch fit at each width, and the radar circle fits inside its panel without clipping. In a 4,569-site fixture, four completed results left 4,565 pending while the estimate was calculating. [Wide console](rc6-media/full-console-1280.png) · [Intermediate console](rc6-media/full-console-900.png) · [Compact console](rc6-media/full-console-760.png) · [Compact progress and cancellation](rc6-media/full-progress.png)
+
+## Production build inputs
+
+After owner selection, apply the chosen application icon and wordmark to a single reviewed source commit. Use version `0.1.0-rc.6`, the production-candidate workflow and the RC.5 trusted public-key SHA-256 `cd307eeee71b7a46e73fbf139469c5f087f57839ba5eba90e40782eeeb341669`. The four test archives above use disposable keys.
+
+Once the permanent-key matrix succeeds, pin its source commit, run ID, four archive IDs and digests, and the offline manifest archive in the existing exact-byte promotion workflow for RC.6. Preserve the active RC.5 manifest as a versioned rollback alongside the existing RC.4 asset. Rehearse read-only, then promote those same verified bytes to preview under owner authorization. [RC.5 promotion evidence](rc5-acceptance.md)

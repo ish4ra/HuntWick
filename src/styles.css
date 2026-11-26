@@ -439,3 +439,11 @@ button.discovery-dot { position:absolute; z-index:2; display:grid; place-items:c
 @media(max-width:420px) {
   .engine-options label {padding:6px;gap:4px}.engine-options small {font-size:10px}
 }
+
+.workload-note { margin: 8px 0 0; color: var(--secondary); font-size: 12px; line-height: 1.5; }
+@media (min-width: 801px) {
+  .console-body .scope-radar { align-self: center; aspect-ratio: 1; min-height: 0; }
+}
+@media (max-width: 800px) {
+  .console-body .radar-disc { width: min(96px, 75%); }
+}

@@ -232,6 +232,7 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
                       </button>
                     ))}
                   </div>
+                  {mode === 'full' && full >= 500 && <p className="workload-note">Full search checks every enabled platform in batches of {ws.settings.concurrency}. Slow sites can take up to {ws.settings.timeout} seconds per attempt.</p>}
                 </>
               )}
             </div>
