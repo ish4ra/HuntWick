@@ -91,6 +91,11 @@ describe('reports and local preferences', () => {
     expect(html).not.toContain('<script>')
     expect(JSON.parse(formatExport(run, 'json')).results).toEqual(run.results)
   })
+  it('includes prereleases only when explicitly enabled', () => {
+    expect(parseSettings({}).includePrereleases).toBe(false)
+    expect(parseSettings({includePrereleases: 'true'}).includePrereleases).toBe(false)
+    expect(parseSettings({includePrereleases: true}).includePrereleases).toBe(true)
+  })
   it('restores validated preferences and keeps history opt-in', () => {
     expect(parseSettings({ saveHistory: 'true', timeout: -1, concurrency: 40 })).toMatchObject({ saveHistory: false, timeout: 10, concurrency: 8 })
     expect(parseSettings({ saveHistory: true, timeout: 60, concurrency: 20, disabledSites: ['Forum', 'Forum', false] })).toMatchObject({ saveHistory: true, timeout: 60, concurrency: 20, disabledSites: ['Forum'] })

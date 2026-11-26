@@ -1,56 +1,107 @@
-import { useEffect, useState, useRef } from 'react'
-import { RefreshCw, ExternalLink } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { ArrowDownToLine, CircleAlert, CircleCheck, ExternalLink, RefreshCw } from 'lucide-react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { desktopDownloadsUrl, isActive, Toggle, version, type Workspace } from './common'
+import { ReleaseNotes } from './ReleaseNotes'
+import './updates.css'
 
-type Offer = {version:string; notes:string}
+type Offer = {version: string; notes: string}
+type Phase = 'idle' | 'checking' | 'current' | 'available' | 'confirm' | 'downloading' | 'error'
+type Transfer = [number, number | null]
 
-export function Updates({ws, visible}: {ws:Workspace;visible:boolean}) {
-  const [preview,setPreview] = useState(false)
-  const [offer,setOffer] = useState<Offer|null>(null)
-  const [status,setStatus] = useState('')
-  const [busy,setBusy] = useState(false)
-  const [confirm,setConfirm] = useState(false)
-  const [progress,setProgress] = useState<number|null>(null)
-  const checked = useRef(false)
-  async function check(prerelease:boolean) {
-    setBusy(true); setConfirm(false); setOffer(null); setStatus('Checking release feed…')
+function size(bytes: number) {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(1) + ' KiB'
+  return (bytes / 1024 ** 2).toFixed(1) + ' MiB'
+}
+
+export function Updates({ws, visible}: {ws: Workspace; visible: boolean}) {
+  const { autoUpdates, includePrereleases } = ws.settings
+  const [phase, setPhase] = useState<Phase>('idle')
+  const [offer, setOffer] = useState<Offer | null>(null)
+  const [error, setError] = useState('')
+  const [transfer, setTransfer] = useState<Transfer>([0, null])
+  const startup = useRef(true)
+  const busy = phase === 'checking' || phase === 'downloading'
+  const active = isActive(ws.run)
+  async function check(prerelease: boolean) {
+    setPhase('checking')
+    setOffer(null)
     try {
-      const found = await invoke<Offer|null>('check_update',{prerelease})
-      setOffer(found); setStatus(found ? 'Available update: '+found.version : 'No newer update is available.')
-    } catch (e) { setStatus(String(e)) } finally { setBusy(false) }
+      const found = await invoke<Offer | null>('check_update', {prerelease})
+      setOffer(found)
+      setPhase(found ? 'available' : 'current')
+    } catch (e) {
+      setError(String(e))
+      setPhase('error')
+    }
   }
   useEffect(() => {
-    if (ws.settings.autoUpdates && !checked.current) { checked.current=true; void check(false) }
-  },[ws.settings.autoUpdates])
+    if (!startup.current) return
+    startup.current = false
+    if (autoUpdates) void check(includePrereleases)
+  }, [autoUpdates, includePrereleases])
+
   async function install() {
-    if (!offer || isActive(ws.run)) return
-    setBusy(true); setConfirm(false); setStatus('Downloading signed update…')
-    let unlisten: (()=>void)|undefined
+    if (!offer || active || phase !== 'confirm') return
+    setTransfer([0, null])
+    setPhase('downloading')
+    let unlisten: (() => void) | undefined
     try {
-      unlisten = await listen<[number,number|null]>('update-progress',({payload:[bytes,total]}) =>{
-        const pct=total ? Math.min(100,Math.floor(100*bytes/total)) : null
-        setProgress(pct);setStatus(pct!==null ? pct+'% downloaded' : Math.ceil(bytes/1024)+' KiB downloaded')
-      })
-      await invoke('install_update',{version:offer.version})
-    } catch(e) { setStatus(String(e)); setOffer(null) } finally {unlisten?.();setProgress(null);setBusy(false)}
+      unlisten = await listen<Transfer>('update-progress', ({payload}) => setTransfer(payload))
+      await invoke('install_update', {version: offer.version})
+    } catch (e) {
+      setError(String(e))
+      setOffer(null)
+      setPhase('error')
+    } finally { unlisten?.() }
   }
+
   if (!visible) return offer ? <p role="status">HuntWick {offer.version} is available in Settings.</p> : null
-  return <section className="settings-panel" aria-label="Software updates">
-    <h2><RefreshCw size={17}/>Software updates</h2>
-    <div className="preference"><div><strong>Automatic update checks</strong><small>Check the stable channel at startup. Installed version {version}.</small></div>
-      <Toggle label="Automatic update checks" checked={ws.settings.autoUpdates} onChange={()=>ws.updateSettings({autoUpdates:!ws.settings.autoUpdates})}/></div>
-    <div className="update-body"><div className="update-actions">
-      <button className="primary" disabled={busy} onClick={()=>void check(preview)}>Check for updates</button>
-      <label><input type="checkbox" disabled={busy} checked={preview} onChange={e=>{setPreview(e.target.checked);setOffer(null);setConfirm(false);setStatus('')}}/> Include prereleases</label>
-      <button className="text-action" onClick={()=>void ws.openUrl(desktopDownloadsUrl)}>Manual downloads <ExternalLink size={13}/></button>
-    </div><p role="status">{status}</p>
-    {progress!==null && <progress aria-label="Download progress" max={100} value={progress}/>}
-    {offer && <><h3>Release notes</h3><div className="release-notes">{offer.notes ? offer.notes.split(/\r?\n/).filter(Boolean).map((line,i)=><p key={i}>{line}</p>) : <p>No notes supplied.</p>}</div>
-      {confirm ? <div className="update-actions"><span>HuntWick will close, install the signed update and restart.</span>
-        <button className="primary" disabled={busy || isActive(ws.run)} onClick={()=>void install()}>Confirm restart</button>
-        <button className="quiet small" onClick={()=>setConfirm(false)}>Cancel</button></div> :
-        <button className="primary" disabled={busy || isActive(ws.run)} onClick={()=>setConfirm(true)}>Install {offer.version} and restart</button>}</>}
-    </div></section>
+  const [downloaded, total] = transfer
+  const percent = total && total > 0 ? Math.min(100, Math.floor(100 * downloaded / total)) : undefined
+  return <section className="settings-panel updates-panel" aria-label="Software updates">
+    <h2><RefreshCw size={17}/>Software updates <small>Installed {version}</small></h2>
+    <div className="preference"><div><strong>Automatic update checks</strong>
+      <small>Check for {includePrereleases ? 'stable releases and prereleases' : 'stable releases'} at startup.</small></div>
+      <Toggle label="Automatic update checks" checked={autoUpdates} onChange={() => ws.updateSettings({autoUpdates: !autoUpdates})}/></div>
+    <div className="preference"><div><strong>Include prereleases</strong>
+      <small>Include preview versions in manual and automatic checks.</small></div>
+      <Toggle label="Include prereleases" checked={includePrereleases} disabled={busy} onChange={() => {
+        ws.updateSettings({includePrereleases: !includePrereleases})
+        setOffer(null)
+        setPhase('idle')
+      }}/></div>
+    <div className="update-body">
+      <div className="update-actions">
+        <button className="primary" disabled={busy} onClick={() => void check(includePrereleases)}>Check for updates</button>
+        <button className="text-action" onClick={() => void ws.openUrl(desktopDownloadsUrl)}>Manual downloads <ExternalLink size={13}/></button>
+      </div>
+      {phase === 'checking' && <p role="status">Checking release feeds…</p>}
+      {phase === 'current' && <div className="update-notice" role="status"><CircleCheck size={17}/> No newer update is available.</div>}
+      {phase === 'error' && <div className="update-notice update-error" role="alert"><CircleAlert size={17}/><div><strong>Update failed</strong><p>{error}</p></div></div>}
+      {offer && <article className="update-card">
+        <header><ArrowDownToLine size={20}/><div><h3>Update available</h3><p>HuntWick {offer.version}</p></div></header>
+        <div className="update-notes"><h4>Release notes</h4><ReleaseNotes notes={offer.notes}/></div>
+        <footer>
+          {phase === 'downloading' ? <div className="update-transfer">
+            <strong>Downloading signed update</strong>
+            <progress aria-label="Download progress" max={100} value={percent}/>
+            <span>{percent === undefined ? size(downloaded) + ' downloaded' : percent + '% · ' + size(downloaded) + ' of ' + size(total!)}</span>
+          </div> : <>
+            {active && <p>Finish or cancel the active search to install this update.</p>}
+            {phase === 'confirm' ? <>
+              <strong>Restart to install HuntWick {offer.version}?</strong>
+              <p>HuntWick will download and verify the update, then close and restart.</p>
+              <div className="update-actions">
+                <button className="primary" disabled={active} onClick={() => void install()}>Confirm restart</button>
+                <button className="quiet small" onClick={() => setPhase('available')}>Cancel</button>
+              </div>
+            </> : <button className="primary" disabled={active} onClick={() => setPhase('confirm')}>Install {offer.version} and restart</button>}
+          </>}
+        </footer>
+      </article>}
+    </div>
+  </section>
 }

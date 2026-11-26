@@ -1392,6 +1392,7 @@ dependencies = [
  "open",
  "reqwest",
  "rfd",
+ "semver",
  "serde",
  "serde_json",
  "tauri",

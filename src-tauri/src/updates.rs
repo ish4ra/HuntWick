@@ -39,7 +39,48 @@ pub async fn check_update(
             "Use the signed release and its checksum to update your Debian package.".into(),
         );
     }
-    let channel = if prerelease { "preview" } else { "stable" };
+    let stable = check_channel(&app, key, "stable").await;
+    let update = if prerelease {
+        let preview = check_channel(&app, key, "preview").await;
+        match (stable, preview) {
+            (Err(a), Err(b)) => return Err(if a == MISSING_FEED { b } else { a }),
+            (Err(e), Ok(other)) | (Ok(other), Err(e)) if e == MISSING_FEED => other,
+            (Err(e), _) | (_, Err(e)) => return Err(e),
+            (Ok(Some(stable)), Ok(Some(preview))) => {
+                if preview_is_newer(&stable.version, &preview.version)? {
+                    Some(preview)
+                } else {
+                    Some(stable)
+                }
+            }
+            (Ok(stable), Ok(preview)) => stable.or(preview),
+        }
+    } else {
+        stable?
+    };
+    let offer = update.as_ref().map(|u| Offer {
+        version: u.version.clone(),
+        notes: u.body.clone().unwrap_or_default(),
+    });
+    *pending.0.lock().unwrap() = update;
+    Ok(offer)
+}
+
+const MISSING_FEED: &str =
+    "No update feed has been published for this channel yet. Check again after the next release.";
+
+fn preview_is_newer(stable: &str, preview: &str) -> Result<bool, String> {
+    let parse =
+        |v: &str| semver::Version::parse(v).map_err(|_| "Invalid release version.".to_owned());
+    Ok(parse(preview)?.cmp_precedence(&parse(stable)?).is_gt())
+}
+
+async fn check_channel(
+    app: &AppHandle,
+    key: &str,
+    channel: &str,
+) -> Result<Option<Update>, String> {
+    let prerelease = channel == "preview";
     let endpoint: url::Url = format!("{RELEASES}updates-{channel}/latest.json")
         .parse()
         .map_err(|_| "Invalid feed.")?;
@@ -50,7 +91,8 @@ pub async fn check_update(
         .endpoints(vec![endpoint.clone()])
         .map_err(|_| "Invalid release feed.")?
         .version_comparator(move |current, remote| {
-            remote.version > current && (prerelease || remote.version.pre.is_empty())
+            remote.version.cmp_precedence(&current).is_gt()
+                && (prerelease || remote.version.pre.is_empty())
         })
         .build()
         .map_err(|_| "Updater is unavailable on this installation.")?;
@@ -69,14 +111,14 @@ pub async fn check_update(
                 .await
                 .is_ok_and(|r| r.status().as_u16() == 404);
             return Err(if missing {
-                "No feed has been published on this channel."
+                MISSING_FEED
             } else {
                 "The update service is unavailable. Try again later."
             }
             .into());
         }
         Err(UpdateError::Reqwest(e)) if !e.is_decode() => {
-            return Err("Could not reach the update service. Check your connection.".into())
+            return Err("Could not reach the update service. Check your connection and try Check for updates again.".into())
         }
         Err(_) => {
             return Err("The release metadata is invalid or does not support this platform.".into())
@@ -88,12 +130,7 @@ pub async fn check_update(
     {
         return Err("The release metadata is invalid.".into());
     }
-    let offer = update.as_ref().map(|u| Offer {
-        version: u.version.clone(),
-        notes: u.body.clone().unwrap_or_default(),
-    });
-    *pending.0.lock().unwrap() = update;
-    Ok(offer)
+    Ok(update)
 }
 
 #[tauri::command]
@@ -140,7 +177,7 @@ pub async fn install_update(
             | UpdateError::SignatureUtf8(_)
             | UpdateError::SignedVersionMismatch { .. }
             | UpdateError::MissingSignedVersion,
-        ) => Err("Update signature verification failed. The update was rejected.".into()),
+        ) => Err("Update signature verification failed. HuntWick rejected the download. Check again for a signed release.".into()),
         Err(UpdateError::Reqwest(_) | UpdateError::Network(_)) => {
             Err("The update download failed. Check your connection and retry.".into())
         }
@@ -151,6 +188,13 @@ pub async fn install_update(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn preview_must_outrank_stable() {
+        assert!(!preview_is_newer("1.10.0", "1.9.0-rc.10").unwrap());
+        assert!(!preview_is_newer("1.0.0", "1.0.0-rc.99").unwrap());
+        assert!(!preview_is_newer("1.0.0+1", "1.0.0+2").unwrap());
+        assert!(preview_is_newer("1.0.0", "1.1.0-rc.1").unwrap());
+    }
     #[test]
     fn downloads_are_pinned_to_release_assets() {
         assert!(approved_url(

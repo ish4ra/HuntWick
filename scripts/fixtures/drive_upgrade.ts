@@ -31,6 +31,8 @@ export async function driveUpgrade(siteCount: number) {
   await mustReject(invoke('install_update',{version:damaged.version}))
   stop()
   if (received<=0) throw Error('No download progress from the installed updater')
+  await report('stable supersedes older preview')
+  if ((await check(true))?.version !== '1.10.0') throw Error('Older preview superseded stable update')
   await report('signed candidate')
   const valid=await check(true)
   if (!valid) throw Error('Missing valid update')

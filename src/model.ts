@@ -56,6 +56,7 @@ export interface Settings {
   scanSound: boolean
   radarSound: boolean
   radarVolume: number
+  includePrereleases: boolean
   autoUpdates: boolean
   adultConsent: boolean
   includeNsfw: boolean
@@ -221,6 +222,7 @@ export function parseSettings(input: unknown): Settings {
   const value = record(input) ? input : {}
   return {
     providerMode: engines.includes(value.providerMode as Engine) ? value.providerMode as Engine : 'deep', retryTransient: value.retryTransient === true,
+    includePrereleases: value.includePrereleases === true,
     autoUpdates: value.autoUpdates !== false,
     adultConsent: value.adultConsent === true || value.includeNsfw === true,
     includeNsfw: value.includeNsfw === true, includeExcluded: value.includeExcluded === true,

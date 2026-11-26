@@ -107,9 +107,11 @@ export function PlatformMark({ name }: { name: string }) {
 export function Toggle({
   checked,
   onChange,
+  disabled,
   label,
 }: {
   checked: boolean
+  disabled?: boolean
   onChange: () => void
   label: string
 }) {
@@ -119,6 +121,7 @@ export function Toggle({
       type="button"
       role="switch"
       aria-label={label}
+      disabled={disabled}
       aria-checked={checked}
       onClick={onChange}
     >
