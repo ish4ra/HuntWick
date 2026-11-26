@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-rc.5
+
+- Bundle Maigret 0.6.7 alongside Sherlock, with progressive Deep Search and source verdicts.
+- Search 4,550 unique eligible profiles with default category settings. Review workload, change engine or cancel in the console.
+- Add targeted retries, visible desktop adult-category consent and paginated results.
+
 ## 0.1.0-rc.4 — release candidate
 
 - Restore Sherlock methods and original verdicts on desktop. Show provider claims and conflicting evidence alongside independently verified matches.

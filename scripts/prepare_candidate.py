@@ -13,7 +13,7 @@ RC3_FINGERPRINT = 'cd307eeee71b7a46e73fbf139469c5f087f57839ba5eba90e40782eeeb341
 def prepare():
     out = ROOT / 'installers'
     fingerprint = hashlib.sha256(os.environ['HUNTWICK_ARTIFACT_PUBLIC_KEY'].strip().encode()).hexdigest()
-    if VERSION == '0.1.0-rc.4' and fingerprint != RC3_FINGERPRINT:
+    if fingerprint != RC3_FINGERPRINT:
         raise ValueError('Candidate does not match the installed RC.3 trust anchor.')
     checksums = []
     for target,(platform,pattern) in TARGETS.items():

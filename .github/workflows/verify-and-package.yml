@@ -97,6 +97,9 @@ jobs:
       - name: Freeze the native engine
         run: |
           uv run --project engine --frozen python engine/build.py
+          engine_bin=engine/dist/huntwick-engine/huntwick-engine
+          if [[ "$RUNNER_OS" == Windows ]]; then engine_bin="$engine_bin.exe"; fi
+          uv run --project engine --frozen python scripts/smoke_maigret_tls.py "$engine_bin"
           cargo fetch --manifest-path src-tauri/Cargo.toml --locked --target "$TARGET"
           uv run --project engine --frozen python scripts/desktop_notices.py
       - name: Run Rust checks
