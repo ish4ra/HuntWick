@@ -7,15 +7,15 @@ import re
 import tempfile
 import shutil
 import subprocess
-import tempfile
+import argparse
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 from zipfile import ZipFile
 
 REPO = "ish4ra/HuntWick"
-SHA = "7d203a5aa40d7338e3a2d3857a777f00ab4b91f8"
-RUN = 45641860559
-VERSION = "0.1.0-rc.4"
+SHA = "90124af0358f9868fb7be05fbec3b6a3ed0ec560"
+RUN = 45776673295
+VERSION = "0.1.0-rc.5"
 TAG = "v" + VERSION
 API = f"https://api.github.com/repos/{REPO}"
 PUBLIC = f"https://github.com/{REPO}/releases/download"
@@ -23,11 +23,11 @@ APP = Path("candidate").resolve()
 OUT = APP / "installers"
 # ID, original archive digest. Changing these pins requires a new owner review.
 ARCHIVES = {
-    "huntwick-aarch64-apple-darwin": (15036421995, "4086715e3fb9ee865ccef8d3606c143ffe8609228e10020cccf277ea35a252e2"),
-    "huntwick-x86_64-apple-darwin": (15037577044, "6bbeefd63ced5be320be585845171dc346dfa58c8ced8f5612b686987566cb2f"),
-    "huntwick-x86_64-pc-windows-msvc": (15035873083, "2088fa78581336a1a66949be80df8feb07f484cc2b0b1998b173e5b32d887480"),
-    "huntwick-x86_64-unknown-linux-gnu": (15037460443, "fcdb9e9a49d9f6e6e639a3c6b5b6eb4da439fadb99174d39ed84de3776a75af0"),
-    "promotion-files": (15038015297, "7d0188d058ad255b2f2afbf070baa61c09de2477cacf42cba699cdc7aecc9e04"),
+    "huntwick-aarch64-apple-darwin": (15096732954, "f8b25eb153252c0a673171ba716c512b48d376d470de374294a2c6726fd7cddb"),
+    "huntwick-x86_64-apple-darwin": (15097781527, "acd427cee61d0a0d05d9cf858530e9fc3338dfca6f5e3fb319b484a2793e1f54"),
+    "huntwick-x86_64-pc-windows-msvc": (15095639813, "8cfc5b9c0bfbe358f792a7b0ad0a3b37bb327ef67027b58875fc91031b183d77"),
+    "huntwick-x86_64-unknown-linux-gnu": (15096029102, "af7436ae9d6897f8312a2d458366c809b1894f17aea29e22de3d7e7e20e6a56c"),
+    "promotion-files": (15097976094, "e36ebc198658258ffe350d0fd3b54bd52cdd921e7814151ce691d9de2a303469"),
 }
 KEY_HASH = "cd307eeee71b7a46e73fbf139469c5f087f57839ba5eba90e40782eeeb341669"
 
@@ -171,6 +171,49 @@ def verify_public(temp, tag, names):
         require(digest(temp / name) == digest(OUT / name), f"Public asset mismatch for {name}")
 
 
+def update_preview(temp):
+    """Stage and verify new bytes, retaining the RC.4 asset for rollback."""
+    tag = "updates-preview"
+    old = "sha256:98cdaa90f1fdef0ade2ff84d9d3489453f69022238b5597bbd1a33efaa3c37a4"
+    new = "sha256:" + digest(OUT / "latest.json")
+    staging = "latest-" + VERSION + ".json"
+    backup = "latest-0.1.0-rc.4.json"
+
+    def inventory():
+        feed = api("releases/tags/" + tag)
+        require(feed["id"] == 459033318 and feed["prerelease"] and not feed["draft"],
+                "Unexpected preview release")
+        return {a["name"]: a for a in feed["assets"]}
+
+    def rename(asset, name):
+        api(f"releases/assets/{asset['id']}", "PATCH", {"name": name})
+
+    def old_asset(asset):
+        return asset and asset["id"] == 794590979 and asset["digest"] == old
+
+    assets = inventory()
+    live = assets.get("latest.json")
+    if live and live["digest"] == new:
+        return
+    require(old_asset(live) or (not live and old_asset(assets.get(backup))),
+            "Preview changed since owner review")
+    if staging not in assets:
+        path = temp / staging
+        shutil.copyfile(OUT / "latest.json", path)
+        subprocess.run(["gh","release","upload",tag,str(path),"--repo",REPO],check=True)
+    staged = inventory()[staging]
+    require(staged["digest"] == new and staged["state"] == "uploaded","Staged preview mismatch")
+    if live:
+        rename(live, backup)
+    try:
+        rename(staged, "latest.json")
+    except Exception:
+        current = inventory()
+        if "latest.json" not in current and old_asset(current.get(backup)):
+            rename(current[backup], "latest.json")
+        raise
+
+
 def promote(temp):
     names, manifest = verify_candidate(temp)
     release(TAG, names)
@@ -179,14 +222,23 @@ def promote(temp):
         name = entry["url"].rsplit("/", 1)[1]
         require(entry["url"] == f"{PUBLIC}/{TAG}/{name}", "Unexpected manifest URL")
         subprocess.run(["node", "scripts/verify-update.mjs", temp / name, VERSION], cwd=APP, check=True)
-    release("updates-preview", ["latest.json"])
+    update_preview(temp)
     verify_public(temp, "updates-preview", ["latest.json"])
     stable = temp / "stable.json"
     if download(f"{PUBLIC}/updates-stable/latest.json", stable, allow_missing=True):
-        require(json.loads(stable.read_bytes())["version"] != VERSION, "Stable advertises RC.4")
+        require(json.loads(stable.read_bytes())["version"] != VERSION, "Stable advertises candidate")
     print("Verified public versioned assets, preview manifest and stable isolation.")
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--verify-only", action="store_true")
+    args = parser.parse_args()
     with tempfile.TemporaryDirectory() as directory:
-        promote(Path(directory))
+        if args.verify_only:
+            names, _ = verify_candidate(Path(directory))
+            for name in names:
+                if name.endswith((".dmg", ".AppImage", ".deb", ".exe")):
+                    print(f"::notice title=Verified installer::{name} {(OUT/name).stat().st_size} bytes")
+        else:
+            promote(Path(directory))

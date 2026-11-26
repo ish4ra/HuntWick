@@ -16,6 +16,7 @@ concurrency:
 jobs:
   verify:
     if: >-
+      github.ref != 'refs/heads/verify/rc5' && github.ref != 'refs/heads/promote/rc5' &&
       github.ref != 'refs/heads/build/production-candidate' &&
       !(github.event_name == 'push' && github.ref == 'refs/heads/feat/phase-1-desktop-mvp' &&
         startsWith(github.event.head_commit.message, '[verify updater key] '))

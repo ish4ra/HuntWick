@@ -1,7 +1,7 @@
-name: Promote verified RC.4
+name: Promote verified RC.5
 on:
   push:
-    branches: [promote/rc4]
+    branches: [promote/rc5, verify/rc5]
 
 permissions: {}
 concurrency:
@@ -12,7 +12,7 @@ jobs:
   promote:
     if: >-
       github.repository == 'ish4ra/HuntWick' &&
-      github.ref == 'refs/heads/promote/rc4' &&
+      github.ref == 'refs/heads/promote/rc5' &&
       github.actor == github.repository_owner &&
       github.triggering_actor == github.repository_owner &&
       !github.event.deleted
@@ -27,11 +27,38 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: 7d203a5aa40d7338e3a2d3857a777f00ab4b91f8
+          ref: 90124af0358f9868fb7be05fbec3b6a3ed0ec560
           path: candidate
           persist-credentials: false
-      - name: Verify the original ZIPs, publish RC.4 and verify preview
+      - name: Verify the original ZIPs, publish RC.5 and verify preview
         env:
           GH_TOKEN: ${{ github.token }}
           HUNTWICK_ARTIFACT_PUBLIC_KEY: ${{ vars.UPDATER_PUBLIC_KEY }}
         run: python scripts/promote_artifacts.py
+
+  verify:
+    if: >-
+      github.repository == 'ish4ra/HuntWick' &&
+      github.ref == 'refs/heads/verify/rc5' &&
+      github.actor == github.repository_owner &&
+      github.triggering_actor == github.repository_owner &&
+      !github.event.deleted
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: 90124af0358f9868fb7be05fbec3b6a3ed0ec560
+          path: candidate
+          persist-credentials: false
+      - name: Verify original ZIPs, installer sizes and offline preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HUNTWICK_ARTIFACT_PUBLIC_KEY: ${{ vars.UPDATER_PUBLIC_KEY }}
+        run: python scripts/promote_artifacts.py --verify-only

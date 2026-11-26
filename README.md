@@ -16,7 +16,9 @@ HuntWick Desktop is a local application for discovering public profiles that use
 
 ## Using the release candidate
 
-**v0.1.0-rc.4** is the desktop candidate for the permanent-key upgrade from RC.3. GitHub Actions builds Windows x64 NSIS, Apple Silicon and Intel DMGs, and Linux x64 Debian and AppImage packages. Sign in to download Actions artifacts and verify their digests before installing. [Five RC.4 installers, checksums and owner checks](docs/rc4-acceptance.md) · [RC.3 manual installation](docs/rc3-acceptance.md) · [Unsigned installation guidance](docs/packaging.md)
+RC.4 is the published preview. RC.5 is awaiting owner acceptance. On an installed copy, open **Settings → Software updates** to check the signed preview feed. [RC.5 acceptance evidence](docs/rc5-acceptance.md) · [RC.4 checksums and owner checks](docs/rc4-acceptance.md)
+
+[Apple Silicon DMG](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.4/HuntWick-0.1.0-rc.4-aarch64-apple-darwin.dmg) · [Intel Mac DMG](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.4/HuntWick-0.1.0-rc.4-x86_64-apple-darwin.dmg) · [Windows x64](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.4/HuntWick-0.1.0-rc.4-x86_64-pc-windows-msvc.exe) · [Linux Debian](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.4/HuntWick-0.1.0-rc.4-x86_64-unknown-linux-gnu.deb) · [Linux AppImage](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.4/HuntWick-0.1.0-rc.4-x86_64-unknown-linux-gnu.AppImage)
 
 The installers bundle the Python runtime and Sherlock. Launch HuntWick from your applications menu. The platform directory and settings work offline. A live search needs a network connection to the selected sites.
 
@@ -64,7 +66,7 @@ Use public information for lawful research, with appropriate consent. Verify a p
 
 ## Development
 
-HuntWick uses Tauri 2 and Rust for native services, React and TypeScript for the interface, and an isolated Python executable for Sherlock. To run it from source, install the [development prerequisites](docs/development.md), then run these commands at the repository root.
+HuntWick uses Tauri 2 and Rust for native services, React and TypeScript for the interface, and an isolated Python executable for Sherlock and Maigret. To run it from source, install the [development prerequisites](docs/development.md), then run these commands at the repository root.
 
 ```sh
 npm ci
@@ -77,11 +79,11 @@ Read the [architecture](docs/architecture.md), [test commands](docs/development.
 
 ## Engine and licensing
 
-The bundled adapter invokes the official Sherlock Python library. Desktop shows Sherlock’s original claims. Native API evidence is labeled separately, and the hosted service retains its restricted two-site policy. The site database is pinned and integrity checked. Website behavior may change between snapshots. [Sherlock](https://github.com/sherlock-project/sherlock) · [snapshot provenance](engine/notices/Provenance.md) · [third-party notices](THIRD_PARTY_NOTICES.md) · [HuntWick MIT license](LICENSE)
+The bundled adapter invokes the pinned Sherlock and Maigret Python libraries. Desktop preserves their original verdicts. Native API evidence is labeled separately, and the hosted service retains its restricted two-site policy. The site database is pinned and integrity checked. Website behavior may change between snapshots. [Sherlock](https://github.com/sherlock-project/sherlock) · [Maigret](https://github.com/soxoj/maigret) · [snapshot provenance](engine/notices/Provenance.md) · [third-party notices](THIRD_PARTY_NOTICES.md) · [HuntWick MIT license](LICENSE)
 
 ## Roadmap
 
-Phase 1 focuses on a single bundled engine, reproducible native packages and local privacy controls. Candidates for later phases include better site-specific evidence and regression fixtures, production-key device acceptance, an optional second engine, history comparison, localization and PDF reports.
+The next release gate is owner acceptance of the RC.4-to-RC.5 in-app update. Further work includes validating more platform definitions and comparing timeout behavior on the owner’s network.
 
 ## Web Edition
 
@@ -97,7 +99,8 @@ The access-restricted Web Edition serves the shared interface through FastAPI. I
 flowchart LR
     UI[React search workspace] --> Native[Tauri desktop]
     UI --> HTTP[Authenticated web service]
-    Native --> Engine[Sherlock adapter]
-    HTTP --> Engine
+    Native --> Engine[Desktop multi-engine adapter]
+    HTTP --> Hosted[Two-site hosted allowlist]
+    Hosted --> Sites
     Engine --> Sites[Selected public platforms]
 ```
