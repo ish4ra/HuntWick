@@ -8,9 +8,9 @@
 
 HuntWick Desktop is a local application for discovering public profiles that use a particular username. Enter a handle, keep the default **Full search** for every enabled compatible platform, or choose **Quick search** for a curated set. Select **Search** to start. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
 
-![RC.6 candidate desktop search console](docs/rc6-media/normal.png)
+![RC.6 candidate desktop search console](docs/rc6-media/pivot/desktop-dark.png)
 
-[Desktop in light mode](docs/rc5-media/light.png) · [Web in light mode](docs/screenshots/web-light.png)
+[Desktop in light mode](docs/rc6-media/pivot/desktop-light.png) · [Web in light mode](docs/rc6-media/pivot/web-light.png)
 
 ## Download the published preview
 
@@ -45,9 +45,9 @@ flowchart LR
  Workers --> Results[Progressive results with source verdicts]
 ```
 
-![Switching engines in the desktop console](docs/rc5-media/engine-selector.gif)
+![Switching engines in the desktop console](docs/rc6-media/pivot/engine-selector.gif)
 
-The radar uses small circular blips with larger keyboard and pointer targets. Each blip has a platform and result label; activating it opens the result link. New desktop installs enable restrained detection sounds. Scanning sounds are optional, with volume and previews in Settings. [Radar](docs/rc4-media/web-desktop.png) · [Update settings](docs/rc4-media/updates-dark.png) · [Original detection sound](docs/rc4-media/verified.wav)
+The radar uses small circular blips with larger keyboard and pointer targets. Each blip has a platform and result label; activating it opens the result link. New desktop installs enable restrained detection sounds. Scanning sounds are optional, with volume and previews in Settings. [Radar](docs/rc6-media/pivot/web-desktop.png) · [Update settings](docs/rc6-media/pivot/settings.png) · [Original detection sound](docs/rc4-media/verified.wav)
 
 The desktop Search console can include adult-labeled platforms with one persistent switch and enable experimental upstream-excluded checks separately. The diagnostic JSON export omits handles and profile URLs. [Coverage and CLI comparison](docs/catalog-audit.md)
 
@@ -95,7 +95,7 @@ The access-restricted Web Edition serves the shared interface through FastAPI. I
 
 ![Authenticated browser search and CSV export menu using a synthetic handle](docs/readme-assets/web-search.gif)
 
-[Desktop browser screenshot](docs/rc4-media/web-desktop.png) · [Mobile screenshot](docs/rc4-media/web-mobile.png) · [Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Frc5)
+[Desktop browser screenshot](docs/rc6-media/pivot/web-desktop.png) · [Mobile screenshot](docs/rc6-media/pivot/web-mobile.png) · [Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Frc5)
 
 ```mermaid
 flowchart LR

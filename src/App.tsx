@@ -6,10 +6,8 @@ import {
   ChevronRight,
   CircleHelp,
   Database,
-  Fingerprint,
   ExternalLink,
   Github,
-  Globe2,
   History,
   Info,
   Menu,
@@ -154,7 +152,7 @@ export default function App() {
             <Menu size={19} />
           </button>
           <div className="breadcrumb">
-            <>{ws.hosted ? <Globe2 size={17} /> : <Fingerprint size={17} />}</>
+            <img src="/huntwick.svg" alt="" width={20} height={20} />
             <span>{ws.hosted ? 'HuntWick Web' : 'Workspace'}</span>
             <ChevronRight size={13} />
             <strong>{page}</strong>
