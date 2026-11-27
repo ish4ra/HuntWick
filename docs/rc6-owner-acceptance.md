@@ -1,0 +1,10 @@
+# RC.6 installed acceptance
+
+After the RC.6 preview is published, open the installed Apple Silicon RC.5 app. In **Settings → Software updates**, click **Check prereleases**, select **Install 0.1.0-rc.6 and restart**, then **Confirm restart**. Keep the app open during download and verification. Finish or cancel an active search before installing.
+
+1. After relaunch, check the version in About or Settings. Look for the Pivot lens in the H crossbar in the sidebar and Dock. Verify the saved theme, preferences, adult-platform choice and one previously saved history entry.
+2. Choose an authorized test username with a public account you control and one confirmed absent handle on the same platform. Record the expected outcomes locally. Include an eligible Maigret-only site if available. A name match alone does not establish common ownership.
+3. Run Enhanced, Maigret and Deep on the same connection with the same category settings, timeout and concurrency. Use the same selected sites for a controlled comparison and record the actual eligible count per engine. For a separate Full run, record the selected count, total duration, time to first candidate and whether the ETA settles after the initial batch.
+4. For each run, record independently verified, provider match, possible, conflict, not found, timed out, blocked and error counts. In Balanced, expand overlapping source verdicts. Confirm that Strict shows verified evidence and Diagnostics shows failures. Check both controlled cases and note false positives, missed positives and transport failures separately.
+5. Reduce the window, inspect the radar, toolbar and platform icons, then cancel a separate run from Results. Check that the partial results remain accessible and that a targeted retry selects only eligible failures.
+6. To share a redacted report, select **Export → Export diagnostics (no handle or URLs)**. Review the JSON locally first. It still identifies checked platforms and outcomes. Remove sensitive platform names before sharing. Ordinary result exports can include the handle and profile links.

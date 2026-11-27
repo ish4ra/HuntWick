@@ -17,6 +17,7 @@ jobs:
   verify:
     if: >-
       github.ref != 'refs/heads/verify/rc5' && github.ref != 'refs/heads/promote/rc5' &&
+      github.ref != 'refs/heads/verify/rc6' && github.ref != 'refs/heads/promote/rc6' &&
       github.ref != 'refs/heads/build/production-candidate' &&
       !(github.event_name == 'push' && github.ref == 'refs/heads/feat/phase-1-desktop-mvp' &&
         startsWith(github.event.head_commit.message, '[verify updater key] '))
@@ -110,7 +111,15 @@ jobs:
       - name: Verify all four platform entries against the signed payloads
         env:
           HUNTWICK_ARTIFACT_PUBLIC_KEY: ${{ vars.UPDATER_PUBLIC_KEY }}
-        run: python scripts/prepare_candidate.py
+        run: |
+          python scripts/prepare_candidate.py
+          cat installers/latest.json
+          {
+            echo '### Verified production updater manifest'
+            echo '```json'
+            cat installers/latest.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: promotion-files
