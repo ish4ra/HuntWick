@@ -15,8 +15,8 @@ jobs:
         run: |
           export GH_REPO=ish4ra/HuntWick
           for job in $(gh api repos/ish4ra/HuntWick/actions/runs/45977057788/jobs --jq '.jobs[]|select(.conclusion=="failure")|.id'); do
-            if ! gh api repos/ish4ra/HuntWick/actions/jobs/$job/logs > "$RUNNER_TEMP/$job.log" 2>"$RUNNER_TEMP/msg"; then
-              echo "::notice::Job log API status for $job: $(grep -oE 'HTTP [0-9]{3}' "$RUNNER_TEMP/msg" || echo unavailable)"
+            if ! curl --fail --silent --show-error --location --proto "=https" --proto-redir "=https" -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/ish4ra/HuntWick/actions/jobs/$job/logs" > "$RUNNER_TEMP/$job.log" 2>"$RUNNER_TEMP/msg"; then
+              echo "::notice::Job log API status for $job: $(grep -oE '(HTTP |error: )[0-9]{3}' "$RUNNER_TEMP/msg" || echo unavailable)"
               continue
             fi
             python - "$RUNNER_TEMP/$job.log" "$job" <<'PY'
