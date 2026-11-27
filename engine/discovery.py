@@ -116,19 +116,25 @@ def run_profile(mode, name, item, username, timeout, network, retry):
     calls = []
     if mode in {'enhanced','deep'} and 'native' in item:
         calls.append((native,name,item['native']))
-    if 'sherlock' in item and (mode in {'sherlock','deep'} or mode=='enhanced' and not calls):
+    # The two pinned templates only accept the short bsky.social prefix.
+    # A dotted handle already identifies its domain; the native API accepts it.
+    exact_domain = mode == 'deep' and name == 'Bluesky' and '.' in username
+    if not exact_domain and 'sherlock' in item and (mode in {'sherlock','deep'} or mode=='enhanced' and not calls):
         calls.append((original,name,item['sherlock']))
-    if mode in {'maigret','deep'}:
+    if not exact_domain and mode in {'maigret','deep'}:
         calls.extend((check,n,rule) for n,rule in item.get('maigret',[]))
 
     def attempt():
         shared = SharedNetwork(network) if mode=='deep' else network
         reports = []
-        for fn, provider_name, rule in calls:
+        for index, (fn, provider_name, rule) in enumerate(calls):
             remaining = timeout - (monotonic()-attempt_start)
             if remaining <= 0:
                 break
-            row = fn(provider_name,rule,username,remaining,shared)
+            # Spend the remainder on the last method. Leave each pending
+            # complementary provider a share if the current socket stalls.
+            budget = remaining / (len(calls) - index)
+            row = fn(provider_name,rule,username,budget,shared)
             reports.append(row)
             transient = (row.get('http') is None and
                          (row['status'] == 'timed_out' or 'Connection failure' in

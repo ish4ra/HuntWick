@@ -9,6 +9,7 @@ from time import monotonic
 import requests
 
 from catalog import DATA
+from http_workers import connection_status
 from providers import http_warning
 
 VERSION = 'Maigret 0.6.7'
@@ -69,14 +70,24 @@ def check(name, definition, username, timeout, network):
         warning = http_warning(response)
         status = {'Claimed':'provider_match','Available':'not_found'}.get(verdict,'inconclusive')
         row.update(verdict=verdict, http=response.status_code, status=warning or status)
+        # The Discourse profile JSON rules use HTTP status alone upstream.
+        # A generic 200 page or a different account must not become a candidate.
+        probe = definition['maigretRule'].get('urlProbe', '')
+        if row['status'] == 'provider_match' and probe.endswith('/u/{username}.json'):
+            try:
+                payload = response.json()
+            except (ValueError, RecursionError):
+                payload = None
+            user = payload.get('user') if isinstance(payload, dict) else None
+            if not (isinstance(user, dict) and isinstance(user.get('username'), str)
+                    and user['username'].casefold() == username.casefold() and type(user.get('id')) is int):
+                row.update(status='inconclusive', message='Response lacked the requested Discourse identity.')
         if verdict == 'Claimed' and warning == 'not_found':
             row['status'] = 'conflict'
     except requests.Timeout:
         row.update(status='timed_out',message='Request timed out.')
-    except requests.exceptions.SSLError:
-        row.update(status='error',message='TLS failure')
-    except requests.ConnectionError:
-        row.update(status='error',message='Connection failure')
+    except requests.ConnectionError as exc:
+        row['status'], row['message'] = connection_status(exc)
     except (requests.RequestException, LookupError, ValueError):
         row.update(status='error',message='Public request failed.')
     row['elapsedMs'] = round((monotonic()-started)*1000)

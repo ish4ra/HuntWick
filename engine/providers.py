@@ -5,7 +5,7 @@ from types import FunctionType, SimpleNamespace
 from urllib.parse import urljoin, urlsplit
 
 import requests
-from http_workers import PublicSession
+from http_workers import PublicSession, connection_status
 from sherlock_project.notify import QueryNotify
 from sherlock_project.result import QueryStatus
 
@@ -50,6 +50,8 @@ def http_warning(response):
             return 'inconclusive'
     if head.gated or GATE_PATH.search(urlsplit(response.url).path) or GATE_TITLE.search(head.title.strip()):
         return 'blocked'
+    if 400 <= code < 500:
+        return 'inconclusive'
     return None
 
 
@@ -86,8 +88,7 @@ def sherlock_site(name, definition, username, timeout, network=None):
     except requests.Timeout:
         event.update(status='timed_out',message='Request timed out.')
     except requests.ConnectionError as exc:
-        retryable = not isinstance(exc,requests.exceptions.SSLError)
-        event.update(status='error',message='Connection failure' if retryable else 'TLS failure')
+        event['status'], event['message'] = connection_status(exc)
     except requests.RequestException:
         event.update(status='error',message='The public request could not be completed.')
     event['elapsedMs'] = round((monotonic()-started)*1000)

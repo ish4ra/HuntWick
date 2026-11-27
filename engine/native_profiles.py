@@ -5,6 +5,7 @@ from urllib.parse import urljoin, urlsplit
 import requests
 
 from catalog import native_rules
+from http_workers import connection_status
 from providers import HOST_LABEL, http_warning, original
 
 PROVIDER = 'HuntWick public lookup'
@@ -30,7 +31,8 @@ def native(name, rule, username, timeout, network):
     except requests.Timeout:
         return {**row,'status':'timed_out','verdict':'Timeout'}
     except requests.ConnectionError as exc:
-        return {**row,'status':'error','verdict':'TLS failure' if isinstance(exc,requests.exceptions.SSLError) else 'Connection failure'}
+        status, verdict = connection_status(exc)
+        return {**row,'status':status,'verdict':verdict}
     except requests.RequestException:
         return {**row,'status':'error','verdict':'Request failed'}
     row['http'] = res.status_code
@@ -39,7 +41,8 @@ def native(name, rule, username, timeout, network):
         dest = urlsplit(urljoin(profile,res.headers.get('Location','')))
         if dest.netloc=='osu.ppy.sh' and dest.scheme=='https' and re.fullmatch(r'/users/[1-9][0-9]*/?',dest.path) and not (dest.query or dest.fragment):
             return {**row,'status':'possible','verdict':'Numeric profile redirect','url':dest.geturl()}
-    if warning:
+    # The AppView uses an explicit JSON error at 400 for a missing profile.
+    if warning and not (warning == 'inconclusive' and name == 'Bluesky' and res.status_code == 400):
         return {**row,'status':warning,'verdict':f'HTTP {res.status_code}'}
     try:
         data = res.json() if 'json' in res.headers.get('Content-Type','').lower() else {}

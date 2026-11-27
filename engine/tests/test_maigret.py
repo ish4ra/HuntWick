@@ -76,3 +76,60 @@ class MaigretTests(unittest.TestCase):
         with patch('discovery.native',return_value={**failed,'status':'blocked','http':403}), patch('discovery.original') as second:
             self.assertEqual(run_profile('deep','Fixture',item,'demo',2,Mock(),False)['status'],'blocked')
             second.assert_not_called()
+
+    def test_discourse_status_only_soft_positive_needs_matching_identity(self):
+        from discovery import directory, run_profile
+        from unittest.mock import Mock
+        item = directory(load_sites(), False, False)['MetaDiscourse']
+        for body, expected in ((b'<html>Welcome</html>', 'inconclusive'),
+                               (b'{"user":{"username":"other","id":42}}', 'inconclusive'),
+                               (b'{"user":{"username":"Fixture","id":42}}', 'provider_match')):
+            network = Mock()
+            res = requests.Response()
+            res.url = 'https://meta.discourse.org/u/fixture.json'
+            res.status_code = 200
+            res._content = body
+            res.headers['Content-Type'] = 'application/json'
+            network.request.return_value = res
+            row = run_profile('deep','MetaDiscourse',item,'fixture',3,network,False)
+            self.assertEqual(row['status'], expected)
+
+    def test_custom_domain_bluesky_only_sends_exact_handle(self):
+        from discovery import directory, run_profile
+        from unittest.mock import Mock
+        item = directory(load_sites(), False, False)['Bluesky']
+        network = Mock()
+        res = requests.Response()
+        res.url = 'https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=fixture.test'
+        res.status_code = 200
+        res.headers['Content-Type'] = 'application/json'
+        res._content = b'{"handle":"fixture.test","did":"did:plc:abc"}'
+        network.request.return_value = res
+        row = run_profile('deep','Bluesky',item,'fixture.test',3,network,False)
+        self.assertEqual(row['status'], 'found')
+        self.assertEqual([c.args[0]['url'] for c in network.request.call_args_list], [res.url])
+
+    def test_slow_first_method_leaves_budget_for_complementary_lookup(self):
+        from discovery import run_profile
+        from unittest.mock import Mock, patch
+        from time import sleep
+        def slow(name, rule, handle, timeout, network):
+            sleep(timeout)
+            return dict(status='timed_out',provider='Native')
+        recovered = dict(status='provider_match',provider='Sherlock Original')
+        with patch('discovery.native',side_effect=slow), patch('discovery.original',return_value=recovered):
+            row = run_profile('deep','Fixture',{'native':{},'sherlock':{}},'fixture',.08,Mock(),False)
+        self.assertEqual(row['status'],'provider_match')
+
+    def test_generic_client_error_is_not_proof_of_absence(self):
+        from discovery import directory, run_profile
+        from unittest.mock import Mock
+        item = directory(load_sites(), False, False)['MetaDiscourse']
+        res = requests.Response()
+        res.status_code = 400
+        res.url = 'https://meta.discourse.org/u/fixture.json'
+        res._content = b'{"error":"invalid request"}'
+        net = Mock()
+        net.request.return_value = res
+        self.assertEqual(run_profile('deep','MetaDiscourse',item,'fixture',3,net,False)['status'],
+                         'inconclusive')

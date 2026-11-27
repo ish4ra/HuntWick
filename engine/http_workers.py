@@ -2,17 +2,40 @@
 import base64
 import json
 import os
+import re
 from pathlib import Path
 from queue import Queue, Empty
 import subprocess
 import sys
 from threading import Thread
+from time import monotonic
 from urllib.parse import urlsplit
 
 import requests
 from requests.adapters import HTTPAdapter
+from urllib3.exceptions import NameResolutionError
 
 MAX_BYTES = 512 * 1024
+
+
+class ProxyDenied(requests.ConnectionError):
+    """The configured proxy rejected CONNECT before the origin responded."""
+
+
+class DnsFailure(requests.ConnectionError):
+    """The resolver could not supply a network address."""
+
+
+def connection_status(exc):
+    if isinstance(exc, ProxyDenied):
+        return 'blocked', 'Proxy denied connection'
+    if isinstance(exc, requests.exceptions.ProxyError):
+        return 'error', 'Proxy connection failure'
+    if isinstance(exc, DnsFailure):
+        return 'error', 'DNS failure'
+    if isinstance(exc, requests.exceptions.SSLError):
+        return 'error', 'TLS failure'
+    return 'error', 'Connection failure'
 
 
 class PublicAdapter(HTTPAdapter):
@@ -81,15 +104,21 @@ def worker_main():
             result = {'failure':'timeout'}
         except requests.exceptions.SSLError:
             result = {'failure':'tls'}
-        except requests.ConnectionError:
-            result = {'failure':'connection'}
+        except requests.exceptions.ProxyError as exc:
+            cause = getattr(exc.args[0], 'reason', None)
+            tunnel = getattr(cause, 'original_error', None)
+            denied = re.match(r'^Tunnel connection failed: (401|403|407|429|451)\b', str(tunnel))
+            result = {'failure': 'proxy_denied' if denied else 'proxy'}
+        except requests.ConnectionError as exc:
+            cause = getattr(exc.args[0], 'reason', None)
+            result = {'failure':'dns' if isinstance(cause, NameResolutionError) else 'connection'}
         except Exception:
             result = {'failure':'request'}
         print(json.dumps(result), flush=True)
 
 
 class Worker:
-    def __init__(self):
+    def __init__(self, startup_timeout):
         command = ([sys.executable,'--http-worker'] if getattr(sys,'frozen',False) else
                    [sys.executable,'-E','-B',str(Path(__file__).resolve())])
         self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -102,7 +131,7 @@ class Worker:
         self.reader = Thread(target=read,daemon=True)
         self.reader.start()
         try:
-            if self.output.get(timeout=20).strip() != b'ready':
+            if self.output.get(timeout=min(20, startup_timeout)).strip() != b'ready':
                 raise OSError('Public request worker failed to start')
         except BaseException:
             self.close()
@@ -133,13 +162,20 @@ class NetworkPool:
                 worker.close()
 
     def request(self, command):
-        worker = self.idle.get()
+        deadline = monotonic() + command['timeout']
+        try:
+            worker = self.idle.get(timeout=command['timeout'])
+        except Empty:
+            raise requests.Timeout('No available public request worker') from None
         try:
             if worker is None:
-                worker = Worker()
-            worker.process.stdin.write(json.dumps(command).encode()+b'\n')
+                worker = Worker(max(0, deadline - monotonic()))
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                raise Empty()
+            worker.process.stdin.write(json.dumps({**command, 'timeout': remaining}).encode()+b'\n')
             worker.process.stdin.flush()
-            data = worker.output.get(timeout=command['timeout'])
+            data = worker.output.get(timeout=max(0, deadline - monotonic()))
             if not data:
                 raise OSError('Public request worker closed')
             result = json.loads(data)
@@ -155,6 +191,7 @@ class NetworkPool:
         failure = result.get('failure')
         if failure:
             error = {'timeout':requests.Timeout,'tls':requests.exceptions.SSLError,
+                     'proxy_denied':ProxyDenied,'proxy':requests.exceptions.ProxyError,'dns':DnsFailure,
                      'connection':requests.ConnectionError}.get(failure,requests.RequestException)
             raise error('Public request failed')
         response = requests.Response()

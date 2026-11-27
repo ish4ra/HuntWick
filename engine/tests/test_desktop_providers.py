@@ -72,3 +72,39 @@ class ApiTests(unittest.TestCase):
                 finally:
                     release.set()
                     server.shutdown()
+
+    def test_proxy_denial_stops_deep_fallback_without_attributing_origin_http(self):
+        from discovery import directory, run_profile
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        from threading import Thread
+        calls = []
+        class Deny(BaseHTTPRequestHandler):
+            def do_CONNECT(self):
+                calls.append(1)
+                self.send_error(403)
+            def log_message(self, *args):
+                pass
+        item = directory(load_sites(), False, False)['Bluesky']
+        with ThreadingHTTPServer(('127.0.0.1', 0), Deny) as server:
+            proxy = f'http://127.0.0.1:{server.server_port}'
+            Thread(target=server.serve_forever, daemon=True).start()
+            try:
+                with patch.dict(os.environ, {'HTTPS_PROXY':proxy, 'https_proxy':proxy, 'no_proxy':'', 'NO_PROXY':''}), NetworkPool(1) as pool:
+                    row = run_profile('deep', 'Bluesky', item, 'fixture', 4, pool, True)
+            finally:
+                server.shutdown()
+        self.assertEqual(row['status'], 'blocked')
+        self.assertNotIn('http', row)
+        self.assertEqual(len(calls), 1)
+
+    def test_cold_worker_startup_is_inside_the_request_deadline(self):
+        from time import sleep
+        fake = Mock()
+        def start_worker(*args, **kwargs):
+            sleep(.08)
+            return fake
+        fake.output.get.return_value = b'{"failure":"connection"}'
+        with patch('http_workers.Worker', start_worker), NetworkPool(1) as pool:
+            with self.assertRaises(requests.Timeout):
+                pool.request({'timeout':.04})
+        fake.process.stdin.write.assert_not_called()
