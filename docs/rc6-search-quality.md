@@ -34,3 +34,15 @@ With upstream experimental exclusions left off, the catalog still reports 394 Sh
 HLTV’s numeric community IDs cannot be derived from the supplied username with a verified anonymous method. Its catalog exclusion remains visible. osu! can return a same-origin numeric profile redirect, which supports a possible match. A verified API v2 username lookup requires authorization. The focused regressions check the expected redirect and rejection of an unrelated destination. The hosted catalog was untouched. [Prior platform investigation](provider-research.md) · [osu! API documentation](https://osu.ppy.sh/docs/index.html#get-user) · [HLTV terms](https://www.hltv.org/terms)
 
 Run the desktop engine checks with `engine/.venv/bin/python -m unittest discover -s engine/tests`. The 39-test run passed, including denial handling, cold-start deadlines, complementary lookup recovery, exact-domain Bluesky requests, normalized Discourse responses and catalog eligibility.
+
+## Additional catalog checks
+
+Five public Sherlock forks were checked at pinned commits. A case-insensitive search of each full site-definition file found no SpankBang entry. The previously reviewed third-party entries disagree on the profile URL and supply no validated detection rule. The earlier requests using a synthetic absent handle were denied by the proxy before reaching the origin. Inclusion requires a supported anonymous username route, a known permitted positive and absent test case, and a response that distinguishes those cases from a generic page or access denial. The desktop catalog continues to explain the exclusion.
+
+- [TheYahya/sherlock site definitions](https://github.com/TheYahya/sherlock/blob/00f0aa4dbb608247a61412dc8c23812e465dd709/sherlock/resources/data.json)
+- [cyclopt/sherlock2 site definitions](https://github.com/cyclopt/sherlock2/blob/a4c0fb05aa1873d06c3740b7f19df82c90a814d4/sherlock/resources/data.json)
+- [ishandutta2007/sherlock site definitions](https://github.com/ishandutta2007/sherlock/blob/e40a45ec2a074b90703b3b4b842c8a3adbd6ada3/sherlock_project/resources/data.json)
+- [omarkdev/sherlock-project-sherlock site definitions](https://github.com/omarkdev/sherlock-project-sherlock/blob/ea58a0d8f4eab8c58517c685ab21d68298cc509f/sherlock/resources/data.json)
+- [soxoj/sherlock site definitions](https://github.com/soxoj/sherlock/blob/253ffa8b068c9a259a7f389a37fb17ff10296743/sherlock/resources/data.json)
+
+Two additional Maigret-only routes, MetaDiscourse and the Ubuntu Community Hub, were checked once for the public Discourse tutorial bot. Both requests received a proxy CONNECT denial before any origin HTTP response. No presence or absence conclusion was possible.

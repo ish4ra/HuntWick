@@ -1,6 +1,6 @@
 # RC.6 desktop quality candidate
 
-Development starts at the published RC.5 documentation commit `78322d5`. Installers linked from the README and the production preview feed still deliver RC.5. The app, installer and README use the RC.5 artwork. [Four identity options for owner review](branding/README.md)
+Development starts at the published RC.5 documentation commit `78322d5`. Installers linked from the README and the production preview feed still deliver RC.5. The app, installer and README use the RC.5 artwork. [Current optical magnifier studies for owner review](branding-v3/README.md)
 
 ## What the four modes contribute
 
@@ -49,7 +49,7 @@ SpankBang has no rule in either pinned engine database or the reviewed WhatsMyNa
 
 The Chromium checks exercised the actual sidecar from the built UI, checked the switch across reload and opt-out, and checked horizontal overflow at 1280×820 and 760×540. The compact results image uses synthetic events to show pacing, logos and layout. Rate and estimated remaining time use completed platform checks and elapsed time, including startup. For runs under 500 platforms, estimates start after three checks and three seconds. Larger runs show checked and pending counts while collecting at least 20 checks and 15 seconds of timing data. The estimate uses the whole-run average because the first batch prioritizes quick sites.
 
-The radar’s single-result caption was removed. In the results list, Ko-fi (catalog name `kofi`), MyAnimeList, Patreon and VirusTotal use bundled icons. All 26 icon aliases resolved to local SVGs. Platforms without a mapped icon use the globe fallback.
+The radar’s single-result caption was removed. In the results list, Ko-fi (catalog name `kofi`), MyAnimeList, Patreon and VirusTotal use bundled icons. The later icon audit also added Behance, Kaggle, Last.fm, npm, SoundCloud and Vimeo. A built-UI fixture verified that all ten named provider rows used the expected local SVGs. Platforms without a mapped icon use the globe fallback.
 
 [Normal window](rc6-media/normal.png) · [Minimum window](rc6-media/compact.png) · [Compact search console](rc6-media/compact-console.png) · [Compact results and pace](rc6-media/compact-results.png)
 
@@ -80,3 +80,5 @@ The built desktop UI with synthetic IPC events was checked at 1280×820, 900×64
 After owner selection, apply the chosen application icon and wordmark to a single reviewed source commit. Use version `0.1.0-rc.6`, the production-candidate workflow and the RC.5 trusted public-key SHA-256 `cd307eeee71b7a46e73fbf139469c5f087f57839ba5eba90e40782eeeb341669`. The four test archives above use disposable keys.
 
 Once the permanent-key matrix succeeds, pin its source commit, run ID, four archive IDs and digests, and the offline manifest archive in the existing exact-byte promotion workflow for RC.6. Preserve the active RC.5 manifest as a versioned rollback alongside the existing RC.4 asset. Rehearse read-only, then promote those same verified bytes to preview under owner authorization. [RC.5 promotion evidence](rc5-acceptance.md)
+
+[Current search reliability measurements](rc6-search-quality.md) · [Updater in dark mode](rc6-media/updater-v2/dark/available.png) · [Updater in light mode](rc6-media/updater-v2/light/available.png)

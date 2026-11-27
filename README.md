@@ -4,7 +4,7 @@
 
 ![HuntWick — OSINT, simplified.](docs/readme-assets/hero.svg)
 
-[Static hero](docs/readme-assets/hero-static.png) · [RC.6 desktop candidate checks](https://github.com/ish4ra/HuntWick/actions/runs/45869171776) · [RC.5 Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Frc5)
+[Static hero](docs/readme-assets/hero-static.png) · [RC.6 installer checkpoint](https://github.com/ish4ra/HuntWick/actions/runs/45869171776) · [Integration Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Frc5)
 
 HuntWick Desktop is a local application for discovering public profiles that use a particular username. Enter a handle, keep the default **Full search** for every enabled compatible platform, or choose **Quick search** for a curated set. Select **Search** to start. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
 
@@ -22,16 +22,16 @@ The installers bundle the Python runtime and Sherlock. Launch HuntWick from your
 
 ## Search workspace in the RC.6 candidate
 
-[Compact window](docs/rc6-media/compact-console.png) · [Coverage and live comparison](docs/rc6-quality.md)
+[Compact search console](docs/rc6-media/full-console-760.png) · [Coverage and live comparison](docs/rc6-quality.md) · [Search reliability measurements](docs/rc6-search-quality.md)
 
-| Desktop engine | Default eligible platforms | Evidence |
+| Desktop engine | Platforms in Full search¹ | What it checks |
 | --- | ---: | --- |
-| Sherlock Original | 394 | Original Sherlock verdict |
-| Enhanced Search | 396 | Native API verification, including Scratch, and remaining Sherlock rules |
-| Maigret | 4,186 | Maigret 0.6.7 provider verdict |
-| Deep Search | 4,552 | Combined coverage, prioritized checks, and expandable source verdicts |
+| Sherlock Original | 394 | Pinned Sherlock rules report the upstream verdict for each eligible site. |
+| Enhanced Search | 396 | Public APIs check account identity where supported. Sherlock handles the remaining eligible sites. |
+| Maigret | 4,186 | Maigret checks additional developer and community sites, including individual forum instances. |
+| Deep Search | 4,552 | Native lookups, Sherlock and Maigret share a bounded time budget per profile. Expand a result to inspect overlapping verdicts. |
 
-In Deep Search the count is the number of distinct eligible profiles. When multiple engines cover the same profile, expand its result to see their verdicts. A larger search can return the same number of matches. During a run the console shows checks completed, speed and an estimate of the time remaining.
+¹ Counts use the bundled catalog with adult and experimental sites off. Deep Search counts distinct eligible profile routes. When multiple engines cover the same profile, expand its result to see their verdicts. A larger search can return the same number of matches. During a run the console shows checks completed, speed and an estimate of the time remaining.
 
 The pinned Maigret database contains 11,071 definitions. Upstream enables 10,335. HuntWick accepts 4,188 reviewed-route definitions before category preferences and records exclusion reasons for 6,883. Eligibility describes a supported rule. Sites can still time out, deny access or change their profiles. A provider claim and independent API evidence appear separately.
 
