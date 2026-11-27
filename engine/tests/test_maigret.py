@@ -112,13 +112,16 @@ class MaigretTests(unittest.TestCase):
     def test_slow_first_method_leaves_budget_for_complementary_lookup(self):
         from discovery import run_profile
         from unittest.mock import Mock, patch
-        from time import sleep
+        clock = 100.0
         def slow(name, rule, handle, timeout, network):
-            sleep(timeout)
+            nonlocal clock
+            self.assertEqual(timeout, 4.0)
+            clock += timeout
             return dict(status='timed_out',provider='Native')
         recovered = dict(status='provider_match',provider='Sherlock Original')
-        with patch('discovery.native',side_effect=slow), patch('discovery.original',return_value=recovered):
-            row = run_profile('deep','Fixture',{'native':{},'sherlock':{}},'fixture',.08,Mock(),False)
+        with patch('discovery.monotonic', side_effect=lambda: clock), patch('discovery.native',side_effect=slow), patch('discovery.original',return_value=recovered) as fallback:
+            row = run_profile('deep','Fixture',{'native':{},'sherlock':{}},'fixture',8,Mock(),False)
+        self.assertEqual(fallback.call_args.args[3], 4.0)
         self.assertEqual(row['status'],'provider_match')
 
     def test_generic_client_error_is_not_proof_of_absence(self):

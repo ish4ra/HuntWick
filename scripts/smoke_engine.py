@@ -26,6 +26,18 @@ def run_request(executable, request, directory):
     return [json.loads(line) for line in process.stdout.splitlines()]
 
 
+def check_closed_proxy(events):
+    if [event.get("type") for event in events] == ["result", "done"]:
+        row = events[0]
+        if (row.get("platform") == "Lichess" and row.get("provider") == "HuntWick public lookup"
+                and row.get("http") is None and (row.get("status"), row.get("verdict")) in {
+                    ("error", "Proxy connection failure"), ("error", "Connection failure"),
+                    ("timed_out", "Timeout"),
+                }):
+            return
+    raise RuntimeError(f"Unexpected closed-proxy lookup: {events}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("path", type=Path, help="Engine executable or unpacked installer root")
@@ -56,8 +68,7 @@ def main():
         # A closed local proxy exercises the packaged HTTP worker without reaching a site.
         failure = run_request(executable, {"op":"search","providerMode":"enhanced",
             "username":"fixture","sites":["Lichess"],"timeout":3,"concurrency":1},directory)
-        if failure[0].get("provider") != "HuntWick public lookup" or failure[0].get("verdict") not in {"Connection failure","Timeout"}:
-            raise RuntimeError("Packaged native public lookup did not report the offline connection failure.")
+        check_closed_proxy(failure)
         maigret = run_request(executable, {"op":"search","providerMode":"maigret",
             "username":"with_underscore","sites":["GitHub"],"timeout":2,"concurrency":1}, directory)
         if [e['type'] for e in maigret] != ['result','done'] or (
