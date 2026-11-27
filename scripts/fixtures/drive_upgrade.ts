@@ -9,14 +9,19 @@ export async function driveUpgrade(siteCount: number) {
     throw Error('Expected update operation to fail')
   }
   await invoke('confirm_install',{siteCount})
-  localStorage.setItem('huntwick.preferences.v1', JSON.stringify({saveHistory:true,theme:'light',autoUpdates:false}))
+  localStorage.setItem('huntwick.preferences.v1', JSON.stringify({saveHistory:true,includePrereleases:true,theme:'light',autoUpdates:false}))
   const timestamp='2026-01-01T00:00:00Z'
   const history=[{id:'fixture-preservation',username:'fixture',startedAt:timestamp,finishedAt:timestamp,
     mode:'quick',phase:'complete',error:null,checked:1,sites:['Fixture'],results:[{
       platform:'Fixture',category:'Other',status:'not_found',message:'',url:''}]}]
   localStorage.setItem('huntwick.history.v1', JSON.stringify(history))
   await report('missing manifest')
-  await mustReject(check(false))
+  try {
+    await check(false)
+    throw Error('Expected the missing manifest to be reported')
+  } catch (error) {
+    if (!String(error).includes('No update feed has been published')) throw error
+  }
   await report('stable isolation')
   if (await check(false)) throw Error('Stable check accepted a prerelease')
   await report('downgrade')

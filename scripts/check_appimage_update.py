@@ -113,12 +113,13 @@ def acceptance(tmp):
         service.write_text(service.read_text().replace('https://github.com/ish4ra/HuntWick/releases/download/',origin)
             .replace('.updater_builder()', '.updater_builder().configure_client(|c| c.tls_certs_only(['
                      'reqwest::Certificate::from_pem(include_bytes!("fixture-ca.pem")).unwrap()]))')
-            .replace('.map_err(|_| "The signed update feed could not be checked. Retry or open Releases.")',
-                     '.map_err(|e| format!("fixture feed: {e:?}"))'))
+            .replace('reqwest::Client::builder()', 'reqwest::Client::builder().tls_certs_only(['
+                     'reqwest::Certificate::from_pem(include_bytes!("fixture-ca.pem")).unwrap()])'))
         # The old client confirms its real catalog and rendered UI, then stays alive
         # for the update. Keep install_verified true so the normal exit hook permits restart.
         native=checkout/'src-tauri/src/main.rs'
         native.write_text(native.read_text().replace('    app.exit(0);', '    let _ = app;')
+            .replace('"HUNTWICK_EXPECTED_UPDATER_KEY"', '"HUNTWICK_EXPECTED_FIXTURE_KEY"')
             .replace('    site_count: usize,\n) -> Result', '    site_count: usize,\n    step: Option<String>,\n) -> Result')
             .replace('    state.runtime.lock().unwrap().confirm_install(site_count)?;',
                      '    if let Some(step) = step { eprintln!("fixture step: {step}"); return Ok(()); }\n'
@@ -147,7 +148,8 @@ def acceptance(tmp):
         with payload.open('rb') as stream:
             expected=hashlib.file_digest(stream,'sha256').digest()
         env=desktop_environment(os.environ,False)
-        env.update(APPIMAGE_EXTRACT_AND_RUN='1', LIBGL_ALWAYS_SOFTWARE='1', WEBKIT_DISABLE_DMABUF_RENDERER='1',
+        env.update(HUNTWICK_EXPECTED_FIXTURE_KEY=key.with_suffix('.key.pub').read_text().strip(),
+                   APPIMAGE_EXTRACT_AND_RUN='1', LIBGL_ALWAYS_SOFTWARE='1', WEBKIT_DISABLE_DMABUF_RENDERER='1',
                    NO_PROXY='localhost,127.0.0.1',no_proxy='localhost,127.0.0.1',
                    XDG_CONFIG_HOME=str(tmp/'prefs'),XDG_DATA_HOME=str(tmp/'data'),XDG_CACHE_HOME=str(tmp/'cache'))
         log=tmp/'installed.log'
@@ -183,7 +185,7 @@ def acceptance(tmp):
             prefs=json.loads(preserved.get('huntwick.preferences.v1','{}'))
             history=json.loads(preserved.get('huntwick.history.v1','[]'))
             if (prefs.get('theme')!='light' or prefs.get('saveHistory') is not True or len(history)!=1
-                    or history[0].get('id')!='fixture-preservation'
+                    or prefs.get('includePrereleases') is not True or history[0].get('id')!='fixture-preservation'
                     or history[0].get('results',[{}])[0].get('status')!='not_found'):
                 raise RuntimeError('Local preferences or history changed across the update.')
         finally:

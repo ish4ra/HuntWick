@@ -151,6 +151,8 @@ jobs:
           $installDir = Join-Path $env:RUNNER_TEMP HuntWick
           $install = Start-Process $installer -ArgumentList '/S', "/D=$installDir" -Wait -PassThru
           if ($install.ExitCode -ne 0) { throw "Installer exited with $($install.ExitCode)" }
+          uv run --project engine --frozen python scripts/check_packaged_icons.py windows "$installer" "$installDir/huntwick.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           uv run --project engine --frozen python scripts/smoke_engine.py "$installDir"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           uv run --project engine --frozen python scripts/smoke_desktop.py "$installDir/huntwick.exe"
@@ -163,19 +165,22 @@ jobs:
           trap 'hdiutil detach "$mountpoint"' EXIT
           uv run --project engine --frozen python scripts/smoke_engine.py "$mountpoint"
           apps=("$mountpoint/"*.app)
+          uv run --project engine --frozen python scripts/check_packaged_icons.py mac "${apps[0]}" "installers/$TARGET/"*.app.tar.gz
           uv run --project engine --frozen python scripts/smoke_desktop.py "${apps[0]}/Contents/MacOS/huntwick"
       - name: Test installed Debian desktop and both Linux engines
         if: inputs.checks-only == false && runner.os == 'Linux'
         run: |
           sudo dpkg -i "installers/$TARGET/"*.deb
+          uv run --project engine --frozen python scripts/check_packaged_icons.py linux /
           uv run --project engine --frozen python scripts/smoke_engine.py /usr/lib/HuntWick
           dbus-run-session -- xvfb-run -a uv run --project engine --frozen python scripts/smoke_desktop.py /usr/bin/huntwick
           appimage=("$GITHUB_WORKSPACE/installers/$TARGET/"*.AppImage)
           chmod +x "${appimage[0]}"
           (cd "$RUNNER_TEMP" && "${appimage[0]}" --appimage-extract >/dev/null)
+          uv run --project engine --frozen python scripts/check_packaged_icons.py linux "$RUNNER_TEMP/squashfs-root"
           uv run --project engine --frozen python scripts/smoke_engine.py "$RUNNER_TEMP/squashfs-root"
       - name: Exercise a signed AppImage upgrade on a private local feed
-        if: inputs.checks-only == false && runner.os == 'Linux' && !inputs.release-signing
+        if: inputs.checks-only == false && runner.os == 'Linux'
         env:
           APPIMAGE_EXTRACT_AND_RUN: '1'
         run: |
