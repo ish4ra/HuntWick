@@ -93,7 +93,40 @@ export function CopyLink({ url, action }: { url: string; action?: string }) {
     </span>
   )
 }
-const platformIcons: Record<string,string> = {'kofi':'kofi','Ko-fi':'kofi','MyAnimeList':'myanimelist','Patreon':'patreon','VirusTotal':'virustotal','Scratch':'scratch','Replit.com':'replit','RubyGems':'rubygems','Letterboxd':'letterboxd','Chess.com':'chessdotcom','osu!':'osu','GitHub':'github','GitLab':'gitlab','Docker Hub':'docker','Codeberg':'codeberg','Twitch':'twitch','Instagram':'instagram','Reddit':'reddit','X (Twitter)':'x','YouTube':'youtube','TikTok':'tiktok','Hugging Face':'huggingface','Lichess':'lichess','Bluesky':'bluesky','Trello':'trello','Codewars':'codewars'}
+const platformIcons: Record<string, string> = {
+  'Behance': 'behance',
+  'Bluesky': 'bluesky',
+  'Chess.com': 'chessdotcom',
+  'Codeberg': 'codeberg',
+  'Codewars': 'codewars',
+  'Docker Hub': 'docker',
+  'GitHub': 'github',
+  'GitLab': 'gitlab',
+  'Hugging Face': 'huggingface',
+  'Instagram': 'instagram',
+  'Kaggle': 'kaggle',
+  'Ko-fi': 'kofi',
+  'Letterboxd': 'letterboxd',
+  'Lichess': 'lichess',
+  'MyAnimeList': 'myanimelist',
+  'Patreon': 'patreon',
+  'Reddit': 'reddit',
+  'Replit.com': 'replit',
+  'RubyGems': 'rubygems',
+  'Scratch': 'scratch',
+  'SoundCloud': 'soundcloud',
+  'TikTok': 'tiktok',
+  'Trello': 'trello',
+  'Twitch': 'twitch',
+  'Vimeo': 'vimeo',
+  'VirusTotal': 'virustotal',
+  'X (Twitter)': 'x',
+  'YouTube': 'youtube',
+  'kofi': 'kofi',
+  'last.fm': 'lastdotfm',
+  'npm': 'npm',
+  'osu!': 'osu',
+}
 export function PlatformMark({ name }: { name: string }) {
   const icon = platformIcons[name]
   if (icon) return <span className="brand-mark" aria-hidden="true" style={{maskImage:`url(/platforms/${icon}.svg)`}}/>

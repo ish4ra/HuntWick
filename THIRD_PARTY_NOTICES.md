@@ -30,3 +30,9 @@ Bundled SVGs from Simple Icons 16.38.1 identify their respective services. Trade
 | Bluesky | [Brand source](https://bsky.social/about/blog/press-faq) | See brand guidelines |
 | Trello | [Brand source](https://atlassian.design/resources/logo-library) | See brand guidelines |
 | Codewars | [Brand source](https://github.com/codewars/branding/tree/1ff0d44db52ac4a5e3a1c43277dc35f228eb6983) | See brand guidelines |
+| Behance | [Brand source](https://www.behance.net) | See brand guidelines |
+| Kaggle | [Brand source](https://www.kaggle.com/brand-guidelines) | See brand guidelines |
+| last.fm | [Brand source](https://commons.wikimedia.org/wiki/File:Lastfm_logo.svg) | See brand guidelines |
+| npm | [Brand source](https://www.npmjs.com) | See brand guidelines |
+| SoundCloud | [Brand source](https://press.soundcloud.com) | See brand guidelines |
+| Vimeo | [Brand source](https://press.vimeo.com/brand-guidelines) | See brand guidelines |
