@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyEvent, diagnosticReport, countStatuses, createRun, formatExport, matchLinks, parseCatalog, parseHistory, selectSites, visibleIn } from './model'
+import { applyEvent, federatedSelection, diagnosticReport, countStatuses, createRun, formatExport, matchLinks, parseCatalog, parseHistory, selectSites, visibleIn } from './model'
 import type { Catalog, Result, Status } from './model'
 
 const site = { name: 'Forum', url: 'https://forum.example/', quick: true, category: 'Community' }
@@ -52,6 +52,14 @@ describe('evidence in results and reports', () => {
       expect(formatExport(done, format)).toContain('marker_missing')
     }
     expect(JSON.parse(formatExport(done, 'json')).results[0].status).toBe('possible')
+  })
+  it('scopes qualified handles to the enabled federated instance', () => {
+    const local = {...site, federated:true}
+    const others = [local, {...local,url:'https://other.example'}, {...site, name:'Other method'}]
+    expect(federatedSelection('@fixture@FORUM.EXAMPLE','deep',others)).toEqual({username:'fixture',sites:[local]})
+    expect(federatedSelection('fixture@unlisted.example','maigret',others)?.sites).toEqual([])
+    expect(federatedSelection('fixture','deep',others)).toBeNull()
+    expect(federatedSelection('fixture@forum.example','sherlock',others)).toBeNull()
   })
   it('exposes exclusion reasons without ever selecting unavailable sites', () => {
     const unavailable = [{ name: 'Removed site', reason: 'The provider retired its public lookup.' }]

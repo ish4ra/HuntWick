@@ -17,6 +17,17 @@ export interface Site {
   nativeOnly?: boolean
   quick: boolean
 }
+/** A qualified handle selects a known instance; it never supplies a network endpoint. */
+export function federatedSelection(input: string, engine: Engine, sites: Site[]) {
+  if (engine !== 'deep' && engine !== 'maigret') return null
+  const address = /^@?([A-Za-z0-9_]{1,64})@([A-Za-z0-9.-]+)$/.exec(input.trim())
+  if (!address) return null
+  return {
+    username: address[1],
+    sites: sites.filter(site => site.federated && new URL(site.url).hostname === address[2].toLowerCase()),
+  }
+}
+
 export interface Catalog {
   version: string
   databaseVersion: string

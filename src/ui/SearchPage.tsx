@@ -9,8 +9,6 @@ import {
   ChevronDown,
   CircleDot,
   Globe2,
-  Github,
-  Gitlab,
   ShieldCheck,
   Layers3,
   LocateFixed,
@@ -21,8 +19,8 @@ import {
   X,
   Zap,
 } from 'lucide-react'
-import { eligible, engines, validUsername, type Mode } from '../model'
-import { Busy, isActive, webPrivacy, type Workspace } from './common'
+import { eligible, engines, federatedSelection, validUsername, type Mode } from '../model'
+import { Busy, PlatformMark, isActive, webPrivacy, type Workspace } from './common'
 import Results from './Results'
 
 export function NumberSetting({
@@ -80,10 +78,8 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
     const disabled = new Set(ws.settings.disabledSites)
     return ws.catalog?.sites.filter(site => eligible(site, ws.settings.providerMode) && !disabled.has(site.name)) ?? []
   }, [ws.catalog, ws.settings.disabledSites, ws.settings.providerMode])
-  const address = !ws.hosted && ['deep','maigret'].includes(ws.settings.providerMode)
-    ? /^@?([A-Za-z0-9_]{1,64})@([A-Za-z0-9.-]+)$/.exec(username.trim()) : null
-  const instanceSites = address ? enabledSites.filter(site => site.federated &&
-    new URL(site.url).hostname.toLowerCase() === address[2].toLowerCase()) : enabledSites
+  const address = ws.hosted ? null : federatedSelection(username, ws.settings.providerMode, enabledSites)
+  const instanceSites = address?.sites ?? enabledSites
   const categories = [...new Set(enabledSites.map(site => site.category))].sort()
   const scoped = category ? instanceSites.filter(site => site.category === category) : instanceSites
   const quickSites = scoped.filter(site => site.quick)
@@ -104,7 +100,7 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
   }, [focusToken])
   async function submit(event: FormEvent) {
     event.preventDefault()
-    const name = address?.[1] ?? username.trim()
+    const name = address?.username ?? username.trim()
     if (!validUsername(name)) {
       setValidation('Enter a username of 1–64 letters, numbers, periods, hyphens or underscores.')
       input.current?.focus()
@@ -190,10 +186,9 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
                   <legend>Platforms to check</legend>
                   {ws.catalog?.sites.map((site) => {
                     const enabled = !ws.settings.disabledSites.includes(site.name)
-                    const Icon = site.name === 'GitHub' ? Github : site.name === 'GitLab' ? Gitlab : Globe2
                     return (
                       <label key={site.name} className={'platform-choice' + (enabled ? ' enabled' : '')}>
-                        <Icon size={16} />
+                        <PlatformMark name={site.name} />
                         <span>{site.name}</span>
                         <input type="checkbox" checked={enabled} onChange={() => togglePlatform(site.name)} />
                       </label>
