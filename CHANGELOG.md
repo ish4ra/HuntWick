@@ -2,6 +2,8 @@
 
 ## 0.1.0-rc.6
 
+Published to the preview channel for Apple Silicon, Intel Mac, Windows x64 and Linux x64. [Public release](https://github.com/ish4ra/HuntWick/releases/tag/v0.1.0-rc.6) · [Verified files and rollback manifests](docs/rc6-production.md)
+
 ### Discovery
 
 - Full Search remains the default. Deep Search combines up to 4,552 eligible profile routes with standard settings, or 4,569 with adult sites enabled. New routes include Codementor and HackingWithSwift. Scratch's public API can verify a matching username and account ID.

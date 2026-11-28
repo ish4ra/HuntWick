@@ -1,6 +1,6 @@
 # RC.6 desktop quality candidate
 
-Development starts at the published RC.5 documentation commit `78322d5`. Installers linked from the README and the production preview feed still deliver RC.5. The owner selected Pivot for the app, installer and README. [Pivot source](branding-v3/pivot/) · [Final desktop screenshots](rc6-media/pivot/)
+Development starts at the published RC.5 documentation commit `78322d5`. The published preview is now RC.6. [Production evidence](rc6-production.md) The owner selected Pivot for the app, installer and README. [Pivot source](branding-v3/pivot/) · [Final desktop screenshots](rc6-media/pivot/)
 
 ## What the four modes contribute
 
@@ -59,7 +59,7 @@ The first four-target build passed on Windows and both Mac architectures. On Lin
 
 On the restored-artwork build, nine web service tests passed locally. Authenticated Chromium checks exercised the shared search UI, CSV export, accessible radar blips, local icons and sound controls against a loopback web service.
 
-All four targets passed for `f97a6dfcd9b8cf7556c10347001446cd0a103b18`. CI launched the desktop and checked the bundled engine on Windows, on both mounted Mac DMGs and on Linux. Linux also repeated the private signed AppImage upgrade. Each job verified its staged installers and uploaded archive digest. These archives use disposable CI updater keys and are available for manual owner testing. Published preview installs continue to receive RC.5. [Final desktop CI](https://github.com/ish4ra/HuntWick/actions/runs/45869171776)
+All four targets passed for `f97a6dfcd9b8cf7556c10347001446cd0a103b18`. CI launched the desktop and checked the bundled engine on Windows, on both mounted Mac DMGs and on Linux. Linux also repeated the private signed AppImage upgrade. Each job verified its staged installers and uploaded archive digest. These archives use disposable CI updater keys and are available for manual owner testing. RC.5 was the public preview at this checkpoint. [Final desktop CI](https://github.com/ish4ra/HuntWick/actions/runs/45869171776)
 
 | Manual test archive | Archive SHA-256 |
 | --- | --- |
@@ -79,6 +79,6 @@ The built desktop UI with synthetic IPC events was checked at 1280×820, 900×64
 
 The owner approved Pivot for both the icon and wordmark. Use version `0.1.0-rc.6`, the production-candidate workflow and the RC.5 trusted public-key SHA-256 `cd307eeee71b7a46e73fbf139469c5f087f57839ba5eba90e40782eeeb341669`. The four test archives above use disposable keys.
 
-Once the permanent-key matrix succeeds, pin its source commit, run ID, four archive IDs and digests, and the offline manifest archive in the existing exact-byte promotion workflow for RC.6. Preserve the active RC.5 manifest as a versioned rollback alongside the existing RC.4 asset. Rehearse read-only, then promote those same verified bytes to preview under owner authorization. [RC.5 promotion evidence](rc5-acceptance.md)
+The following was the original promotion plan. After the permanent-key matrix, pin its source commit, run ID, four archive IDs and digests, and the offline manifest archive in the existing exact-byte promotion workflow for RC.6. Preserve the active RC.5 manifest as a versioned rollback alongside the existing RC.4 asset. Rehearse read-only, then promote those same verified bytes to preview under owner authorization. [RC.5 promotion evidence](rc5-acceptance.md)
 
 [Current search reliability measurements](rc6-search-quality.md) · [Updater in dark mode](rc6-media/updater-v2/dark/available.png) · [Updater in light mode](rc6-media/updater-v2/light/available.png)

@@ -4,23 +4,23 @@
 
 ![HuntWick — OSINT, simplified.](docs/readme-assets/hero.svg)
 
-[Static hero](docs/readme-assets/hero-static.png) · [RC.6 installer checkpoint](https://github.com/ish4ra/HuntWick/actions/runs/45869171776) · [Integration Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Frc5)
+[Static hero](docs/readme-assets/hero-static.png) · [RC.6 production checks](https://github.com/ish4ra/HuntWick/actions/runs/46053737732) · [RC.6 Web CI](https://github.com/ish4ra/HuntWick/actions/runs/46053737578)
 
 HuntWick Desktop is a local application for discovering public profiles that use a particular username. Enter a handle, keep the default **Full search** for every enabled compatible platform, or choose **Quick search** for a curated set. Select **Search** to start. Results appear as checks finish. A matching username alone cannot establish identity or common ownership.
 
-![RC.6 candidate desktop search console](docs/rc6-media/pivot/desktop-dark.png)
+![RC.6 desktop search console](docs/rc6-media/pivot/desktop-dark.png)
 
 [Desktop in light mode](docs/rc6-media/pivot/desktop-light.png) · [Web in light mode](docs/rc6-media/pivot/web-light.png)
 
 ## Download the published preview
 
-RC.5 is the published preview. In RC.4, open **Settings → Software updates → Check prereleases**, choose **Install 0.1.0-rc.5 and restart**, then **Confirm restart**. [RC.5 acceptance evidence](docs/rc5-acceptance.md) · [RC.5 checksums](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/SHA256SUMS)
+RC.6 is the published preview. In RC.5, open **Settings → Software updates → Check prereleases**, select **Install 0.1.0-rc.6 and restart**, then **Confirm restart**. [Release](https://github.com/ish4ra/HuntWick/releases/tag/v0.1.0-rc.6) · [Checksums](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.6/SHA256SUMS) · [Installed upgrade checks](docs/rc6-owner-acceptance.md)
 
-[Apple Silicon DMG](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/HuntWick-0.1.0-rc.5-aarch64-apple-darwin.dmg) · [Intel Mac DMG](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/HuntWick-0.1.0-rc.5-x86_64-apple-darwin.dmg) · [Windows x64](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/HuntWick-0.1.0-rc.5-x86_64-pc-windows-msvc.exe) · [Linux Debian](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/HuntWick-0.1.0-rc.5-x86_64-unknown-linux-gnu.deb) · [Linux AppImage](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.5/HuntWick-0.1.0-rc.5-x86_64-unknown-linux-gnu.AppImage)
+[Apple Silicon DMG](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.6/HuntWick-0.1.0-rc.6-aarch64-apple-darwin.dmg) · [Intel Mac DMG](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.6/HuntWick-0.1.0-rc.6-x86_64-apple-darwin.dmg) · [Windows x64](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.6/HuntWick-0.1.0-rc.6-x86_64-pc-windows-msvc.exe) · [Linux Debian](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.6/HuntWick-0.1.0-rc.6-x86_64-unknown-linux-gnu.deb) · [Linux AppImage](https://github.com/ish4ra/HuntWick/releases/download/v0.1.0-rc.6/HuntWick-0.1.0-rc.6-x86_64-unknown-linux-gnu.AppImage)
 
 The installers bundle the Python runtime and Sherlock. Launch HuntWick from your applications menu. The platform directory and settings work offline. A live search needs a network connection to the selected sites.
 
-## Search workspace in the RC.6 candidate
+## Search workspace in RC.6
 
 [Compact search console](docs/rc6-media/full-console-760.png) · [Coverage and live comparison](docs/rc6-quality.md) · [Search reliability measurements](docs/rc6-search-quality.md)
 
@@ -85,7 +85,7 @@ The bundled adapter invokes the pinned Sherlock and Maigret Python libraries. De
 
 ## Roadmap
 
-RC.6 is under candidate testing. RC.5 remains the published preview while owner testing continues.
+The first stable release awaits owner acceptance of the Apple Silicon upgrade and explicit approval. [Production evidence and stable checklist](docs/rc6-production.md)
 
 ## Web Edition
 
@@ -95,7 +95,7 @@ The access-restricted Web Edition serves the shared interface through FastAPI. I
 
 ![Authenticated browser search and CSV export menu using a synthetic handle](docs/readme-assets/web-search.gif)
 
-[Desktop browser screenshot](docs/rc6-media/pivot/web-desktop.png) · [Mobile screenshot](docs/rc6-media/pivot/web-mobile.png) · [Web CI](https://github.com/ish4ra/HuntWick/actions/workflows/web.yml?query=branch%3Aintegration%2Frc5)
+[Desktop browser screenshot](docs/rc6-media/pivot/web-desktop.png) · [Mobile screenshot](docs/rc6-media/pivot/web-mobile.png) · [Web CI](https://github.com/ish4ra/HuntWick/actions/runs/46053737578)
 
 ```mermaid
 flowchart LR
