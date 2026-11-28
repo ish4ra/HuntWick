@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.0-rc.7
+
+### Search
+
+- Verify local Mastodon and Lemmy identities from instance APIs. Deep and Maigret accept a qualified handle for a supported instance.
+- Search an individual category from Advanced options. Diagnostics include selected and completed counts and overlapping provider outcomes.
+- Verify iNaturalist profiles using the public account API.
+
+### Updates and platform icons
+
+- Discover a newer preview from a stable-channel check and choose explicitly whether to consider it.
+- Use bundled platform logos across the directory and results.
+
 ## 0.1.0-rc.6
 
 Published to the preview channel for Apple Silicon, Intel Mac, Windows x64 and Linux x64. [Public release](https://github.com/ish4ra/HuntWick/releases/tag/v0.1.0-rc.6) · [Verified files and rollback manifests](docs/rc6-production.md)

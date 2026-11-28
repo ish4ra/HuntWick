@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Check, Copy, Globe2, LoaderCircle } from 'lucide-react'
+import { Check, Copy, LoaderCircle } from 'lucide-react'
 import { useHuntWick } from '../useHuntWick'
 import { activeRun, type Run } from '../model'
 export { statusLabels as statuses } from '../model'
@@ -7,10 +7,10 @@ export { statusLabels as statuses } from '../model'
 export type Workspace = ReturnType<typeof useHuntWick>
 export type Page = 'Search' | 'History' | 'Platforms' | 'Settings' | 'About'
 export const repositoryUrl = 'https://github.com/ish4ra/HuntWick'
-export const desktopDownloadsUrl = repositoryUrl + '/releases/tag/v0.1.0-rc.5'
+export const desktopDownloadsUrl = repositoryUrl + '/releases'
 export const webPrivacy =
   'The service operator receives your IP address and the username you submit. Selected platforms receive the username and the server’s IP address.'
-export const version = '0.1.0-rc.6'
+export const version = '0.1.0-rc.7'
 export const phases: Record<Run['phase'], string> = {
   running: 'Running',
   cancelling: 'Cancelling',
@@ -93,50 +93,7 @@ export function CopyLink({ url, action }: { url: string; action?: string }) {
     </span>
   )
 }
-const platformIcons: Record<string, string> = {
-  'Behance': 'behance',
-  'Bluesky': 'bluesky',
-  'Chess.com': 'chessdotcom',
-  'Codeberg': 'codeberg',
-  'Codewars': 'codewars',
-  'Docker Hub': 'docker',
-  'GitHub': 'github',
-  'GitLab': 'gitlab',
-  'Hugging Face': 'huggingface',
-  'Instagram': 'instagram',
-  'Kaggle': 'kaggle',
-  'Ko-fi': 'kofi',
-  'Letterboxd': 'letterboxd',
-  'Lichess': 'lichess',
-  'MyAnimeList': 'myanimelist',
-  'Patreon': 'patreon',
-  'Reddit': 'reddit',
-  'Replit.com': 'replit',
-  'RubyGems': 'rubygems',
-  'Scratch': 'scratch',
-  'SoundCloud': 'soundcloud',
-  'TikTok': 'tiktok',
-  'Trello': 'trello',
-  'Twitch': 'twitch',
-  'Vimeo': 'vimeo',
-  'VirusTotal': 'virustotal',
-  'X (Twitter)': 'x',
-  'YouTube': 'youtube',
-  'kofi': 'kofi',
-  'last.fm': 'lastdotfm',
-  'npm': 'npm',
-  'osu!': 'osu',
-}
-export function PlatformMark({ name }: { name: string }) {
-  const icon = platformIcons[name]
-  if (icon) return <span className="brand-mark" aria-hidden="true" style={{maskImage:`url(/platforms/${icon}.svg)`}}/>
-  const hash = Array.from(name).reduce((value, c) => (value * 31 + c.charCodeAt(0)) >>> 0, 0)
-  return (
-    <span aria-hidden="true" className={'platform-mark hue-' + (hash % 4)}>
-      <Globe2 size={16}/>
-    </span>
-  )
-}
+export { PlatformMark } from './PlatformMark'
 export function Toggle({
   checked,
   onChange,

@@ -85,7 +85,7 @@ The bundled adapter invokes the pinned Sherlock and Maigret Python libraries. De
 
 ## Roadmap
 
-The first stable release awaits owner acceptance of the Apple Silicon upgrade and explicit approval. [Production evidence and stable checklist](docs/rc6-production.md)
+The owner installed RC.6 through the Apple Silicon updater. The RC.7 source candidate addresses the remaining search, logo and updater feedback. Installed RC.7 acceptance and explicit approval precede stable. [Candidate scope and measurements](docs/rc7-coverage.md) [Production evidence and stable checklist](docs/rc6-production.md)
 
 ## Web Edition
 
