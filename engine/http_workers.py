@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 
 import requests
 from requests.adapters import HTTPAdapter
-from urllib3.exceptions import NameResolutionError
+from urllib3.exceptions import NameResolutionError, ReadTimeoutError
 
 MAX_BYTES = 512 * 1024
 
@@ -40,8 +40,19 @@ def connection_status(exc):
 
 class PublicAdapter(HTTPAdapter):
     """Apply the byte limit at each HTTP hop, before Requests buffers content."""
+    def __init__(self, *, follow_redirects=False):
+        super().__init__()
+        self.follow_redirects = follow_redirects
+
     def send(self, request, **kwargs):
         response = super().send(request, **kwargs)
+        if self.follow_redirects and response.is_redirect:
+            # Requests needs Location for the next, separately guarded hop.
+            # Close the unread socket before marking the empty body consumed.
+            response.close()
+            response._content = b''
+            response._content_consumed = True
+            return response
         try:
             media = response.headers.get('Content-Type', '').lower()
             if media.startswith(('audio/', 'video/', 'image/', 'application/octet-stream')):
@@ -54,17 +65,21 @@ class PublicAdapter(HTTPAdapter):
             response._content = bytes(body)
             response._content_consumed = True
             return response
+        except requests.ConnectionError as exc:
+            if any(isinstance(arg, ReadTimeoutError) for arg in exc.args):
+                raise requests.ReadTimeout('Profile body read timed out') from None
+            raise
         finally:
             response.close()
 
 
 class PublicSession(requests.Session):
-    def __init__(self, urls):
+    def __init__(self, urls, *, follow_redirects=False):
         super().__init__()
         self.trust_env = False
         self.max_redirects = 4
         self.hosts = {urlsplit(url).hostname.lower().removeprefix('www.') for url in urls}
-        self.mount('https://', PublicAdapter())
+        self.mount('https://', PublicAdapter(follow_redirects=follow_redirects))
 
     def send(self, request, **kwargs):
         dest = urlsplit(request.url)
@@ -79,7 +94,7 @@ class PublicSession(requests.Session):
 
 
 def exchange(command):
-    with PublicSession(command['origins']) as session:
+    with PublicSession(command['origins'], follow_redirects=command['redirect']) as session:
         response = session.request(command['method'], command['url'], headers=command['headers'],
                                    timeout=command['timeout'], allow_redirects=command['redirect'])
         return {'url':response.url,'code':response.status_code,'encoding':response.encoding,
