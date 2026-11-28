@@ -1,0 +1,2408 @@
+{
+  "type": "catalog",
+  "version": "0.16.2",
+  "updatedAt": "2026-11-25",
+  "databaseVersion": "4e2a4f6 + exclusions 1096274 + native 2026-11-25.1",
+  "sites": [
+    {
+      "name": "1337x",
+      "url": "https://www.1337x.to/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "2Dimensions",
+      "url": "https://2Dimensions.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "7Cups",
+      "url": "https://www.7cups.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "9GAG",
+      "url": "https://www.9gag.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "About.me",
+      "url": "https://about.me/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Academia.edu",
+      "url": "https://www.academia.edu/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "addons.wago.io",
+      "url": "https://addons.wago.io/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Airbit",
+      "url": "https://airbit.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "akniga",
+      "url": "https://akniga.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "AllMyLinks",
+      "url": "https://allmylinks.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "AniWorld",
+      "url": "https://aniworld.to/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Aparat",
+      "url": "https://www.aparat.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Archive of Our Own",
+      "url": "https://archiveofourown.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Arduino Forum",
+      "url": "https://forum.arduino.cc/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "ArtStation",
+      "url": "https://www.artstation.com/",
+      "category": "Creative",
+      "quick": true
+    },
+    {
+      "name": "Asciinema",
+      "url": "https://asciinema.org",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Ask Fedora",
+      "url": "https://ask.fedoraproject.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Atcoder",
+      "url": "https://atcoder.jp/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Audiojungle",
+      "url": "https://audiojungle.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Autofrage",
+      "url": "https://www.autofrage.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Avizo",
+      "url": "https://www.avizo.cz/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "AWS Skills Profile",
+      "url": "https://skillsprofile.skillbuilder.aws",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "babyblogRU",
+      "url": "https://www.babyblog.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "BabyRu",
+      "url": "https://www.baby.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Bandcamp",
+      "url": "https://www.bandcamp.com/",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "Bazar.cz",
+      "url": "https://www.bazar.cz/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Behance",
+      "url": "https://www.behance.net/",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "Bezuzyteczna",
+      "url": "https://bezuzyteczna.pl",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "BiggerPockets",
+      "url": "https://www.biggerpockets.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "BioHacking",
+      "url": "https://forum.dangerousthings.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "BitBucket",
+      "url": "https://bitbucket.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Bitwarden Forum",
+      "url": "https://bitwarden.com/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Blipfoto",
+      "url": "https://www.blipfoto.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Blitz Tactics",
+      "url": "https://blitztactics.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Blogger",
+      "url": "https://www.blogger.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Bluesky",
+      "url": "https://bsky.app/",
+      "category": "Social Media",
+      "quick": true
+    },
+    {
+      "name": "Bookcrossing",
+      "url": "https://www.bookcrossing.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "BOOTH",
+      "url": "https://booth.pm/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "BraveCommunity",
+      "url": "https://community.brave.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "BreachSta.rs Forum",
+      "url": "https://breachsta.rs/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "BugCrowd",
+      "url": "https://bugcrowd.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "BuyMeACoffee",
+      "url": "https://www.buymeacoffee.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "BuzzFeed",
+      "url": "https://buzzfeed.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Caddy Community",
+      "url": "https://caddy.community/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Car Talk Community",
+      "url": "https://community.cartalk.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Carbonmade",
+      "url": "https://carbonmade.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Career.habr",
+      "url": "https://career.habr.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Carrd",
+      "url": "https://carrd.co/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "CashApp",
+      "url": "https://cash.app",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Cfx.re Forum",
+      "url": "https://forum.cfx.re",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "CGTrader",
+      "url": "https://www.cgtrader.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Championat",
+      "url": "https://www.championat.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Chaos",
+      "url": "https://chaos.social/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Chess.com",
+      "url": "https://www.chess.com",
+      "category": "Gaming",
+      "quick": false,
+      "nativeOnly": true
+    },
+    {
+      "name": "Choice Community",
+      "url": "https://choice.community/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Chollometro",
+      "url": "https://www.chollometro.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Clapper",
+      "url": "https://clapperapp.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "CloudflareCommunity",
+      "url": "https://community.cloudflare.com/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Clozemaster",
+      "url": "https://www.clozemaster.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Clubhouse",
+      "url": "https://www.clubhouse.com",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "CNET",
+      "url": "https://www.cnet.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Code Snippet Wiki",
+      "url": "https://codesnippets.fandom.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Codeberg",
+      "url": "https://codeberg.org/",
+      "category": "Development",
+      "quick": true
+    },
+    {
+      "name": "Codecademy",
+      "url": "https://www.codecademy.com/",
+      "category": "Development",
+      "quick": false
+    },
+    {
+      "name": "Codechef",
+      "url": "https://www.codechef.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Codeforces",
+      "url": "https://codeforces.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Codepen",
+      "url": "https://codepen.io/",
+      "category": "Development",
+      "quick": false
+    },
+    {
+      "name": "Coders Rank",
+      "url": "https://codersrank.io/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Coderwall",
+      "url": "https://coderwall.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "CodeSandbox",
+      "url": "https://codesandbox.io",
+      "category": "Development",
+      "quick": false
+    },
+    {
+      "name": "Codewars",
+      "url": "https://www.codewars.com",
+      "category": "Development",
+      "quick": true
+    },
+    {
+      "name": "Coinvote",
+      "url": "https://coinvote.cc/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "ColourLovers",
+      "url": "https://www.colourlovers.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Contently",
+      "url": "https://contently.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Coroflot",
+      "url": "https://coroflot.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "couchsurfing",
+      "url": "https://www.couchsurfing.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Cplusplus",
+      "url": "https://cplusplus.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Cracked",
+      "url": "https://www.cracked.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Cracked Forum",
+      "url": "https://cracked.ax/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "crates.io",
+      "url": "https://crates.io",
+      "category": "Development",
+      "quick": false,
+      "nativeOnly": true
+    },
+    {
+      "name": "Credly",
+      "url": "https://www.credly.com/",
+      "category": "Professional",
+      "quick": false
+    },
+    {
+      "name": "Crevado",
+      "url": "https://crevado.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Crowdin",
+      "url": "https://crowdin.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "CryptoHack",
+      "url": "https://cryptohack.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Cryptomator Forum",
+      "url": "https://community.cryptomator.org/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "CSSBattle",
+      "url": "https://cssbattle.dev",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "CTAN",
+      "url": "https://ctan.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Cults3D",
+      "url": "https://cults3d.com/en",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "CurseForge",
+      "url": "https://www.curseforge.com.",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "CyberDefenders",
+      "url": "https://cyberdefenders.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "d3RU",
+      "url": "https://d3.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "DailyMotion",
+      "url": "https://www.dailymotion.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "dcinside",
+      "url": "https://www.dcinside.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Dealabs",
+      "url": "https://www.dealabs.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "DEV Community",
+      "url": "https://dev.to/",
+      "category": "Development",
+      "quick": true
+    },
+    {
+      "name": "devRant",
+      "url": "https://devrant.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "DigitalSpy",
+      "url": "https://forums.digitalspy.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Discogs",
+      "url": "https://www.discogs.com/",
+      "category": "Entertainment",
+      "quick": false
+    },
+    {
+      "name": "Discuss.Elastic.co",
+      "url": "https://discuss.elastic.co/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Disqus",
+      "url": "https://disqus.com/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "DMOJ",
+      "url": "https://dmoj.ca/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Docker Hub",
+      "url": "https://hub.docker.com/",
+      "category": "Development",
+      "quick": true
+    },
+    {
+      "name": "Dribbble",
+      "url": "https://dribbble.com/",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "drive2",
+      "url": "https://www.drive2.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Duolingo",
+      "url": "https://duolingo.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "eGPU",
+      "url": "https://egpu.io/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Eintracht Frankfurt Forum",
+      "url": "https://community.eintracht.de/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Empretienda AR",
+      "url": "https://empretienda.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Envato Forum",
+      "url": "https://forums.envato.com/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "exophase",
+      "url": "https://www.exophase.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Exposure",
+      "url": "https://exposure.co/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "EyeEm",
+      "url": "https://www.eyeem.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "F3.cool",
+      "url": "https://f3.cool/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Fameswap",
+      "url": "https://fameswap.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Fandom",
+      "url": "https://www.fandom.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Fanpop",
+      "url": "https://www.fanpop.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Finanzfrage",
+      "url": "https://www.finanzfrage.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "fl",
+      "url": "https://www.fl.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Flickr",
+      "url": "https://www.flickr.com/",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "Flightradar24",
+      "url": "https://www.flightradar24.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Flipboard",
+      "url": "https://flipboard.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Football",
+      "url": "https://www.rusfootball.info/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "FortniteTracker",
+      "url": "https://fortnitetracker.com/challenges",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "forum_guns",
+      "url": "https://forum.guns.ru/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Fosstodon",
+      "url": "https://fosstodon.org/",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "Framapiaf",
+      "url": "https://framapiaf.org",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "freecodecamp",
+      "url": "https://www.freecodecamp.org/",
+      "category": "Development",
+      "quick": false
+    },
+    {
+      "name": "Freelancer",
+      "url": "https://www.freelancer.com/",
+      "category": "Professional",
+      "quick": false
+    },
+    {
+      "name": "Freesound",
+      "url": "https://freesound.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "furaffinity",
+      "url": "https://www.furaffinity.net",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "GameFAQs",
+      "url": "https://gamefaqs.gamespot.com",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Gamespot",
+      "url": "https://www.gamespot.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Genius (Artists)",
+      "url": "https://genius.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Genius (Users)",
+      "url": "https://genius.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "geocaching",
+      "url": "https://www.geocaching.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Gesundheitsfrage",
+      "url": "https://www.gesundheitsfrage.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "GetMyUni",
+      "url": "https://getmyuni.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Giant Bomb",
+      "url": "https://www.giantbomb.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Giphy",
+      "url": "https://giphy.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "GitBook",
+      "url": "https://gitbook.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Gitea",
+      "url": "https://gitea.com/",
+      "category": "Development",
+      "quick": false
+    },
+    {
+      "name": "Gitee",
+      "url": "https://gitee.com/",
+      "category": "Development",
+      "quick": false
+    },
+    {
+      "name": "GitHub",
+      "url": "https://www.github.com/",
+      "category": "Development",
+      "quick": true
+    },
+    {
+      "name": "GitLab",
+      "url": "https://gitlab.com/",
+      "category": "Development",
+      "quick": true
+    },
+    {
+      "name": "GNOME VCS",
+      "url": "https://gitlab.gnome.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "GoodReads",
+      "url": "https://www.goodreads.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Google Play",
+      "url": "https://play.google.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Gradle",
+      "url": "https://gradle.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Grailed",
+      "url": "https://www.grailed.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Gumroad",
+      "url": "https://www.gumroad.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Gutefrage",
+      "url": "https://www.gutefrage.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "habr",
+      "url": "https://habr.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Hackaday",
+      "url": "https://hackaday.io/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "HackenProof (Hackers)",
+      "url": "https://hackenproof.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "HackerEarth",
+      "url": "https://hackerearth.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "HackerOne",
+      "url": "https://hackerone.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "HackerRank",
+      "url": "https://hackerrank.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "HackerSploit",
+      "url": "https://forum.hackersploit.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "HackMD",
+      "url": "https://hackmd.io/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "hackster",
+      "url": "https://www.hackster.io",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "HackTheBox",
+      "url": "https://forum.hackthebox.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Harvard Scholar",
+      "url": "https://scholar.harvard.edu/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Hive Blog",
+      "url": "https://hive.blog/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "HotUKdeals",
+      "url": "https://www.hotukdeals.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Houzz",
+      "url": "https://houzz.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "HubPages",
+      "url": "https://hubpages.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Hugging Face",
+      "url": "https://huggingface.co/",
+      "category": "Development",
+      "quick": true
+    },
+    {
+      "name": "Icons8 Community",
+      "url": "https://community.icons8.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "IFTTT",
+      "url": "https://www.ifttt.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Ifunny",
+      "url": "https://ifunny.co/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "ImgUp.cz",
+      "url": "https://imgup.cz/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Imgur",
+      "url": "https://imgur.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "imood",
+      "url": "https://www.imood.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Instructables",
+      "url": "https://www.instructables.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Intigriti",
+      "url": "https://app.intigriti.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Ionic Forum",
+      "url": "https://forum.ionicframework.com/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "IRC-Galleria",
+      "url": "https://irc-galleria.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "irecommend",
+      "url": "https://irecommend.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Issuu",
+      "url": "https://issuu.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Itch.io",
+      "url": "https://itch.io/",
+      "category": "Gaming",
+      "quick": false
+    },
+    {
+      "name": "Itemfix",
+      "url": "https://www.itemfix.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "jbzd.com.pl",
+      "url": "https://jbzd.com.pl/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Jellyfin Weblate",
+      "url": "https://translate.jellyfin.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "jeuxvideo",
+      "url": "https://www.jeuxvideo.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Jimdo",
+      "url": "https://jimdosite.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Joplin Forum",
+      "url": "https://discourse.joplinapp.org/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Jupyter Community Forum",
+      "url": "https://discourse.jupyter.org",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Kaggle",
+      "url": "https://www.kaggle.com/",
+      "category": "Professional",
+      "quick": false
+    },
+    {
+      "name": "kaskus",
+      "url": "https://www.kaskus.co.id",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Keybase",
+      "url": "https://keybase.io/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Kick",
+      "url": "https://kick.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "kofi",
+      "url": "https://ko-fi.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Kongregate",
+      "url": "https://www.kongregate.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "kwork",
+      "url": "https://www.kwork.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Laracast",
+      "url": "https://laracasts.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "last.fm",
+      "url": "https://last.fm/",
+      "category": "Entertainment",
+      "quick": false
+    },
+    {
+      "name": "Launchpad",
+      "url": "https://launchpad.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "leasehackr",
+      "url": "https://forum.leasehackr.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "LeetCode",
+      "url": "https://leetcode.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "LemmyWorld",
+      "url": "https://lemmy.world",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "LessWrong",
+      "url": "https://www.lesswrong.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Letterboxd",
+      "url": "https://letterboxd.com/",
+      "category": "Entertainment",
+      "quick": false
+    },
+    {
+      "name": "LibraryThing",
+      "url": "https://www.librarything.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Lichess",
+      "url": "https://lichess.org",
+      "category": "Gaming",
+      "quick": true
+    },
+    {
+      "name": "LinkedIn",
+      "url": "https://linkedin.com",
+      "category": "Professional",
+      "quick": false
+    },
+    {
+      "name": "LinuxFR.org",
+      "url": "https://linuxfr.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Listed",
+      "url": "https://listed.to/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "LiveJournal",
+      "url": "https://www.livejournal.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "livelib",
+      "url": "https://www.livelib.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Lobsters",
+      "url": "https://lobste.rs/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "LOR",
+      "url": "https://linux.org.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "LottieFiles",
+      "url": "https://lottiefiles.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Mamot",
+      "url": "https://mamot.fr/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "mastodon.cloud",
+      "url": "https://mastodon.cloud/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "mastodon.social",
+      "url": "https://chaos.social/",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "mastodon.xyz",
+      "url": "https://mastodon.xyz/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Medium",
+      "url": "https://medium.com/",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "Memrise",
+      "url": "https://www.memrise.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "MixCloud",
+      "url": "https://www.mixcloud.com/",
+      "category": "Entertainment",
+      "quick": false
+    },
+    {
+      "name": "MMORPG Forum",
+      "url": "https://forums.mmorpg.com/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "moikrug",
+      "url": "https://moikrug.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Monkeytype",
+      "url": "https://monkeytype.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Motorradfrage",
+      "url": "https://www.motorradfrage.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "mstdn.io",
+      "url": "https://mstdn.io/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "mstdn.social",
+      "url": "https://mstdn.social/",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "MuseScore",
+      "url": "https://musescore.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "MyAnimeList",
+      "url": "https://myanimelist.net/",
+      "category": "Entertainment",
+      "quick": false
+    },
+    {
+      "name": "Mydealz",
+      "url": "https://www.mydealz.de/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Mydramalist",
+      "url": "https://mydramalist.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "MyMiniFactory",
+      "url": "https://www.myminifactory.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Myspace",
+      "url": "https://myspace.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "n8n Community",
+      "url": "https://community.n8n.io/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "nairaland.com",
+      "url": "https://www.nairaland.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "namuwiki",
+      "url": "https://namu.wiki/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "NationStates Nation",
+      "url": "https://nationstates.net",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Naver",
+      "url": "https://naver.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Needrom",
+      "url": "https://www.needrom.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Newgrounds",
+      "url": "https://newgrounds.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Nextcloud Forum",
+      "url": "https://nextcloud.com/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "NICommunityForum",
+      "url": "https://www.native-instruments.com/forum/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Nightbot",
+      "url": "https://nightbot.tv/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Ninja Kiwi",
+      "url": "https://ninjakiwi.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "NintendoLife",
+      "url": "https://www.nintendolife.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "NitroType",
+      "url": "https://www.nitrotype.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "nnRU",
+      "url": "https://www.nn.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "NotABug.org",
+      "url": "https://notabug.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "note",
+      "url": "https://note.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Nothing Community",
+      "url": "https://nothing.community/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "npm",
+      "url": "https://www.npmjs.com/",
+      "category": "Development",
+      "quick": false
+    },
+    {
+      "name": "Nyaa.si",
+      "url": "https://nyaa.si/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Open Collective",
+      "url": "https://opencollective.com/",
+      "category": "Professional",
+      "quick": false
+    },
+    {
+      "name": "OpenGameArt",
+      "url": "https://opengameart.org",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Opensource",
+      "url": "https://opensource.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "OpenStreetMap",
+      "url": "https://www.openstreetmap.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "osu!",
+      "url": "https://osu.ppy.sh/",
+      "category": "Gaming",
+      "quick": false
+    },
+    {
+      "name": "OurDJTalk",
+      "url": "https://ourdjtalk.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Outgress",
+      "url": "https://outgress.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Packagist",
+      "url": "https://packagist.org/",
+      "category": "Development",
+      "quick": false
+    },
+    {
+      "name": "Pastebin",
+      "url": "https://pastebin.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Patched",
+      "url": "https://patched.sh/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Patreon",
+      "url": "https://www.patreon.com/",
+      "category": "Professional",
+      "quick": false
+    },
+    {
+      "name": "PentesterLab",
+      "url": "https://pentesterlab.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Pepperdeals",
+      "url": "https://www.pepperdeals.se/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "PepperealsUS",
+      "url": "https://www.pepperdeals.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "PepperNL",
+      "url": "https://nl.pepper.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "PepperPL",
+      "url": "https://www.pepper.pl/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Periscope",
+      "url": "https://www.periscope.tv/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "pikabu",
+      "url": "https://pikabu.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Pinkbike",
+      "url": "https://www.pinkbike.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Pinterest",
+      "url": "https://www.pinterest.com/",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "pixelfed.social",
+      "url": "https://pixelfed.social",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Platzi",
+      "url": "https://platzi.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Playstrategy",
+      "url": "https://playstrategy.org",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Plurk",
+      "url": "https://www.plurk.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Pokemon Showdown",
+      "url": "https://pokemonshowdown.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Polarsteps",
+      "url": "https://polarsteps.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Polygon",
+      "url": "https://www.polygon.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Polymart",
+      "url": "https://polymart.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "pr0gramm",
+      "url": "https://pr0gramm.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Preisjaeger",
+      "url": "https://www.preisjaeger.at/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "ProductHunt",
+      "url": "https://www.producthunt.com/",
+      "category": "Professional",
+      "quick": false
+    },
+    {
+      "name": "prog.hu",
+      "url": "https://prog.hu/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "programming.dev",
+      "url": "https://programming.dev",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Promodescuentos",
+      "url": "https://www.promodescuentos.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Pronouns.page",
+      "url": "https://pronouns.page/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "PSNProfiles.com",
+      "url": "https://psnprofiles.com/",
+      "category": "Gaming",
+      "quick": false
+    },
+    {
+      "name": "Pychess",
+      "url": "https://www.pychess.org",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "PyPi",
+      "url": "https://pypi.org",
+      "category": "Development",
+      "quick": false
+    },
+    {
+      "name": "Python.org Discussions",
+      "url": "https://discuss.python.org",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Rajce.net",
+      "url": "https://www.rajce.idnes.cz/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Rate Your Music",
+      "url": "https://rateyourmusic.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Rclone Forum",
+      "url": "https://forum.rclone.org/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Redbubble",
+      "url": "https://www.redbubble.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Reisefrage",
+      "url": "https://www.reisefrage.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Replit.com",
+      "url": "https://replit.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "ResearchGate",
+      "url": "https://www.researchgate.net/",
+      "category": "Professional",
+      "quick": false
+    },
+    {
+      "name": "Roblox",
+      "url": "https://www.roblox.com/",
+      "category": "Gaming",
+      "quick": false
+    },
+    {
+      "name": "RoyalCams",
+      "url": "https://royalcams.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Ruby Forums",
+      "url": "https://ruby-forums.com",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "RubyGems",
+      "url": "https://rubygems.org/",
+      "category": "Development",
+      "quick": false
+    },
+    {
+      "name": "Rumble",
+      "url": "https://rumble.com/",
+      "category": "Entertainment",
+      "quick": false
+    },
+    {
+      "name": "RuneScape",
+      "url": "https://www.runescape.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "satsisRU",
+      "url": "https://satsis.info/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Sbazar.cz",
+      "url": "https://www.sbazar.cz/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Scratch",
+      "url": "https://scratch.mit.edu/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "SEOForum",
+      "url": "https://www.seoforum.com/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "sessionize",
+      "url": "https://sessionize.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "ShitpostBot5000",
+      "url": "https://www.shitpostbot.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Signal",
+      "url": "https://community.signalusers.org",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Sketchfab",
+      "url": "https://sketchfab.com/",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "Slant",
+      "url": "https://www.slant.co/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Slashdot",
+      "url": "https://slashdot.org",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Slides",
+      "url": "https://slides.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "SmugMug",
+      "url": "https://smugmug.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Smule",
+      "url": "https://www.smule.com/",
+      "category": "Entertainment",
+      "quick": false
+    },
+    {
+      "name": "Snapchat",
+      "url": "https://www.snapchat.com",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "SOOP",
+      "url": "https://www.sooplive.co.kr/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "SoundCloud",
+      "url": "https://soundcloud.com/",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "SourceForge",
+      "url": "https://sourceforge.net/",
+      "category": "Development",
+      "quick": false
+    },
+    {
+      "name": "SoylentNews",
+      "url": "https://soylentnews.org",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "SpaceHey",
+      "url": "https://spacehey.com/",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "SpeakerDeck",
+      "url": "https://speakerdeck.com/",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "Speedrun.com",
+      "url": "https://speedrun.com/",
+      "category": "Gaming",
+      "quick": false
+    },
+    {
+      "name": "Spells8",
+      "url": "https://spells8.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "spletnik",
+      "url": "https://spletnik.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Splits.io",
+      "url": "https://splits.io",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Sporcle",
+      "url": "https://www.sporcle.com/",
+      "category": "Entertainment",
+      "quick": false
+    },
+    {
+      "name": "Sportlerfrage",
+      "url": "https://www.sportlerfrage.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "SportsRU",
+      "url": "https://www.sports.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Star Citizen",
+      "url": "https://robertsspaceindustries.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Status Cafe",
+      "url": "https://status.cafe/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Steam Community (User)",
+      "url": "https://steamcommunity.com/",
+      "category": "Gaming",
+      "quick": false
+    },
+    {
+      "name": "Strava",
+      "url": "https://www.strava.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "SublimeForum",
+      "url": "https://forum.sublimetext.com/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Substack",
+      "url": "https://substack.com/",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "svidbook",
+      "url": "https://www.svidbook.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "SWAPD",
+      "url": "https://swapd.co/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Telegram",
+      "url": "https://t.me/",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "Tellonym.me",
+      "url": "https://tellonym.me/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Tenor",
+      "url": "https://tenor.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "TETR.IO",
+      "url": "https://tetr.io",
+      "category": "Gaming",
+      "quick": false
+    },
+    {
+      "name": "ThemeForest",
+      "url": "https://themeforest.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "TheMovieDB",
+      "url": "https://www.themoviedb.org/",
+      "category": "Entertainment",
+      "quick": false
+    },
+    {
+      "name": "threads",
+      "url": "https://www.threads.net/",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "Tiendanube",
+      "url": "https://www.tiendanube.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "TikTok",
+      "url": "https://www.tiktok.com",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "tistory",
+      "url": "https://www.tistory.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Topcoder",
+      "url": "https://topcoder.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Topmate",
+      "url": "https://topmate.io/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "toster",
+      "url": "https://www.toster.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "TradingView",
+      "url": "https://www.tradingview.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Trakt",
+      "url": "https://www.trakt.tv/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "TRAKTRAIN",
+      "url": "https://traktrain.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "TrashboxRU",
+      "url": "https://trashbox.ru/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Trawelling",
+      "url": "https://traewelling.de/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Trello",
+      "url": "https://trello.com/",
+      "category": "Professional",
+      "quick": true
+    },
+    {
+      "name": "Trovo",
+      "url": "https://trovo.live",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "tumblr",
+      "url": "https://www.tumblr.com/",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "Tuna",
+      "url": "https://tuna.voicemod.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Tweakers",
+      "url": "https://tweakers.net",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Twitch",
+      "url": "https://www.twitch.tv",
+      "category": "Gaming",
+      "quick": false
+    },
+    {
+      "name": "Typeracer",
+      "url": "https://typeracer.com",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Ultimate-Guitar",
+      "url": "https://ultimate-guitar.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Unsplash",
+      "url": "https://unsplash.com/",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "Untappd",
+      "url": "https://untappd.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Valorant Forums",
+      "url": "https://valorantforums.com",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Velog",
+      "url": "https://velog.io/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Vimeo",
+      "url": "https://vimeo.com/",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "VirusTotal",
+      "url": "https://www.virustotal.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Vjudge",
+      "url": "https://VJudge.net/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "VK",
+      "url": "https://vk.com/",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "VLR",
+      "url": "https://www.vlr.gg",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "VSCO",
+      "url": "https://vsco.co/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Wakatime",
+      "url": "https://wakatime.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Warframe Market",
+      "url": "https://warframe.market/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Warrior Forum",
+      "url": "https://www.warriorforum.com/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Wattpad",
+      "url": "https://www.wattpad.com/",
+      "category": "Creative",
+      "quick": true
+    },
+    {
+      "name": "Weblate",
+      "url": "https://hosted.weblate.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "WebNode",
+      "url": "https://www.webnode.cz/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Weebly",
+      "url": "https://weebly.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "WICG Forum",
+      "url": "https://discourse.wicg.io/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Wikipedia",
+      "url": "https://www.wikipedia.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Windy",
+      "url": "https://windy.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Wix",
+      "url": "https://wix.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "WolframalphaForum",
+      "url": "https://community.wolfram.com/",
+      "category": "Forums",
+      "quick": false
+    },
+    {
+      "name": "Wordnik",
+      "url": "https://www.wordnik.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "WordPress",
+      "url": "https://wordpress.com",
+      "category": "Creative",
+      "quick": false
+    },
+    {
+      "name": "WordPressOrg",
+      "url": "https://wordpress.org/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Wowhead",
+      "url": "https://wowhead.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "write.as",
+      "url": "https://write.as",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Wykop",
+      "url": "https://www.wykop.pl",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "Xbox Gamertag",
+      "url": "https://xboxgamertag.com/",
+      "category": "Gaming",
+      "quick": false
+    },
+    {
+      "name": "YouNow",
+      "url": "https://www.younow.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "YouPic",
+      "url": "https://youpic.com/",
+      "category": "Other",
+      "quick": false
+    },
+    {
+      "name": "YouTube",
+      "url": "https://www.youtube.com/",
+      "category": "Social Media",
+      "quick": false
+    },
+    {
+      "name": "znanylekarz.pl",
+      "url": "https://znanylekarz.pl",
+      "category": "Other",
+      "quick": false
+    }
+  ],
+  "unavailable": [
+    {
+      "name": "Instagram",
+      "reason": "The bundled lookup uses a third-party mirror."
+    },
+    {
+      "name": "X (Twitter)",
+      "reason": "The bundled lookup uses a third-party Nitter instance."
+    },
+    {
+      "name": "Reddit",
+      "reason": "Disabled by the pinned upstream exclusions."
+    },
+    {
+      "name": "HLTV",
+      "reason": "Community accounts have numeric IDs. No supported public username lookup has been verified."
+    },
+    {
+      "name": "Facebook",
+      "reason": "No public profile rule in the pinned database."
+    }
+  ]
+}

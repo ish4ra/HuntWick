@@ -1,0 +1,64 @@
+name: Promote verified RC.6
+on:
+  push:
+    branches: [promote/rc6, verify/rc6]
+
+permissions: {}
+concurrency:
+  group: exact-byte-preview-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: >-
+      github.repository == 'ish4ra/HuntWick' &&
+      github.ref == 'refs/heads/promote/rc6' &&
+      github.actor == github.repository_owner &&
+      github.triggering_actor == github.repository_owner &&
+      !github.event.deleted
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: 4c283babbd4e6a4874e8633701bfeade2690f718
+          path: candidate
+          persist-credentials: false
+      - name: Verify the original ZIPs, publish RC.6 and verify preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HUNTWICK_ARTIFACT_PUBLIC_KEY: ${{ vars.UPDATER_PUBLIC_KEY }}
+        run: python scripts/promote_artifacts.py
+
+  verify:
+    if: >-
+      github.repository == 'ish4ra/HuntWick' &&
+      github.ref == 'refs/heads/verify/rc6' &&
+      github.actor == github.repository_owner &&
+      github.triggering_actor == github.repository_owner &&
+      !github.event.deleted
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: 4c283babbd4e6a4874e8633701bfeade2690f718
+          path: candidate
+          persist-credentials: false
+      - name: Verify original ZIPs, installer sizes and offline preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HUNTWICK_ARTIFACT_PUBLIC_KEY: ${{ vars.UPDATER_PUBLIC_KEY }}
+        run: python scripts/promote_artifacts.py --verify-only

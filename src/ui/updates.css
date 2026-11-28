@@ -1,0 +1,22 @@
+.updates-panel h2 { flex-wrap: wrap; }
+.updates-panel h2 small { margin-left: auto; font: 11px var(--mono); color: var(--muted); }
+.updates-panel .update-notice, .updates-panel .update-card { margin-top: 16px; border: 1px solid var(--accent-border); border-radius: 8px; }
+.updates-panel .update-notice { display: flex; gap: 9px; align-items: flex-start; padding: 14px; color: var(--accent); background: var(--tint); font-size: 13px; }
+.updates-panel .update-notice svg { flex-shrink: 0; }
+.update-notice p + button { margin-top: 9px; }
+.updates-panel .update-error { color: var(--warn); border-color: var(--line); background: var(--field); }
+.updates-panel .update-error p { margin-top: 4px; color: var(--secondary); }
+.update-card { overflow: hidden; background: var(--field); }
+.update-card header { display: flex; gap: 12px; align-items: center; padding: 16px; background: var(--tint); color: var(--accent); }
+.update-card header p { margin-top: 4px; font: 13px var(--mono); color: var(--text); }
+.update-card h3 { font-size: 15px; }
+.update-notes, .update-card footer { padding: 14px 16px; }
+.update-notes h4 { margin: 0 0 10px; font-size: 13px; }
+.update-notes .release-notes { max-height: 19rem; overflow: auto; font-size: 13px; color: var(--secondary); }
+.update-notes h5 { margin: 10px 0 3px; font-size: 13px; color: var(--text); }
+.update-notes ul, .update-notes ol { margin: 4px 0 8px; padding-left: 22px; }
+.update-card footer { border-top: 1px solid var(--line); font-size: 13px; }
+.update-card footer p { margin: 5px 0 10px; line-height: 1.5; color: var(--muted); }
+.update-transfer { display: grid; gap: 8px; }
+.update-transfer progress { accent-color: var(--accent); }
+.update-transfer span { font: 12px var(--mono); color: var(--secondary); }

@@ -1,0 +1,45 @@
+HuntWick uses these logos solely to identify the corresponding service or software family.
+Each mark belongs to its respective owner. See credits.csv for per-file names,
+original artwork sources, applicable brand guidelines and SHA-256 checksums.
+No affiliation or endorsement is implied.
+
+simple — Simple Icons 16.38.1, corpus dedication CC0 1.0 (LICENSE.md).
+The collection dedication does not waive brand-owner rights. The 31 existing
+marks remain byte-identical. Kongregate's K identifies Kongregate using its
+listed brand red and the Simple Icons single-colour shape. See Kongregate
+graphics guidance in credits.csv.
+https://github.com/simple-icons/simple-icons/blob/16.38.1/DISCLAIMER.md
+
+fa — Font Awesome Free 7.3.1, © Fonticons, Inc. SVG artwork under CC BY 4.0.
+https://fontawesome.com/license/free and https://creativecommons.org/licenses/by/4.0/
+The original SVGs and embedded notices are preserved. See licenses/Font-Awesome.txt.
+
+coreui — CoreUI Icons 3.1.0, CoreUI. Brand collection CC0 1.0, for identifying
+the corresponding product or service. See licenses/CoreUI.txt.
+https://coreui.io/icons/license/
+
+tabler — Tabler Icons 3.53.0, © Paweł Kuna. MIT, licenses/Tabler.txt.
+https://github.com/tabler/tabler-icons
+
+arcticons — Arcticons, Donnnno and contributors, via @iconify-json/arcticons
+1.2.62. Each Arcticons SVG is distributed under CC BY-SA 4.0. Iconify path
+data is wrapped in a standalone SVG with a 2-unit base stroke for small-size
+legibility. The per-icon links in credits.csv identify the artwork.
+https://github.com/Arcticons-Team/Arcticons
+https://creativecommons.org/licenses/by-sa/4.0/
+
+dashboard — Laracasts symbol, distributed by Dashboard Icons, Apache-2.0.
+Both colour variants are unchanged. Laracasts owns the trademark.
+https://assets.laracasts.com/logo-symbol
+https://github.com/homarr-labs/dashboard-icons/tree/23fc02e7710a66e0c774989f6e78372e9b6c2e15
+See licenses/Dashboard-Icons.txt.
+
+flarum — © Flarum Foundation. Unmodified original-colour PNG from its
+official documentation, displayed to identify the software family.
+https://flarum.org/foundation/legal
+
+Four additional Simple Icons SVGs carry upstream artwork licenses identified
+in the pinned metadata. Lobsters is BSD-3-Clause (licenses/Lobsters.txt).
+Packagist is MIT (licenses/Packagist.txt). Weblate and Monkeytype are
+GPL-3.0-only (licenses/GPL-3.txt). Their standalone, editable SVG sources
+are distributed in this directory. credits.csv links upstream originals.

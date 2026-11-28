@@ -1,0 +1,46 @@
+{
+  "brand_assets": 304,
+  "bundled_family_inheritance": {
+    "discourse": 2772,
+    "flarum": 229,
+    "forgejo": 1,
+    "gitea": 458,
+    "gitlab": 499,
+    "lemmy": 142,
+    "mastodon": 63
+  },
+  "scopes": {
+    "adult_enabled": {
+      "actual_logos": 4346,
+      "alias": 33,
+      "direct": 150,
+      "fallback": 224,
+      "family": 4163,
+      "total": 4570
+    },
+    "all_bundled": {
+      "actual_logos": 4367,
+      "alias": 37,
+      "direct": 166,
+      "fallback": 246,
+      "family": 4164,
+      "total": 4613
+    },
+    "default": {
+      "actual_logos": 4346,
+      "alias": 33,
+      "direct": 150,
+      "fallback": 207,
+      "family": 4163,
+      "total": 4553
+    },
+    "unavailable": {
+      "actual_logos": 202,
+      "alias": 24,
+      "direct": 124,
+      "fallback": 6404,
+      "family": 54,
+      "total": 6606
+    }
+  }
+}

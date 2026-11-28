@@ -1,0 +1,3 @@
+# The logo ledger verifies original file bytes on every packaging platform.
+public/platforms/*.svg -text
+public/platforms/*.png -text

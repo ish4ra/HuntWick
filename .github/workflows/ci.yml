@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  push:
+    branches-ignore: [feat/web-edition]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    if: >-
+      github.ref != 'refs/heads/verify/rc5' && github.ref != 'refs/heads/promote/rc5' &&
+      github.ref != 'refs/heads/verify/rc6' && github.ref != 'refs/heads/promote/rc6' &&
+      github.ref != 'refs/heads/build/production-candidate' &&
+      !(github.event_name == 'push' && github.ref == 'refs/heads/feat/phase-1-desktop-mvp' &&
+        startsWith(github.event.head_commit.message, '[verify updater key] '))
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/verify-and-package.yml
+    with:
+      checks-only: ${{ github.ref == 'refs/heads/integration/rc5' || github.head_ref == 'integration/rc5' || github.ref == 'refs/heads/integration/desktop-web' || github.head_ref == 'integration/desktop-web' || github.head_ref == 'feat/web-edition' }}
+
+  signed-candidate:
+    name: Production-key candidate (artifacts only)
+    if: >-
+      github.repository == 'ish4ra/HuntWick' && github.actor == github.repository_owner &&
+      github.triggering_actor == github.repository_owner &&
+      github.event_name == 'push' && github.ref == 'refs/heads/build/production-candidate'
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/verify-and-package.yml
+    with:
+      release-signing: true
+    secrets:
+      UPDATER_PRIVATE_KEY: ${{ secrets.UPDATER_PRIVATE_KEY }}
+      UPDATER_KEY_PASSWORD: ${{ secrets.UPDATER_KEY_PASSWORD }}
+
+  verify-updater-key:
+    name: Verify permanent updater key
+    if: >-
+      github.repository == 'ish4ra/HuntWick' && github.actor == github.repository_owner &&
+      github.triggering_actor == github.repository_owner &&
+      github.event_name == 'push' && github.ref == 'refs/heads/feat/phase-1-desktop-mvp' &&
+      startsWith(github.event.head_commit.message, '[verify updater key] ')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: 5a8a5750cf47a0ce1a51539b67f921eee98d562b
+          persist-credentials: false
+          sparse-checkout: scripts/verify-update.mjs
+          sparse-checkout-cone-mode: false
+      - name: Verify official signer download
+        working-directory: ${{ runner.temp }}
+        run: |
+          curl --fail --location --retry 2 --proto '=https' \
+            'https://github.com/tauri-apps/tauri/releases/download/tauri-cli-v2.12.6/cargo-tauri-x86_64-unknown-linux-gnu.tgz' -o signer.tgz
+          echo '057983293b14d88b29331f96b2e57ce9780f887e7a0b76e255844924f83118dc  signer.tgz' | sha256sum -c -
+          tar -xzf signer.tgz cargo-tauri
+      - name: Sign a fixed non-executable fixture
+        working-directory: ${{ runner.temp }}
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.UPDATER_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.UPDATER_KEY_PASSWORD }}
+        run: |
+          set -eu
+          umask 077
+          : "${TAURI_SIGNING_PRIVATE_KEY:?Missing UPDATER_PRIVATE_KEY}"
+          : "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:?Missing UPDATER_KEY_PASSWORD}"
+          printf '%s\n' 'HuntWick updater credential check' > probe.txt
+          ./cargo-tauri signer sign --app-version 0.0.0 probe.txt >/dev/null 2>&1 || {
+            echo '::error::The production signer could not sign the fixture with the configured credentials.'
+            exit 1
+          }
+      - name: Check signature and signed version against repository public key
+        env:
+          HUNTWICK_ARTIFACT_PUBLIC_KEY: ${{ vars.UPDATER_PUBLIC_KEY }}
+        run: |
+          set -eu
+          : "${HUNTWICK_ARTIFACT_PUBLIC_KEY:?Missing UPDATER_PUBLIC_KEY}"
+          node scripts/verify-update.mjs "$RUNNER_TEMP/probe.txt" 0.0.0
+
+  promotion-files:
+    name: Verify exact bytes and prepare the offline preview manifest
+    needs: signed-candidate
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          pattern: huntwick-*
+          merge-multiple: true
+          path: installers
+      - name: Verify all four platform entries against the signed payloads
+        env:
+          HUNTWICK_ARTIFACT_PUBLIC_KEY: ${{ vars.UPDATER_PUBLIC_KEY }}
+        run: |
+          python scripts/prepare_candidate.py
+          cat installers/latest.json
+          {
+            echo '### Verified production updater manifest'
+            echo '```json'
+            cat installers/latest.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: promotion-files
+          path: |
+            installers/latest.json
+            installers/SHA256SUMS
+            installers/candidate.json
+          if-no-files-found: error
+          retention-days: 90

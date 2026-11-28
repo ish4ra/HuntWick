@@ -1,0 +1,207 @@
+name: Verify and package
+
+on:
+  workflow_call:
+    inputs:
+      checks-only:
+        type: boolean
+        default: false
+      release-signing:
+        type: boolean
+        default: false
+    secrets:
+      UPDATER_PRIVATE_KEY:
+        required: false
+      UPDATER_KEY_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            runner: windows-2022
+            bundles: nsis
+          - target: aarch64-apple-darwin
+            runner: macos-15
+            bundles: app,dmg
+          - target: x86_64-apple-darwin
+            runner: macos-15-intel
+            bundles: app,dmg
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-22.04
+            bundles: deb,appimage
+    defaults:
+      run:
+        shell: bash
+    env:
+      RUSTUP_TOOLCHAIN: "1.95.0"
+      TARGET: ${{ matrix.target }}
+      BUNDLES: ${{ matrix.bundles }}
+      HUNTWICK_EXPECTED_UPDATER_KEY: ${{ inputs.release-signing && vars.UPDATER_PUBLIC_KEY || '' }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: "24.22.3"
+          package-manager-cache: false
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        with:
+          version: "0.13.9"
+          enable-cache: false
+      - name: Install Linux desktop build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl wget file libwebkit2gtk-4.1-dev \
+            libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev libfuse2 patchelf \
+            xvfb xauth dbus-x11
+      - name: Install Rust, Python, and locked dependencies
+        run: |
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt,clippy --target "$TARGET"
+          uv python install 3.12.14
+          uv sync --project engine --frozen --python 3.12.14
+          npm ci
+      - name: Check frontend and engine
+        run: |
+          node --test scripts/test-update-signatures.mjs
+          npm run lint
+          npm run typecheck
+          npm test
+          uv run --project engine --frozen python -m unittest discover -s scripts
+          npm run build
+      - name: Check engine parity and process lifecycle
+        run: |
+          if ! uv run --project engine --frozen python -m unittest discover -v -s engine/tests > engine-tests.log 2>&1; then
+            cat engine-tests.log
+            # Expose the deterministic fixture failure in the public check annotation.
+            python -c 'from pathlib import Path; s=Path("engine-tests.log").read_bytes().decode("utf-8", errors="replace"); print("::error title=Engine regression::" + s[-3800:].replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A"))'
+            echo '### Engine regression failure' >> "$GITHUB_STEP_SUMMARY"
+            echo '```text' >> "$GITHUB_STEP_SUMMARY"
+            tail -80 engine-tests.log >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          cat engine-tests.log
+      - name: Freeze the native engine
+        run: |
+          uv run --project engine --frozen python engine/build.py
+          engine_bin=engine/dist/huntwick-engine/huntwick-engine
+          if [[ "$RUNNER_OS" == Windows ]]; then engine_bin="$engine_bin.exe"; fi
+          uv run --project engine --frozen python scripts/smoke_maigret_tls.py "$engine_bin"
+          cargo fetch --manifest-path src-tauri/Cargo.toml --locked --target "$TARGET"
+          uv run --project engine --frozen python scripts/desktop_notices.py
+      - name: Run Rust checks
+        run: |
+          cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+          cargo clippy --manifest-path src-tauri/Cargo.toml --locked --target "$TARGET" --all-targets -- -D warnings
+          cargo test --manifest-path src-tauri/Cargo.toml --locked --target "$TARGET"
+      - name: Build desktop installers and checksums
+        if: inputs.checks-only == false
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+          RELEASE_SIGNING: ${{ inputs.release-signing }}
+          HUNTWICK_UPDATER_PUBLIC_KEY: ${{ inputs.release-signing && vars.UPDATER_PUBLIC_KEY || '' }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.UPDATER_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.UPDATER_KEY_PASSWORD }}
+        run: |
+          case "$RELEASE_SIGNING" in
+            true)
+              : "${TAURI_SIGNING_PRIVATE_KEY:?Configure UPDATER_PRIVATE_KEY}"
+              : "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:?Configure UPDATER_KEY_PASSWORD}"
+              : "${HUNTWICK_UPDATER_PUBLIC_KEY:?Configure UPDATER_PUBLIC_KEY}"
+              export HUNTWICK_ARTIFACT_PUBLIC_KEY="$HUNTWICK_UPDATER_PUBLIC_KEY"
+              fingerprint=$(node -e 'console.log(require("node:crypto").createHash("sha256").update(process.env.HUNTWICK_ARTIFACT_PUBLIC_KEY.trim()).digest("hex"))')
+              if [[ "$fingerprint" != cd307eeee71b7a46e73fbf139469c5f087f57839ba5eba90e40782eeeb341669 ]]; then
+                echo "::error::Production updater key differs from the key trusted by RC.5."
+                exit 1
+              fi
+              echo "Production public key SHA256: $fingerprint" >> "$GITHUB_STEP_SUMMARY"
+              echo "::notice title=Updater public key SHA256::$TARGET $fingerprint"
+              ;;
+            false)
+              key="$RUNNER_TEMP/huntwick-ci.key"
+              node_modules/.bin/tauri signer generate --ci -p "" -w "$key" > /dev/null
+              export TAURI_SIGNING_PRIVATE_KEY="$(cat "$key")"
+              export HUNTWICK_ARTIFACT_PUBLIC_KEY="$(cat "$key.pub")"
+              export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=""
+              ;;
+            *) echo "Unknown signing mode" >&2; exit 1 ;;
+          esac
+          config=$(node -p 'JSON.stringify({bundle:{createUpdaterArtifacts:true},plugins:{updater:{pubkey:process.env.HUNTWICK_ARTIFACT_PUBLIC_KEY}}})')
+          npm run tauri -- build --config "$config" --ci --target "$TARGET" --bundles "$BUNDLES" -- --locked
+          uv run --project engine --frozen python scripts/stage_installers.py "$TARGET"
+          python scripts/updater_assets.py "$TARGET"
+      - name: Test installed Windows engine and desktop
+        if: inputs.checks-only == false && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $installer = (Get-Item "installers/$env:TARGET/*.exe").FullName
+          $installDir = Join-Path $env:RUNNER_TEMP HuntWick
+          $install = Start-Process $installer -ArgumentList '/S', "/D=$installDir" -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw "Installer exited with $($install.ExitCode)" }
+          uv run --project engine --frozen python scripts/check_packaged_icons.py windows "$installer" "$installDir/huntwick.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          uv run --project engine --frozen python scripts/smoke_engine.py "$installDir"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          uv run --project engine --frozen python scripts/smoke_desktop.py "$installDir/huntwick.exe"
+      - name: Test engine and desktop from the mounted DMG
+        if: inputs.checks-only == false && runner.os == 'macOS'
+        run: |
+          mountpoint="$RUNNER_TEMP/huntwick-dmg"
+          mkdir "$mountpoint"
+          hdiutil attach -readonly -nobrowse -mountpoint "$mountpoint" "installers/$TARGET/"*.dmg
+          trap 'hdiutil detach "$mountpoint"' EXIT
+          uv run --project engine --frozen python scripts/smoke_engine.py "$mountpoint"
+          apps=("$mountpoint/"*.app)
+          uv run --project engine --frozen python scripts/check_packaged_icons.py mac "${apps[0]}" "installers/$TARGET/"*.app.tar.gz
+          uv run --project engine --frozen python scripts/smoke_desktop.py "${apps[0]}/Contents/MacOS/huntwick"
+      - name: Test installed Debian desktop and both Linux engines
+        if: inputs.checks-only == false && runner.os == 'Linux'
+        run: |
+          sudo dpkg -i "installers/$TARGET/"*.deb
+          uv run --project engine --frozen python scripts/check_packaged_icons.py linux /
+          uv run --project engine --frozen python scripts/smoke_engine.py /usr/lib/HuntWick
+          dbus-run-session -- xvfb-run -a uv run --project engine --frozen python scripts/smoke_desktop.py /usr/bin/huntwick
+          appimage=("$GITHUB_WORKSPACE/installers/$TARGET/"*.AppImage)
+          chmod +x "${appimage[0]}"
+          (cd "$RUNNER_TEMP" && "${appimage[0]}" --appimage-extract >/dev/null)
+          uv run --project engine --frozen python scripts/check_packaged_icons.py linux "$RUNNER_TEMP/squashfs-root"
+          uv run --project engine --frozen python scripts/smoke_engine.py "$RUNNER_TEMP/squashfs-root"
+      - name: Exercise a signed AppImage upgrade on a private local feed
+        if: inputs.checks-only == false && runner.os == 'Linux'
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+        run: |
+          dbus-run-session -- xvfb-run -a uv run --project engine --frozen python scripts/check_appimage_update.py
+      - name: Verify staged installers and report SHA-256
+        if: inputs.checks-only == false
+        run: uv run --project engine --frozen python scripts/stage_installers.py "$TARGET" --verify
+      - name: Upload verified installers
+        if: inputs.checks-only == false
+        id: upload
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: huntwick-${{ matrix.target }}
+          path: installers/${{ matrix.target }}/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+      - name: Verify the uploaded archive digest
+        if: inputs.checks-only == false
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARCHIVE_SHA256: ${{ steps.upload.outputs.artifact-digest }}
+        run: uv run --project engine --frozen python scripts/check_uploaded_archive.py
