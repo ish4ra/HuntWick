@@ -66,13 +66,13 @@ def acceptance(tmp):
                         data['version'] = '1.10.0'
                 else:
                     data = dict(manifest)
-                    if n == 1:
+                    if n == 2:
                         data['version'] = '0.0.1'
-                    elif n == 2:
-                        data['platforms'] = {'unsupported': next(iter(manifest['platforms'].values()))}
-                    elif n == 4:
-                        data['version'] = '1.9.0-rc.10'
                     elif n == 3:
+                        data['platforms'] = {'unsupported': next(iter(manifest['platforms'].values()))}
+                    elif n == 5:
+                        data['version'] = '1.9.0-rc.10'
+                    elif n == 4:
                         data['platforms'] = {'linux-x86_64': dict(manifest['platforms']['linux-x86_64'],signature='invalid')}
                 body = json.dumps(data).encode()
                 self.send_response(200)
@@ -174,7 +174,7 @@ def acceptance(tmp):
             with installed.open('rb') as f:
                 if hashlib.file_digest(f,'sha256').digest()!=expected:
                     raise RuntimeError('Installed image does not match the signed candidate.')
-            if list(attempts.values()) != [5,7]:
+            if list(attempts.values()) != [6,7]:
                 raise RuntimeError(f'Unexpected update feed requests: {attempts}')
             preserved={}
             data=tmp/'data'

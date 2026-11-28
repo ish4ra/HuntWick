@@ -7,7 +7,8 @@ import { ReleaseNotes } from './ReleaseNotes'
 import './updates.css'
 
 type Offer = {version: string; notes: string}
-type Phase = 'idle' | 'checking' | 'current' | 'available' | 'confirm' | 'downloading' | 'error'
+type CheckResult = {offer: Offer | null; previewVersion: string | null; feedMessage: string | null}
+type Phase = 'preview' | 'unavailable' | 'idle' | 'checking' | 'current' | 'available' | 'confirm' | 'downloading' | 'error'
 type Transfer = [number, number | null]
 
 function size(bytes: number) {
@@ -20,18 +21,26 @@ export function Updates({ws, visible}: {ws: Workspace; visible: boolean}) {
   const { autoUpdates, includePrereleases } = ws.settings
   const [phase, setPhase] = useState<Phase>('idle')
   const [offer, setOffer] = useState<Offer | null>(null)
+  const [previewVersion, setPreviewVersion] = useState<string | null>(null)
+  const [feedMessage, setFeedMessage] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [transfer, setTransfer] = useState<Transfer>([0, null])
   const startup = useRef(true)
   const busy = phase === 'checking' || phase === 'downloading'
   const active = isActive(ws.run)
-  async function check(prerelease: boolean) {
+  async function check(prerelease: boolean, discoverPreview = false) {
     setPhase('checking')
     setOffer(null)
+    setFeedMessage(null)
+    setPreviewVersion(null)
     try {
-      const found = await invoke<Offer | null>('check_update', {prerelease})
-      setOffer(found)
-      setPhase(found ? 'available' : 'current')
+      const result = await invoke<CheckResult>('check_update', {prerelease, discoverPreview})
+      setOffer(result.offer)
+      setPreviewVersion(result.previewVersion)
+      setFeedMessage(result.feedMessage)
+      if (result.offer) setPhase('available')
+      else if (result.previewVersion) setPhase('preview')
+      else setPhase(result.feedMessage ? 'unavailable' : 'current')
     } catch (e) {
       setError(String(e))
       setPhase('error')
@@ -67,19 +76,26 @@ export function Updates({ws, visible}: {ws: Workspace; visible: boolean}) {
       <small>Check for {includePrereleases ? 'stable releases and prereleases' : 'stable releases'} at startup.</small></div>
       <Toggle label="Automatic update checks" checked={autoUpdates} onChange={() => ws.updateSettings({autoUpdates: !autoUpdates})}/></div>
     <div className="preference"><div><strong>Include prereleases</strong>
-      <small>Include preview versions in manual and automatic checks.</small></div>
+      <small>Offer preview versions during manual and automatic checks.</small></div>
       <Toggle label="Include prereleases" checked={includePrereleases} disabled={busy} onChange={() => {
         ws.updateSettings({includePrereleases: !includePrereleases})
         setOffer(null)
+        setFeedMessage(null)
+        setPreviewVersion(null)
         setPhase('idle')
       }}/></div>
     <div className="update-body">
       <div className="update-actions">
-        <button className="primary" disabled={busy} onClick={() => void check(includePrereleases)}>Check for updates</button>
+        <button className="primary" disabled={busy} onClick={() => void check(includePrereleases, true)}>Check for updates</button>
         <button className="text-action" onClick={() => void ws.openUrl(desktopDownloadsUrl)}>Manual downloads <ExternalLink size={13}/></button>
       </div>
       {phase === 'checking' && <p role="status">Checking release feeds…</p>}
       {phase === 'current' && <div className="update-notice" role="status"><CircleCheck size={17}/> No newer update is available.</div>}
+      {phase === 'preview' && <div className="update-notice" role="status"><CircleAlert size={17}/><div>
+        <p>{feedMessage || 'No newer stable release is available.'} HuntWick {previewVersion} prerelease is available.</p>
+        <button className="quiet small" onClick={() => void check(true)}>Check prerelease</button>
+      </div></div>}
+      {feedMessage && (phase === 'unavailable' || offer) && <div className="update-notice" role="status"><CircleAlert size={17}/>{feedMessage}</div>}
       {phase === 'error' && <div className="update-notice update-error" role="alert"><CircleAlert size={17}/><div><strong>Update failed</strong><p>{error}</p></div></div>}
       {offer && <article className="update-card">
         <header><ArrowDownToLine size={20}/><div><h3>Update available</h3><p>HuntWick {offer.version}</p></div></header>

@@ -3,6 +3,7 @@
 .updates-panel .update-notice, .updates-panel .update-card { margin-top: 16px; border: 1px solid var(--accent-border); border-radius: 8px; }
 .updates-panel .update-notice { display: flex; gap: 9px; align-items: flex-start; padding: 14px; color: var(--accent); background: var(--tint); font-size: 13px; }
 .updates-panel .update-notice svg { flex-shrink: 0; }
+.update-notice p + button { margin-top: 9px; }
 .updates-panel .update-error { color: var(--warn); border-color: var(--line); background: var(--field); }
 .updates-panel .update-error p { margin-top: 4px; color: var(--secondary); }
 .update-card { overflow: hidden; background: var(--field); }

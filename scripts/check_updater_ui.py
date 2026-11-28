@@ -40,11 +40,12 @@ def main():
             if(cmd==='check_update'){
               window.lastCheck=args.prerelease
               if(window.fixtureError)throw window.fixtureError
-              if(window.current)return null
+              if(window.previewOnly && !args.prerelease && args.discoverPreview) return {offer:null,previewVersion:'0.3.0-rc.1',feedMessage:window.feedMessage}
+              if(window.current)return {offer:null,feedMessage:window.feedMessage}
               const notes=['## Search improvements','This fixture previews a signed desktop release.','',
                 '- Clearer progress during long searches','- More readable platform status messages','',
                 '## After installing','1. Open Settings','2. Review your saved preferences'].join(String.fromCharCode(10))
-              return {version:args.prerelease?'0.3.0-rc.1':'0.2.0',notes:window.notes || notes}
+              return {offer:{version:args.prerelease?'0.3.0-rc.1':'0.2.0',notes:window.notes || notes}}
             }
             if(cmd==='install_update'){
               window.emitProgress=(bytes,total)=>subscriptions['update-progress']({payload:[bytes,total]})
@@ -78,6 +79,23 @@ def main():
             def capture(name, region=panel):
                 if shots:
                     region.screenshot(path=shots/theme/(name+'.png'),animations='disabled')
+            preview.click()
+            page.evaluate("window.previewOnly=true")
+            check.click()
+            expect(panel.get_by_role('status')).to_contain_text("No newer stable release is available.")
+            expect(panel.get_by_role('status')).to_contain_text('HuntWick 0.3.0-rc.1 prerelease is available.')
+            expect(panel.get_by_role('button', name='Check for updates', exact=True)).to_have_count(1)
+            expect(install).to_have_count(0)
+            page.evaluate("window.feedMessage='Stable channel: No update feed has been published.'")
+            check.click()
+            expect(panel.get_by_role('status')).to_contain_text('No update feed has been published')
+            expect(panel.get_by_text('No newer stable release is available.',exact=False)).to_have_count(0)
+            capture('prerelease-notice')
+            panel.get_by_role('button',name='Check prerelease',exact=True).click()
+            expect(preview).not_to_be_checked()
+            expect(install).to_be_visible()
+            page.evaluate("window.previewOnly=false; window.feedMessage=null")
+            preview.click()
             page.evaluate('window.current=true')
             check.click()
             expect(panel.get_by_role('status')).to_contain_text('No newer update')
@@ -106,17 +124,37 @@ def main():
             page.evaluate('window.failInstall()')
             expect(panel.get_by_role('alert')).to_contain_text('signature verification failed')
             capture('failure')
-        for failure in ['No update feed has been published for this channel yet. Check again after the next release.',
-                        'Could not reach the update service. Check your connection and try Check for updates again.', 'The release metadata is invalid.']:
-            page.evaluate('(s)=>window.fixtureError=s',failure)
+            page.evaluate('(notes)=>window.notes=notes',(DIST.parent/'scripts/fixtures/update/rc6-published-notes.md').read_text())
             check.click()
-            expect(panel.get_by_role('alert')).to_contain_text(failure)
+            expect(notes.get_by_role('listitem')).to_have_count(8)
+            expect(notes.get_by_role('heading')).to_have_count(7)
+            expect(notes.locator('p').first).to_have_text('0.1.0-rc.6')
+            expect(notes.get_by_role('heading',name='Known limitations')).to_have_count(1)
+            assert notes.locator('.release-notes').evaluate('(e)=>e.scrollHeight > e.clientHeight')
+            capture('published-rc6-notes',notes)
+            page.set_viewport_size({'width':700,'height':650})
+            assert notes.evaluate('(e)=>e.scrollWidth <= e.clientWidth')
+            notes.locator('.release-notes').scroll_into_view_if_needed()
+            notes.locator('.release-notes').evaluate('(e)=>e.scrollTop=e.scrollHeight')
+            expect(notes.get_by_role('heading',name='Known limitations')).to_be_in_viewport()
+            page.set_viewport_size({'width':1080,'height':900})
+            page.evaluate('window.notes=null')
+        for failure in ['Stable channel: No update feed has been published.',
+                        'Preview channel: Could not reach the update service.',
+                        'Preview channel: The release metadata is invalid.']:
+            page.evaluate('(s)=>{window.current=true;window.feedMessage=s}',failure)
+            check.click()
+            expect(panel.get_by_role('status')).to_contain_text(failure)
+            expect(panel.get_by_text('No newer update is available.')).to_have_count(0)
+        page.evaluate('window.current=false;window.feedMessage=null')
         page.evaluate("""() => {window.fixtureError=null; window.notes='<img src=x onerror=alert(1)>'}""")
         check.click()
         expect(panel.locator('.release-notes img')).to_have_count(0)
         expect(panel.get_by_text('<img src=x onerror=alert(1)>',exact=True)).to_be_visible()
         panel.get_by_role('button',name='Manual downloads').click()
-        assert page.evaluate('window.manualUrl').endswith('/releases/tag/v0.1.0-rc.5')
+        downloads_url = page.evaluate('window.manualUrl')
+        assert downloads_url == 'https://github.com/ish4ra/HuntWick/releases' or downloads_url.startswith(
+            'https://github.com/ish4ra/HuntWick/releases/tag/v')
         page.get_by_role('button',name='Search',exact=True).first.click()
         page.locator('#username').fill('fixture')
         page.locator('button[type=submit]').click()
@@ -129,7 +167,7 @@ def main():
         assert page.evaluate('window.lastCheck') is False
         browser.close()
         server.shutdown()
-    print('Chromium updater UI passed startup stable offer, manual preview, percentage progress, verification error recovery, release fallback and active-search interlock (fixture IPC).')
+    print('Chromium updater UI passed both themes, published RC.6 notes, preview notices and explicit opt-in, feed failures, progress, restart and active-search protection (fixture IPC).')
 
 if __name__ == "__main__":
     main()

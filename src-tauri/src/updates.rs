@@ -1,3 +1,5 @@
+mod policy;
+use self::policy::{eligible_version, select, Choice};
 use super::Engine;
 use serde::Serialize;
 use std::{sync::Mutex, time::Duration};
@@ -11,6 +13,14 @@ pub struct Pending(Mutex<Option<Update>>);
 pub struct Offer {
     version: String,
     notes: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CheckResult {
+    offer: Option<Offer>,
+    preview_version: Option<String>,
+    feed_message: Option<String>,
 }
 
 pub(super) const EMBEDDED_KEY: Option<&str> = option_env!("HUNTWICK_UPDATER_PUBLIC_KEY");
@@ -29,7 +39,8 @@ pub async fn check_update(
     app: AppHandle,
     pending: State<'_, Pending>,
     prerelease: bool,
-) -> Result<Option<Offer>, String> {
+    discover_preview: Option<bool>,
+) -> Result<CheckResult, String> {
     *pending.0.lock().unwrap() = None;
     let key = EMBEDDED_KEY.filter(|k| !k.trim().is_empty()).ok_or(
         "This build has no release verification key. Use the checksummed manual downloads.",
@@ -40,40 +51,46 @@ pub async fn check_update(
         );
     }
     let stable = check_channel(&app, key, "stable").await;
-    let update = if prerelease {
-        let preview = check_channel(&app, key, "preview").await;
-        match (stable, preview) {
-            (Err(a), Err(b)) => return Err(if a == MISSING_FEED { b } else { a }),
-            (Err(e), Ok(other)) | (Ok(other), Err(e)) if e == MISSING_FEED => other,
-            (Err(e), _) | (_, Err(e)) => return Err(e),
-            (Ok(Some(stable)), Ok(Some(preview))) => {
-                if preview_is_newer(&stable.version, &preview.version)? {
-                    Some(preview)
-                } else {
-                    Some(stable)
-                }
-            }
-            (Ok(stable), Ok(preview)) => stable.or(preview),
-        }
+    let preview = if prerelease || discover_preview.unwrap_or(false) {
+        check_channel(&app, key, "preview").await
     } else {
-        stable?
+        Ok(None)
+    };
+    let messages: Vec<_> = [("Stable", &stable), ("Preview", &preview)]
+        .into_iter()
+        .filter_map(|(channel, result)| {
+            result
+                .as_ref()
+                .err()
+                .map(|error| format!("{channel} channel: {error}"))
+        })
+        .collect();
+    let stable = stable.ok().flatten();
+    let preview = preview.ok().flatten();
+    let choice = select(
+        stable.as_ref().map(|u| u.version.as_str()),
+        preview.as_ref().map(|u| u.version.as_str()),
+        prerelease,
+    )?;
+    let (update, preview_version) = match choice {
+        Choice::Stable => (stable, None),
+        Choice::Preview => (preview, None),
+        Choice::PreviewNotice => (None, preview.map(|u| u.version)),
+        Choice::Current => (None, None),
     };
     let offer = update.as_ref().map(|u| Offer {
         version: u.version.clone(),
         notes: u.body.clone().unwrap_or_default(),
     });
     *pending.0.lock().unwrap() = update;
-    Ok(offer)
+    Ok(CheckResult {
+        offer,
+        preview_version,
+        feed_message: (!messages.is_empty()).then(|| messages.join(" ")),
+    })
 }
 
-const MISSING_FEED: &str =
-    "No update feed has been published for this channel yet. Check again after the next release.";
-
-fn preview_is_newer(stable: &str, preview: &str) -> Result<bool, String> {
-    let parse =
-        |v: &str| semver::Version::parse(v).map_err(|_| "Invalid release version.".to_owned());
-    Ok(parse(preview)?.cmp_precedence(&parse(stable)?).is_gt())
-}
+const MISSING_FEED: &str = "No update feed has been published.";
 
 async fn check_channel(
     app: &AppHandle,
@@ -91,8 +108,7 @@ async fn check_channel(
         .endpoints(vec![endpoint.clone()])
         .map_err(|_| "Invalid release feed.")?
         .version_comparator(move |current, remote| {
-            remote.version.cmp_precedence(&current).is_gt()
-                && (prerelease || remote.version.pre.is_empty())
+            eligible_version(&current, &remote.version, prerelease)
         })
         .build()
         .map_err(|_| "Updater is unavailable on this installation.")?;
@@ -188,13 +204,6 @@ pub async fn install_update(
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn preview_must_outrank_stable() {
-        assert!(!preview_is_newer("1.10.0", "1.9.0-rc.10").unwrap());
-        assert!(!preview_is_newer("1.0.0", "1.0.0-rc.99").unwrap());
-        assert!(!preview_is_newer("1.0.0+1", "1.0.0+2").unwrap());
-        assert!(preview_is_newer("1.0.0", "1.1.0-rc.1").unwrap());
-    }
     #[test]
     fn downloads_are_pinned_to_release_assets() {
         assert!(approved_url(
