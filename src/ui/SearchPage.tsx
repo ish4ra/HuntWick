@@ -80,8 +80,12 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
     const disabled = new Set(ws.settings.disabledSites)
     return ws.catalog?.sites.filter(site => eligible(site, ws.settings.providerMode) && !disabled.has(site.name)) ?? []
   }, [ws.catalog, ws.settings.disabledSites, ws.settings.providerMode])
+  const address = !ws.hosted && ['deep','maigret'].includes(ws.settings.providerMode)
+    ? /^@?([A-Za-z0-9_]{1,64})@([A-Za-z0-9.-]+)$/.exec(username.trim()) : null
+  const instanceSites = address ? enabledSites.filter(site => site.federated &&
+    new URL(site.url).hostname.toLowerCase() === address[2].toLowerCase()) : enabledSites
   const categories = [...new Set(enabledSites.map(site => site.category))].sort()
-  const scoped = category ? enabledSites.filter(site => site.category === category) : enabledSites
+  const scoped = category ? instanceSites.filter(site => site.category === category) : instanceSites
   const quickSites = scoped.filter(site => site.quick)
   const quick = quickSites.length
   const full = scoped.length
@@ -100,7 +104,7 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
   }, [focusToken])
   async function submit(event: FormEvent) {
     event.preventDefault()
-    const name = username.trim()
+    const name = address?.[1] ?? username.trim()
     if (!validUsername(name)) {
       setValidation('Enter a username of 1–64 letters, numbers, periods, hyphens or underscores.')
       input.current?.focus()
@@ -108,7 +112,7 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
     }
     setValidation('')
     if (ws.settings.radarSound || ws.settings.scanSound) void armRadar()
-    await ws.start(name, ws.hosted ? 'full' : mode, category ? selected.map(site => site.name) : undefined)
+    await ws.start(name, ws.hosted ? 'full' : mode, category || address ? selected.map(site => site.name) : undefined)
   }
   return (
     <>
@@ -326,7 +330,7 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
           <CircleDot size={15} />
           {ws.hosted
             ? 'Select at least one platform above to search.'
-            : 'Enable platforms for this mode in the Platforms view.'}
+            : address ? 'No enabled federated route matches this instance and search scope.' : 'Enable platforms for this mode in the Platforms view.'}
         </div>
       )}
       <Results key={ws.run?.id ?? 'empty'} ws={ws} />

@@ -32,6 +32,8 @@ pub struct Site {
     pub native_only: bool,
     #[serde(default)]
     pub engines: Vec<String>,
+    #[serde(default)]
+    pub federated: bool,
 }
 
 #[derive(Deserialize, Serialize)]

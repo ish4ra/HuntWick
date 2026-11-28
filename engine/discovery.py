@@ -5,6 +5,7 @@ from urllib.parse import urlsplit
 
 import requests
 
+import federated
 from catalog import describe
 from http_workers import NetworkPool
 from maigret_provider import check, eligible, snapshot
@@ -55,7 +56,10 @@ def modes(item):
 def catalog(items, version):
     result = describe({name:item['base'] for name,item in items.items()},version)
     for row in result['sites']:
-        row['engines'] = modes(items[row['name']])
+        item = items[row['name']]
+        row['engines'] = modes(item)
+        if any(federated.family(rule) for _, rule in item.get('maigret', [])):
+            row['federated'] = True
     unavailable = {r['name']:r['reason'] for r in result['unavailable']}
     unavailable['SpankBang'] = 'No public username rule in the bundled Sherlock or Maigret catalogs.'
     for name, reason in snapshot()['unavailable'].items():
@@ -122,7 +126,11 @@ def run_profile(mode, name, item, username, timeout, network, retry):
     if not exact_domain and 'sherlock' in item and (mode in {'sherlock','deep'} or mode=='enhanced' and not calls):
         calls.append((original,name,item['sherlock']))
     if not exact_domain and mode in {'maigret','deep'}:
-        calls.extend((check,n,rule) for n,rule in item.get('maigret',[]))
+        for n, rule in item.get('maigret', []):
+            if federated.family(rule):
+                calls.insert(0, (federated.check, n, rule))
+            else:
+                calls.append((check, n, rule))
 
     def attempt():
         shared = SharedNetwork(network) if mode=='deep' else network

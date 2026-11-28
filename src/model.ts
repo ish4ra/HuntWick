@@ -13,6 +13,7 @@ export interface Site {
   name: string
   url: string
   category: string
+  federated?: boolean
   nativeOnly?: boolean
   quick: boolean
 }
@@ -144,7 +145,7 @@ export function parseCatalog(value: unknown): Catalog {
     if (!record(s) || !shortString(s.name) || !shortString(s.category) || typeof s.quick !== 'boolean' ||
       !safeUrl(s.url) || seen.has(s.name)) throw new Error('The engine returned an invalid platform entry.')
     seen.add(s.name)
-    return { ...(Array.isArray(s.engines) && s.engines.length ? {engines:s.engines.filter(e=>engines.includes(e))} : {}), ...(s.nativeOnly === true ? {nativeOnly:true} : {}), name: s.name, category: s.category, quick: s.quick, url: safeUrl(s.url) }
+    return { ...(s.federated === true ? {federated:true} : {}), ...(Array.isArray(s.engines) && s.engines.length ? {engines:s.engines.filter(e=>engines.includes(e))} : {}), ...(s.nativeOnly === true ? {nativeOnly:true} : {}), name: s.name, category: s.category, quick: s.quick, url: safeUrl(s.url) }
   })
   const catalog: Catalog = { version: value.version, databaseVersion: value.databaseVersion, updatedAt: value.updatedAt, sites }
   if (value.unavailable === undefined) return catalog
