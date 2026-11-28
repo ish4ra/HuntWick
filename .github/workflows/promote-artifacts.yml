@@ -1,7 +1,7 @@
-name: Promote verified RC.5
+name: Promote verified RC.6
 on:
   push:
-    branches: [promote/rc5, verify/rc5]
+    branches: [promote/rc6, verify/rc6]
 
 permissions: {}
 concurrency:
@@ -12,7 +12,7 @@ jobs:
   promote:
     if: >-
       github.repository == 'ish4ra/HuntWick' &&
-      github.ref == 'refs/heads/promote/rc5' &&
+      github.ref == 'refs/heads/promote/rc6' &&
       github.actor == github.repository_owner &&
       github.triggering_actor == github.repository_owner &&
       !github.event.deleted
@@ -27,10 +27,10 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: 90124af0358f9868fb7be05fbec3b6a3ed0ec560
+          ref: 4c283babbd4e6a4874e8633701bfeade2690f718
           path: candidate
           persist-credentials: false
-      - name: Verify the original ZIPs, publish RC.5 and verify preview
+      - name: Verify the original ZIPs, publish RC.6 and verify preview
         env:
           GH_TOKEN: ${{ github.token }}
           HUNTWICK_ARTIFACT_PUBLIC_KEY: ${{ vars.UPDATER_PUBLIC_KEY }}
@@ -39,7 +39,7 @@ jobs:
   verify:
     if: >-
       github.repository == 'ish4ra/HuntWick' &&
-      github.ref == 'refs/heads/verify/rc5' &&
+      github.ref == 'refs/heads/verify/rc6' &&
       github.actor == github.repository_owner &&
       github.triggering_actor == github.repository_owner &&
       !github.event.deleted
@@ -54,7 +54,7 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: 90124af0358f9868fb7be05fbec3b6a3ed0ec560
+          ref: 4c283babbd4e6a4874e8633701bfeade2690f718
           path: candidate
           persist-credentials: false
       - name: Verify original ZIPs, installer sizes and offline preview
