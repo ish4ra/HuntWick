@@ -361,11 +361,8 @@ tr:last-child td { border-bottom: 0; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 .platform-cell { display: flex; align-items: center; gap: 8px; }
-.platform-mark { display: inline-grid; flex-shrink: 0; place-items: center; width: 28px; height: 28px; font: 600 10px var(--mono); border: 1px solid currentColor; border-radius: 6px; }
-.platform-mark.hue-0 { color: #89cdb1; background: #19332a; }
-.platform-mark.hue-1 { color: #a0bce0; background: #1e2c3d; }
-.platform-mark.hue-2 { color: #c4accf; background: #302638; }
-.platform-mark.hue-3 { color: #d4bd8d; background: #322d20; }
+.platform-mark { display: inline-grid; flex: none; place-items: center; vertical-align: middle; width: 25px; height: 25px; margin: 0 1px; color: var(--muted); background: var(--raised); border: 1px solid var(--line); border-radius: 6px; }
+
 .profile-id { min-width: 0; }
 .profile-id strong, .profile-id small { display: block; overflow-wrap: anywhere; }
 .profile-id strong { color: var(--text); font-size: 12px; font-weight: 580; }
@@ -405,7 +402,11 @@ tr:last-child td { border-bottom: 0; }
 .view-description { margin: 0; padding: 8px 15px; color: var(--muted); font-size: 11px; border-bottom: 1px solid var(--sub-line); }
 .exclusion-reason { display: block; margin-top: 3px; font-size: 11px; color: var(--muted); }
 
-.brand-mark { display:inline-block; width:19px; height:19px; margin:0 4px; flex:none; vertical-align:middle; background:currentColor; mask-size:contain;mask-position:center;mask-repeat:no-repeat; }
+.brand-mark { display:inline-block; width:19px; height:19px; margin:0 4px; flex:none; vertical-align:middle; color:var(--text); background:currentColor; -webkit-mask-size:contain; -webkit-mask-position:center; -webkit-mask-repeat:no-repeat; mask-size:contain;mask-position:center;mask-repeat:no-repeat; }
+.kongregate-mark { color: #f04438; }
+.laracasts-mark { background: center / contain no-repeat url('/platforms/laracasts-dark.svg'); }
+:root[data-theme="light"] .laracasts-mark { background-image: url('/platforms/laracasts.svg'); }
+.brand-original { background: transparent; object-fit: contain; }
 button.discovery-dot { position:absolute; z-index:2; display:grid; place-items:center; width:24px; height:24px; min-height:0; min-width:0; padding:0; margin:-12px; box-sizing:border-box; border:0; border-radius:50%; background:transparent; color:#edb666; cursor:pointer; }
 .discovery-dot.found { color:#ffe2a3; }
 .discovery-dot.conflict { color:#d39f78; }
