@@ -63,7 +63,15 @@ export function useHuntWick() {
     const frame = requestAnimationFrame(() => {
       const input = document.querySelector<HTMLInputElement>('main form input#username')
       if (input?.offsetWidth && input.offsetHeight && input.form?.querySelector('button[type="submit"]')) {
-        void invoke('confirm_install', { siteCount })
+        // Exercise the installed webview's asset protocol before reporting package success.
+        const icons = ['mastodon', 'lemmy', 'wattpad'].map(slug => {
+          const image = new Image()
+          image.src = '/platforms/' + slug + '.svg'
+          return image.decode()
+        })
+        void Promise.all(icons).then(() => {
+          void invoke('confirm_install', { siteCount })
+        }).catch(() => console.error('Installed platform artwork could not be decoded.'))
       }
     })
     return () => cancelAnimationFrame(frame)
