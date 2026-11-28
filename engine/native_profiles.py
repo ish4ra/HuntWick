@@ -54,6 +54,9 @@ def native(name, rule, username, timeout, network):
         data = data[0] if len(data)==1 else {}
     if not isinstance(data,dict):
         data = {}
+    if name == 'iNaturalist':
+        users = data.get('results')
+        data = users[0] if isinstance(users, list) and len(users) == 1 and isinstance(users[0], dict) else {}
     if name=='Bluesky' and res.status_code==400 and data.get('error')=='ProfileNotFound':
         return {**row,'status':'not_found','verdict':'ProfileNotFound'}
     if res.status_code != 200:
@@ -63,8 +66,8 @@ def native(name, rule, username, timeout, network):
                     re.fullmatch(r'did:(?:plc|web):[a-zA-Z0-9.:%_-]+',str(data.get('did',''))))
     elif name=='Lichess':
         verified = data.get('id')==handle and str(data.get('username','')).lower()==handle
-    elif name in {'Chess.com','GitHub','GitLab','Scratch'}:
-        key = {'Scratch':'username','Chess.com':'username','GitHub':'login','GitLab':'username'}[name]
+    elif name in {'Chess.com','GitHub','GitLab','Scratch','iNaturalist'}:
+        key = {'iNaturalist':'login','Scratch':'username','Chess.com':'username','GitHub':'login','GitLab':'username'}[name]
         identifier = data.get('player_id' if name=='Chess.com' else 'id')
         verified = str(data.get(key,'')).lower()==handle and type(identifier) is int and identifier>0
     elif name=='crates.io':

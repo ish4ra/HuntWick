@@ -306,11 +306,15 @@ export function formatExport(run: Run, format: ExportFormat): string {
 
 /** Share only recognized transport measurements. Older history may contain free text. */
 export function diagnosticReport(run: Run) {
-  return JSON.stringify({mode:run.mode, counts:countStatuses(run.results), checks:run.results.map(row=>{
+  const providers = new Set(['Sherlock Original', 'HuntWick public lookup', 'Maigret'])
+  return JSON.stringify({mode:run.mode, engine:run.engine, selected:run.sites.length,
+    completed:run.checked, counts:countStatuses(run.results), checks:run.results.map(row=>{
     const http=/^Sherlock: (Claimed|Available|Unknown|Illegal|WAF)\. HTTP (\d{3})\. Headers: (\d+\.\d+) s\. Total: (\d+\.\d+) s\.$/.exec(row.message)
     const failure=/^(Connect timeout|Response timeout|Body timeout|Connection failure|TLS failure) after (\d+\.\d+) s\.$/.exec(row.message)
-    return {platform:row.platform,status:row.status,...(row.provider && ['Sherlock Original','HuntWick public lookup','Maigret'].includes(row.provider) ? {provider:row.provider} : {}),
-      ...(row.verdict && /^(Claimed|Available|Illegal|Unknown|WAF|API identity matched|Identity unavailable|Invalid handle|Numeric profile redirect|Empty user lookup|ProfileNotFound|Request failed|Connection failure|TLS failure|Timeout|HTTP [1-5][0-9]{2})$/.test(row.verdict) ? {verdict:row.verdict} : {}),
+    return {platform:row.platform,status:row.status,...(row.provider && providers.has(row.provider) ? {provider:row.provider} : {}),
+      ...(row.sources ? {sources:row.sources.filter(s => providers.has(s.provider) && validStatus(s.status))
+        .map(s => ({provider:s.provider, status:s.status}))} : {}),
+      ...(row.verdict && /^(Claimed|Available|Illegal|Unknown|WAF|API identity matched|Identity unavailable|Invalid handle|Numeric profile redirect|Empty user lookup|ProfileNotFound|Request failed|Connection failure|TLS failure|DNS failure|Proxy connection failure|Timeout|HTTP [1-5][0-9]{2})$/.test(row.verdict) ? {verdict:row.verdict} : {}),
       ...(row.http ? {http:row.http} : {}),...(row.elapsedMs !== undefined ? {elapsedMs:row.elapsedMs} : {}),...(http?{upstream:http[1],http:Number(http[2]),headersSeconds:Number(http[3]),totalSeconds:Number(http[4])}:{}),
       ...(failure?{failure:failure[1],totalSeconds:Number(failure[2])}:{})}
   })},null,2)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyEvent, countStatuses, createRun, formatExport, matchLinks, parseCatalog, parseHistory, selectSites, visibleIn } from './model'
+import { applyEvent, diagnosticReport, countStatuses, createRun, formatExport, matchLinks, parseCatalog, parseHistory, selectSites, visibleIn } from './model'
 import type { Catalog, Result, Status } from './model'
 
 const site = { name: 'Forum', url: 'https://forum.example/', quick: true, category: 'Community' }
@@ -31,6 +31,14 @@ describe('evidence in results and reports', () => {
       expect(parseHistory([done])[0].results[0]).toMatchObject({provider:'Sherlock Original',verdict:'Claimed',http:403,elapsedMs:120})
       for (const format of ['csv','html','json'] as const) expect(formatExport(done,format)).toContain('Claimed')
     }
+  })
+  it('exports scoped completion and nested outcomes without private source details', () => {
+    const run = createRun('id', 'private-handle', 'full', [site], now)
+    run.results = [{...rows[0], sources:[{provider:'Maigret',status:'provider_match',verdict:'private-handle'}]}]
+    run.checked = 1
+    const report = diagnosticReport(run)
+    expect(JSON.parse(report)).toMatchObject({selected:1,completed:1,checks:[{sources:[{provider:'Maigret',status:'provider_match'}]}]})
+    expect(report).not.toContain('private-handle')
   })
   it('preserves a possible match and its evidence in saved history and exports', () => {
     const run = createRun('fixture', 'fixture', 'quick', [site], now)

@@ -41,11 +41,17 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.check('Bluesky','blue',{'error':'ProfileNotFound'},400)[0]['status'],'not_found')
 
     def test_lichess_and_crates_positive_negative_and_denials(self):
-        for name,data in [('Scratch',{'username':'Blue','id':33}),('Lichess',{'username':'Blue','id':'blue'}),('crates.io',{'user':{'login':'Blue','id':31}}),('Chess.com',{'username':'Blue','player_id':17}),('GitHub',{'login':'Blue','id':3}),('GitLab',[{'username':'Blue','id':4}])]:
+        for name,data in [('iNaturalist',{'results':[{'login':'Blue','id':42}]}),('Scratch',{'username':'Blue','id':33}),('Lichess',{'username':'Blue','id':'blue'}),('crates.io',{'user':{'login':'Blue','id':31}}),('Chess.com',{'username':'Blue','player_id':17}),('GitHub',{'login':'Blue','id':3}),('GitLab',[{'username':'Blue','id':4}])]:
             self.assertEqual(self.check(name,'blue',data)[0]['status'],'found')
             self.assertEqual(self.check(name,'blue',{},404)[0]['status'],'not_found')
             self.assertEqual(self.check(name,'other',data)[0]['status'],'inconclusive')
             self.assertEqual(self.check(name,'blue',data,429,retry=True)[0]['status'],'blocked')
+
+    def test_inaturalist_ambiguous_or_malformed_identity(self):
+        for users in ([], [None], [{'login':'Blue','id':True}], [{'login':'Blue','id':42}]*2):
+            row, probe = self.check('iNaturalist','blue',{'results':users})
+            self.assertEqual(row['status'],'inconclusive')
+            self.assertEqual(probe,'https://api.inaturalist.org/v2/users/blue?fields=id,login')
 
     def test_osu_expected_and_unrelated_redirect(self):
         self.assertEqual(self.check('osu!','blue',{},302,'/users/123')[0]['status'],'possible')

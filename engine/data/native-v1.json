@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": "2026-11-26.1",
+  "revision": "2026-11-28.1",
   "license": "MIT",
   "validation": "synthetic fixtures",
   "sites": {
@@ -67,6 +67,14 @@
       "category": "Development",
       "source": "https://docs.gitlab.com/api/users/#list-all-users",
       "nativeOnly": false
+    },
+    "iNaturalist": {
+      "url": "https://www.inaturalist.org/people/{}",
+      "urlProbe": "https://api.inaturalist.org/v2/users/{}?fields=id,login",
+      "urlMain": "https://www.inaturalist.org",
+      "category": "Community",
+      "source": "https://github.com/inaturalist/iNaturalistAPI/blob/9f9738d69e083cab8e55d2da783312a32e83b512/lib/models/user.js",
+      "nativeOnly": true
     }
   }
 }

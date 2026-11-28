@@ -1,7 +1,7 @@
 import { AdultCategory } from './AdultCategory'
 import { DiscoveryRadar } from './DiscoveryRadar'
 import { armRadar } from './radarAudio'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import {
   ArrowRight,
   AtSign,
@@ -71,14 +71,22 @@ export function NumberSetting({
 export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusToken: number }) {
   const [username, setUsername] = useState(ws.run?.username ?? '')
   const [mode, setMode] = useState<Mode>(ws.run?.mode ?? ws.settings.defaultMode)
+  const [category, setCategory] = useState('')
   const [advanced, setAdvanced] = useState(false)
   const [validation, setValidation] = useState('')
   const input = useRef<HTMLInputElement>(null)
   const active = isActive(ws.run)
-  const quick =
-    ws.catalog?.sites.filter((s) => eligible(s, ws.settings.providerMode) && s.quick && !ws.settings.disabledSites.includes(s.name)).length ?? 0
-  const full = ws.catalog?.sites.filter((s) => eligible(s, ws.settings.providerMode) && !ws.settings.disabledSites.includes(s.name)).length ?? 0
-  const count = ws.hosted || mode === 'full' ? full : quick
+  const enabledSites = useMemo(() => {
+    const disabled = new Set(ws.settings.disabledSites)
+    return ws.catalog?.sites.filter(site => eligible(site, ws.settings.providerMode) && !disabled.has(site.name)) ?? []
+  }, [ws.catalog, ws.settings.disabledSites, ws.settings.providerMode])
+  const categories = [...new Set(enabledSites.map(site => site.category))].sort()
+  const scoped = category ? enabledSites.filter(site => site.category === category) : enabledSites
+  const quickSites = scoped.filter(site => site.quick)
+  const quick = quickSites.length
+  const full = scoped.length
+  const selected = ws.hosted || mode === 'full' ? scoped : quickSites
+  const count = selected.length
   function togglePlatform(platform: string) {
     const disabled = ws.settings.disabledSites
     ws.updateSettings({
@@ -100,7 +108,7 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
     }
     setValidation('')
     if (ws.settings.radarSound || ws.settings.scanSound) void armRadar()
-    await ws.start(name, ws.hosted ? 'full' : mode)
+    await ws.start(name, ws.hosted ? 'full' : mode, category ? selected.map(site => site.name) : undefined)
   }
   return (
     <>
@@ -232,7 +240,7 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
                       </button>
                     ))}
                   </div>
-                  {mode === 'full' && full >= 500 && <p className="workload-note">Full search checks every enabled platform in batches of {ws.settings.concurrency}. Slow sites can take up to {ws.settings.timeout} seconds per attempt.</p>}
+                  {mode === 'full' && full >= 500 && <p className="workload-note">Full search checks the selected platforms in batches of {ws.settings.concurrency}. Slow sites can take up to {ws.settings.timeout} seconds per attempt.</p>}
                 </>
               )}
             </div>
@@ -265,7 +273,7 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
             ) : (
               <span className="scope-caption">
                 <Globe2 size={13} />
-                {ws.catalog ? ws.catalog.sites.length + ' platforms in catalog' : 'Platform catalog'}
+                {ws.catalog ? (category ? category + ' · ' + count + ' selected' : ws.catalog.sites.length + ' platforms in catalog') : 'Platform catalog'}
               </span>
             )}
           </div>
@@ -274,6 +282,13 @@ export default function SearchPage({ ws, focusToken }: { ws: Workspace; focusTok
               <legend className="sr-only">Search limits</legend>
               {!ws.hosted && <label><input type="checkbox" checked={ws.settings.retryTransient}
                 onChange={e=>ws.updateSettings({retryTransient:e.target.checked})}/> Retry a transient network failure once</label>}
+              {!ws.hosted && <label>Search category
+                <select value={category} onChange={event => setCategory(event.target.value)}>
+                  <option value="">All categories</option>
+                  {category && !categories.includes(category) && <option value={category}>{category} (0 eligible)</option>}
+                  {categories.map(name => <option key={name} value={name}>{name}</option>)}
+                </select>
+              </label>}
               <NumberSetting
                 label="Timeout (seconds)"
                 value={ws.settings.timeout}

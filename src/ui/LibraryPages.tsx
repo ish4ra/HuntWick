@@ -196,9 +196,17 @@ export function PlatformsPage({ ws }: { ws: Workspace }) {
             : 'Explore the platform catalog and choose which sites to include in searches.'
         }
       />
+      {!ws.hosted && <details className="note">
+        <summary>How catalog and search counts work</summary>
+        <p>HuntWick bundles 481 Sherlock definitions and compiles 4,188 reviewed Maigret definitions from 11,071 upstream.
+          The directory combines compatible routes with native lookups. Equivalent profile routes share one result.</p>
+        <p>Eligible routes meet the current category policy. Engine, mode, search category and disabled sites determine the selected total.
+          Unavailable entries explain unsupported methods and excluded upstream rules. A completed check can report a match,
+          absence, timeout or access block. A timeout or block leaves the account’s existence unknown.</p>
+      </details>}
       <div className="library-stats">
         {[
-          { label: 'Available platforms', value: sites.length, Icon: Database },
+          { label: 'Eligible platforms', value: sites.length, Icon: Database },
           { label: 'Enabled platforms', value: enabled, Icon: Layers3 },
           {
             label: ws.hosted ? 'Disabled platforms' : 'Quick search platforms',
